@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "formId": "f14-clean-shift-a",
+    "capturedAt": "2026-11-13T07:05:00.000Z",
+    "captureQualityScore": 0.96,
+    "modelUsed": "Qwen/Qwen2.5-VL-72B-Instruct",
+    "overallConfidence": 0.96,
+    "processingTimeMs": 2840
+  },
+  "header": {
+    "loomId": { "value": "L-104", "confidence": 0.98, "isFlagged": false },
+    "loomType": { "value": "Airjet", "confidence": 0.95 },
+    "date": { "value": "2026-11-13", "confidence": 0.99, "isFlagged": false },
+    "shift": { "value": "A", "confidence": 0.97, "isFlagged": false },
+    "operatorId": { "value": "OP-482", "confidence": 0.96, "isFlagged": false },
+    "operatorName": { "value": "Manoj Verma", "confidence": 0.94 },
+    "sortCode": { "value": "S-4040-68", "confidence": 0.97, "isFlagged": false },
+    "beamNumber": { "value": "BM-8842", "confidence": 0.95, "isFlagged": false }
+  },
+  "readings": {
+    "startPick": { "value": 148200, "confidence": 0.98 },
+    "endPick": { "value": 349800, "confidence": 0.98 },
+    "netPicks": {
+      "extracted": 201600,
+      "calculated": 201600,
+      "matches": true,
+      "confidence": 0.99
+    },
+    "netMeters": { "value": 753.0, "confidence": 0.95, "isFlagged": false },
+    "loomRpm": { "value": 800, "confidence": 0.96 },
+    "efficiencyPct": { "value": 88.5, "confidence": 0.94, "isFlagged": false }
+  },
+  "defects": [
+    { "defectType": "warp_break", "count": 3, "severity": "minor", "confidence": 0.95 },
+    { "defectType": "weft_break", "count": 6, "severity": "minor", "confidence": 0.93 },
+    { "defectType": "slub", "count": 1, "severity": "major", "confidence": 0.92 }
+  ],
+  "downtime": [
+    { "reasonCode": "beam_knotting", "durationMinutes": 45, "remarks": "New beam BM-8842 drawn in", "confidence": 0.94 },
+    { "reasonCode": "cleaning", "durationMinutes": 15, "remarks": "Shift changeover lubrication", "confidence": 0.95 }
+  ],
+  "summary": {
+    "shiftDurationMinutes": 480,
+    "totalDowntimeMinutes": 60,
+    "totalRunTimeMinutes": 420,
+    "calculatedEfficiencyPct": 88.5,
+    "validationStatus": "PASSED",
+    "validationErrors": []
+  },
+  "supervision": {
+    "status": "auto_approved",
+    "reviewedBy": "Aditya Sharma (Supervisor)",
+    "reviewedAt": "2026-11-13T15:10:00.000Z",
+    "correctedFields": [],
+    "supervisorNotes": "Zero manual corrections required. First-pass auto approval."
+  }
+}

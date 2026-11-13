@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "formId": "f14-degraded-strikethrough",
+    "capturedAt": "2026-11-13T15:05:00.000Z",
+    "captureQualityScore": 0.72,
+    "modelUsed": "Qwen/Qwen2.5-VL-72B-Instruct",
+    "overallConfidence": 0.78,
+    "processingTimeMs": 3120,
+    "imageHazardFlags": ["PERSPECTIVE_SKEW_20DEG", "FLUORESCENT_GLARE_14PCT", "GREASE_THUMBPRINT_LOOM_ID", "PICK_STRIKETHROUGH_DETECTED"]
+  },
+  "header": {
+    "loomId": {
+      "value": "L-1O4",
+      "confidence": 0.65,
+      "isFlagged": true,
+      "suggestedMatch": "L-104",
+      "flagReason": "Ambiguous digit 'O' vs '0' due to oil thumbprint on sheet"
+    },
+    "loomType": { "value": "Airjet", "confidence": 0.85 },
+    "date": { "value": "2026-11-13", "confidence": 0.95, "isFlagged": false },
+    "shift": { "value": "A", "confidence": 0.92, "isFlagged": false },
+    "operatorId": { "value": "OP-482", "confidence": 0.88, "isFlagged": false },
+    "sortCode": { "value": "S-4040-68", "confidence": 0.90, "isFlagged": false },
+    "beamNumber": { "value": "BM-8842", "confidence": 0.85, "isFlagged": false }
+  },
+  "readings": {
+    "startPick": { "value": 148200, "confidence": 0.94 },
+    "endPick": {
+      "value": 349800,
+      "confidence": 0.78,
+      "rawNote": "Operator struck out 348,200 with pen line; extracted new handwriting 349,800 above",
+      "isFlagged": false
+    },
+    "netPicks": {
+      "extracted": 201600,
+      "calculated": 201600,
+      "matches": true,
+      "confidence": 0.90
+    },
+    "netMeters": { "value": 752.0, "confidence": 0.89, "isFlagged": false },
+    "loomRpm": { "value": 800, "confidence": 0.92 },
+    "efficiencyPct": { "value": 88.0, "confidence": 0.85, "isFlagged": false }
+  },
+  "defects": [
+    { "defectType": "warp_break", "count": 3, "severity": "minor", "confidence": 0.90 },
+    { "defectType": "weft_break", "count": 6, "severity": "minor", "confidence": 0.88 },
+    { "defectType": "oil_stain", "count": 2, "severity": "major", "confidence": 0.84 }
+  ],
+  "downtime": [
+    { "reasonCode": "electrical_fault", "durationMinutes": 35, "remarks": "Nozzle 2 air pressure low", "confidence": 0.82 },
+    { "reasonCode": "yarn_wait", "durationMinutes": 25, "remarks": "Cone supply delayed", "confidence": 0.85 }
+  ],
+  "summary": {
+    "shiftDurationMinutes": 480,
+    "totalDowntimeMinutes": 60,
+    "totalRunTimeMinutes": 420,
+    "calculatedEfficiencyPct": 88.0,
+    "validationStatus": "WARNINGS",
+    "validationErrors": [
+      {
+        "ruleCode": "BR-05-LOOM-GROUNDING",
+        "field": "header.loomId",
+        "severity": "WARNING",
+        "message": "Loom 'L-1O4' not in Master table. Suggested match: 'L-104'",
+        "suggestedValue": "L-104"
+      }
+    ]
+  },
+  "supervision": {
+    "status": "manually_corrected",
+    "reviewedBy": "Aditya Sharma (Supervisor)",
+    "reviewedAt": "2026-11-13T15:14:22.000Z",
+    "correctedFields": ["header.loomId"],
+    "supervisorNotes": "Accepted fuzzy suggestion L-104. Verified strikethrough pick counter correction."
+  }
+}

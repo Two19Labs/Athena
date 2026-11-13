@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1250" width="900" height="1250" style="background:#eee8dc; font-family:'Inter', Arial, sans-serif;">
+  <!-- Paper Background (Wrinkled & Creased) -->
+  <rect x="0" y="0" width="900" height="1250" fill="#eee8dc" />
+  <rect x="25" y="25" width="850" height="1200" fill="none" stroke="#94a3b8" stroke-width="1.5" />
+
+  <!-- Diagonal Crease / Fold Shadow -->
+  <path d="M 0 450 Q 450 490 900 460" stroke="rgba(70,60,50,0.22)" stroke-width="3.5" fill="none" />
+  <path d="M 450 0 Q 460 625 440 1250" stroke="rgba(70,60,50,0.18)" stroke-width="2.5" fill="none" />
+
+  <!-- Mill Header -->
+  <text x="450" y="70" text-anchor="middle" font-size="24" font-weight="bold" fill="#0f172a">ATHENA WEAVING MILLS LTD.</text>
+  <text x="450" y="95" text-anchor="middle" font-size="14" font-weight="600" fill="#475569">DAILY LOOM PRODUCTION &amp; STOPPAGE LOG SHEET (SHED A / B)</text>
+  <text x="450" y="115" text-anchor="middle" font-size="11" fill="#64748b">Form Ref: APLYD-TX-2026-F14  |  Standard Shift Duration: 8.0 Hours (480 Min)</text>
+  <line x1="40" y1="128" x2="860" y2="128" stroke="#334155" stroke-width="2" />
+
+  <!-- Section 1: Header Metadata Grid -->
+  <rect x="40" y="145" width="820" height="75" fill="#f8f6f0" stroke="#475569" stroke-width="1.2" />
+  <line x1="220" y1="145" x2="220" y2="220" stroke="#475569" />
+  <line x1="380" y1="145" x2="380" y2="220" stroke="#475569" />
+  <line x1="560" y1="145" x2="560" y2="220" stroke="#475569" />
+  <line x1="700" y1="145" x2="700" y2="220" stroke="#475569" />
+
+  <text x="50" y="165" font-size="11" font-weight="bold" fill="#64748b">PRODUCTION DATE</text>
+  <text x="230" y="165" font-size="11" font-weight="bold" fill="#ef4444">SHIFT (A / B / C) *MISSING*</text>
+  <text x="390" y="165" font-size="11" font-weight="bold" fill="#64748b">LOOM / MACHINE ID</text>
+  <text x="570" y="165" font-size="11" font-weight="bold" fill="#64748b">FABRIC SORT CODE</text>
+  <text x="710" y="165" font-size="11" font-weight="bold" fill="#64748b">WEFT BEAM NO.</text>
+
+  <text x="50" y="200" font-size="19" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">2026-11-13</text>
+  
+  <!-- Shift box left completely blank by operator! -->
+  <rect x="225" y="172" width="150" height="42" fill="none" stroke="#ef4444" stroke-dasharray="3 3" />
+  <text x="240" y="198" font-size="12" font-style="italic" fill="#ef4444">[LEFT BLANK]</text>
+
+  <text x="400" y="200" font-size="19" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">L-201</text>
+  <text x="575" y="200" font-size="19" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">S-4040-68</text>
+  <text x="715" y="200" font-size="19" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">BM-8842</text>
+
+  <!-- Section 2: Production Table -->
+  <text x="40" y="245" font-size="13" font-weight="bold" fill="#1e293b">1. SHIFT PRODUCTION &amp; ODOMETER READINGS</text>
+  <rect x="40" y="255" width="820" height="110" fill="#f8f6f0" stroke="#475569" stroke-width="1" />
+  <rect x="40" y="255" width="820" height="30" fill="#e2e8f0" stroke="#475569" stroke-width="1" />
+  
+  <line x1="180" y1="255" x2="180" y2="365" stroke="#475569" />
+  <line x1="330" y1="255" x2="330" y2="365" stroke="#475569" />
+  <line x1="480" y1="255" x2="480" y2="365" stroke="#475569" />
+  <line x1="630" y1="255" x2="630" y2="365" stroke="#475569" />
+  <line x1="730" y1="255" x2="730" y2="365" stroke="#475569" />
+
+  <text x="50" y="275" font-size="11" font-weight="bold" fill="#334155">START PICK</text>
+  <text x="190" y="275" font-size="11" font-weight="bold" fill="#ef4444">END PICK (REVERSAL)</text>
+  <text x="340" y="275" font-size="11" font-weight="bold" fill="#334155">NET PICKS</text>
+  <text x="490" y="275" font-size="11" font-weight="bold" fill="#334155">PROD. METERS</text>
+  <text x="640" y="275" font-size="11" font-weight="bold" fill="#334155">RPM</text>
+  <text x="740" y="275" font-size="11" font-weight="bold" fill="#ef4444">EFF. % (&gt;100%)</text>
+
+  <!-- Start Pick 349,800 -->
+  <text x="50" y="330" font-size="21" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">349,800</text>
+  <!-- End Pick 148,200 (Lower than start pick!) -->
+  <text x="190" y="330" font-size="21" font-weight="bold" font-style="italic" fill="#ef4444" font-family="'JetBrains Mono', Courier, monospace">148,200</text>
+  <text x="340" y="330" font-size="21" font-weight="bold" font-style="italic" fill="#ef4444" font-family="'JetBrains Mono', Courier, monospace">-201,600</text>
+  <text x="490" y="330" font-size="21" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">753 m</text>
+  <text x="640" y="330" font-size="21" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">800</text>
+  <text x="740" y="330" font-size="21" font-weight="bold" font-style="italic" fill="#ef4444" font-family="'JetBrains Mono', Courier, monospace">115 %</text>
+
+  <!-- Section 3: Defect Table -->
+  <text x="40" y="395" font-size="13" font-weight="bold" fill="#1e293b">2. DEFECT CLASSIFICATION &amp; QUALITY INSPECTION</text>
+  <rect x="40" y="405" width="820" height="80" fill="#f8f6f0" stroke="#475569" stroke-width="1" />
+  <rect x="40" y="405" width="820" height="26" fill="#f1f5f9" stroke="#475569" stroke-width="1" />
+  
+  <line x1="176" y1="405" x2="176" y2="485" stroke="#475569" />
+  <line x1="312" y1="405" x2="312" y2="485" stroke="#475569" />
+  <line x1="448" y1="405" x2="448" y2="485" stroke="#475569" />
+  <line x1="584" y1="405" x2="584" y2="485" stroke="#475569" />
+  <line x1="720" y1="405" x2="720" y2="485" stroke="#475569" />
+
+  <text x="50" y="422" font-size="10" font-weight="bold" fill="#475569">WARP BREAK</text>
+  <text x="186" y="422" font-size="10" font-weight="bold" fill="#475569">WEFT STOP</text>
+  <text x="322" y="422" font-size="10" font-weight="bold" fill="#475569">SLUB / THICK</text>
+  <text x="458" y="422" font-size="10" font-weight="bold" fill="#475569">OIL STAIN</text>
+  <text x="594" y="422" font-size="10" font-weight="bold" fill="#475569">REED MARK</text>
+  <text x="730" y="422" font-size="10" font-weight="bold" fill="#475569">FLOAT / STITCH</text>
+
+  <text x="95" y="465" font-size="22" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">14</text>
+  <text x="235" y="465" font-size="22" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">22</text>
+  <text x="375" y="465" font-size="22" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">0</text>
+  <text x="510" y="465" font-size="22" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">0</text>
+  <text x="645" y="465" font-size="22" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">0</text>
+  <text x="780" y="465" font-size="22" font-weight="bold" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">0</text>
+
+  <!-- Section 4: Downtime Table (TIME OVERFLOW) -->
+  <text x="40" y="515" font-size="13" font-weight="bold" fill="#1e293b">3. DOWNTIME &amp; STOPPAGE LOG (SHIFT CAPACITY: 480 MINS)</text>
+  <rect x="40" y="525" width="820" height="150" fill="#f8f6f0" stroke="#475569" stroke-width="1" />
+  <rect x="40" y="525" width="820" height="28" fill="#fee2e2" stroke="#ef4444" stroke-width="1" />
+
+  <line x1="140" y1="525" x2="140" y2="675" stroke="#475569" />
+  <line x1="400" y1="525" x2="400" y2="675" stroke="#475569" />
+  <line x1="540" y1="525" x2="540" y2="675" stroke="#475569" />
+
+  <text x="50" y="543" font-size="11" font-weight="bold" fill="#991b1b">CODE</text>
+  <text x="150" y="543" font-size="11" font-weight="bold" fill="#991b1b">STOPPAGE REASON / CATEGORY</text>
+  <text x="410" y="543" font-size="11" font-weight="bold" fill="#b91c1c">DURATION (540m &gt; 480m SHIFT!)</text>
+  <text x="550" y="543" font-size="11" font-weight="bold" fill="#991b1b">REMARKS / ROOT CAUSE</text>
+
+  <text x="50" y="585" font-size="16" font-style="italic" fill="#0f172a" font-family="'JetBrains Mono', Courier, monospace">DT-04</text>
+  <text x="150" y="585" font-size="16" font-style="italic" fill="#0f172a">Mechanical Motor Burnout</text>
+  <!-- 540 minutes exceeds 480 minutes! -->
+  <text x="420" y="585" font-size="18" font-style="italic" font-weight="bold" fill="#ef4444">540 min</text>
+  <text x="550" y="585" font-size="15" font-style="italic" fill="#334155">Motor replaced by electrical team</text>
+
+  <!-- Section 5: Signatures & Remarks -->
+  <text x="40" y="705" font-size="13" font-weight="bold" fill="#1e293b">4. OPERATOR REMARKS &amp; SHIFT SIGN-OFF</text>
+  <rect x="40" y="715" width="820" height="110" fill="#f8f6f0" stroke="#475569" stroke-width="1" />
+  <line x1="560" y1="715" x2="560" y2="825" stroke="#475569" />
+
+  <text x="50" y="737" font-size="11" font-weight="bold" fill="#64748b">OPERATOR REMARKS &amp; HANDOVER NOTES:</text>
+  <text x="50" y="775" font-size="16" font-style="italic" fill="#1e293b">"Complete stoppage due to motor fault. No production."</text>
+
+  <text x="580" y="737" font-size="11" font-weight="bold" fill="#64748b">OPERATOR SIGNATURE:</text>
+  <text x="580" y="760" font-size="17" font-weight="bold" font-style="italic" fill="#0f172a">Manoj Verma (OP-482)</text>
+
+  <text x="580" y="785" font-size="11" font-weight="bold" fill="#ef4444">SUPERVISOR APPROVAL:</text>
+  <text x="580" y="810" font-size="13" font-weight="bold" fill="#ef4444">[UNAPPROVED — PENDING REVISION]</text>
+
+  <!-- Rejection Stamp -->
+  <circle cx="800" cy="910" r="45" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4 2" />
+  <text x="800" y="905" text-anchor="middle" font-size="12" font-weight="bold" fill="#ef4444">AUDIT</text>
+  <text x="800" y="920" text-anchor="middle" font-size="11" font-weight="bold" fill="#ef4444">REJECTED</text>
+</svg>

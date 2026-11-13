@@ -1,4 +1,4 @@
-import { LOOM_MASTER, SORT_MASTER, DOWNTIME_CODES } from '../data/masterData';
+import { LOOM_MASTER, SORT_MASTER, DOWNTIME_CODES } from '../data/masterData.ts';
 
 export interface ValidationError {
   ruleCode: string;

@@ -194,7 +194,7 @@ function drawProductionTable(ctx: CanvasRenderingContext2D, scenario: string) {
     ctx.fillText('148,200', 50, tableY + 75);
     ctx.fillText('349,800', 190, tableY + 75);
     ctx.fillText('201,600', 340, tableY + 75);
-    ctx.fillText('753.0 m', 490, tableY + 75);
+    ctx.fillText('75.3 m', 490, tableY + 75);
     ctx.fillText('800', 640, tableY + 75);
     ctx.fillText('88.5%', 740, tableY + 75);
   } else if (scenario === 'degraded') {
@@ -482,7 +482,7 @@ export function getScenarioCanonicalRecord(scenario: 'clean' | 'degraded' | 'fai
         startPick: { value: 148200, confidence: 0.98 },
         endPick: { value: 349800, confidence: 0.98 },
         netPicks: { extracted: 201600, calculated: 201600, matches: true, confidence: 0.99 },
-        netMeters: { value: 753.0, confidence: 0.95, isFlagged: false },
+        netMeters: { value: 75.3, confidence: 0.95, isFlagged: false },
         loomRpm: { value: 800, confidence: 0.96 },
         efficiencyPct: { value: 88.5, confidence: 0.94, isFlagged: false }
       },

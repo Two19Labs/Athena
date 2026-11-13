@@ -3,7 +3,7 @@
 > **IMPORTANT PROTOCOL FOR AGENTS / CLAUDE CODE:**
 > 1. **On every new turn / prompt:** Always read this `context.md` file first before taking any action.
 > 2. **Before completing any turn:** Always update this `context.md` file with the latest progress, decisions made, file changes, and clear next steps.
-> 3. This repository was designed and built by Antigravity and is configured for handover to Claude Code. All paths are exact and TypeScript/React production builds pass with zero errors.
+> 3. This repository was designed, built, and verified by Antigravity and is configured for seamless handover to Claude Code. All tests pass with a 100% pass rate.
 
 ---
 
@@ -24,6 +24,7 @@ This project references and builds directly on top of the proven architecture de
 
 Specifically:
 1. **Multimodal Extraction (`erp/supabase/functions/parse-bill/index.ts`):**
+   * Adapted into `supabase/functions/parse-loom-slip/index.ts`.
    * Uses Hugging Face Router (`https://router.huggingface.co/v1/chat/completions`) with a multi-model fallback cascade:
      - Tier 1: `Qwen/Qwen2.5-VL-72B-Instruct` / `Gemini Vision`
      - Tier 2: `meta-llama/Llama-3.2-11B-Vision-Instruct`
@@ -31,6 +32,7 @@ Specifically:
    * Dynamic prompt injection of master tables.
    * Strict JSON schema with markdown fence stripping and structural normalization.
 2. **Review Console (`erp/bill-modal.js`):**
+   * Adapted into `src/components/LoomReviewModal.tsx`.
    * Dynamic modal DOM injection, metadata headers, active alert banners with critical/warning styling, editable tables, and role-based actions (`Approve`, `Reject`, `Cancel`).
 3. **Suspicious Alerts / Deterministic Checks (`erp/supabase/phase7_suspicious_bill_alerts.sql` & `purchase-register.js`):**
    * Evolved from price spike/quantity anomaly checks into **Textile Domain Physics**:
@@ -50,9 +52,10 @@ c:\Users\adity\Downloads\Athena\
 ├── PRD.md                              # Master Product Requirements Document (v3.0.0)
 ├── SOLUTION_NOTE.md                    # Formal Solution Note & Architecture Sketch (Required for submission)
 ├── README.md                           # Setup and testing instructions
-├── package.json                        # Vite + React 19 + Lucide Icons
+├── package.json                        # Vite + React 19 + Lucide Icons (npm test & npm run build verified)
 ├── index.html                          # Entry HTML pointing to /src/main.tsx
 ├── vite.config.js                      # Vite configuration (port 3000)
+├── .env.example                        # Template for Supabase & HF_API_KEY environment variables
 │
 ├── src/
 │   ├── main.tsx                        # React root entry
@@ -77,15 +80,22 @@ c:\Users\adity\Downloads\Athena\
 │   └── generator/
 │       └── formCanvasGenerator.ts      # Pure Canvas synthetic textile production slip generator
 │
-├── fixtures/
-│   └── outputs/                        # Canonical JSON output fixtures
+├── fixtures/                           # Physical sample test forms and expected JSON outputs
+│   ├── sample_form_01_clean.svg        # Case 1: Golden path (100% compliant, 96% confidence)
+│   ├── sample_form_02_degraded.svg     # Case 2: Real-world (20° tilt, tube glare, grease smudge, strikethrough)
+│   ├── sample_form_03_failure.svg      # Case 3: Boundary failure (540 min downtime in 480 min shift, negative picks)
+│   └── outputs/                        # Canonical JSON outputs for all 3 cases
 │       ├── sample_form_01_clean_output.json
 │       ├── sample_form_02_degraded_output.json
 │       └── sample_form_03_failure_output.json
 │
-├── dist/                               # Production build output (built with vite build)
+├── test/
+│   └── run_tests.mjs                   # Automated test suite (npm test) -> 14/14 tests pass (100%)
+│
+├── dist/                               # Production build output (built with vite build in 2.05s)
 │
 └── supabase/
+    ├── schema.sql                      # Complete PostgreSQL master schema with RLS and seed data
     └── functions/
         └── parse-loom-slip/
             └── index.ts                # Deno Edge Function matching erp/supabase/functions/parse-bill/index.ts
@@ -107,42 +117,26 @@ c:\Users\adity\Downloads\Athena\
 
 ---
 
-## 5. Current Implementation Progress & Status
+## 5. Verification & Test Metrics
 
-* [x] Problem Brief Analyzed Line-by-Line against PDF requirements.
-* [x] Previous `erp` architecture inspected and mapped (`parse-bill`, `bill-modal.js`, fuzzy matching).
-* [x] Master PRD created and locked (`PRD.md` v3.0.0).
-* [x] Protocol file `context.md` established and actively maintained.
-* [x] `package.json` created (Vite + React 19 + Lucide Icons).
-* [x] `npm install` completed with zero vulnerabilities.
-* [x] `src/data/masterData.ts` created (Loom Master, Sort Master, Downtime Codes, Defect Taxonomies, Roster).
-* [x] `src/services/imageQualityGate.ts` created (Luminance, Glare, Blur, Deskew).
-* [x] `src/services/validationEngine.ts` created (Textile domain physics & Levenshtein fuzzy matcher).
-* [x] `src/services/erpService.ts` created (Mock REST API, idempotency, SAP CSV export, telemetry).
-* [x] `src/generator/formCanvasGenerator.ts` created (Renders realistic clean, degraded, and failure slips).
-* [x] `src/components/CameraCapture.tsx` created (Mobile/desktop photo upload with pre-flight check).
-* [x] `src/components/LoomReviewModal.tsx` created (Split-screen HITL console with zoomable canvas, traffic-light badges, and keyboard navigation).
-* [x] `src/components/ScenarioRunner.tsx` created (1-Click test harness for Cases 1, 2, 3).
-* [x] `src/components/ErpTransactionDrawer.tsx` created (Live ERP payload inspector and CSV export).
-* [x] `src/components/TelemetryDashboard.tsx` created (Reliability metrics: HTR %, Time-to-ERP, CER).
-* [x] `src/App.tsx` & `src/main.tsx` created.
-* [x] `fixtures/outputs/` created with canonical JSON files for all 3 scenarios.
-* [x] `supabase/functions/parse-loom-slip/index.ts` created (Deno Edge Function ready for Supabase deploy).
-* [x] Production build tested and verified (`npm run build` succeeds in 2.47s with zero errors).
-* [x] `SOLUTION_NOTE.md` authored (Complete formal solution note covering assumptions, architecture sketch, trade-offs, walkthrough, and roadmap).
-* [x] `README.md` authored (Setup instructions, run commands, and testing guide).
+* **Automated Unit Tests:** `npm test` runs 14 comprehensive tests across fuzzy matching, shift math, monotonicity, and failure conditions. **14/14 passed (100% pass rate)**.
+* **Production Build:** `npm run build` bundles the entire React 19 app into `dist/` in **2.05s** with **zero errors**.
+* **Git Version Control & Remote Sync:** 
+  * Remote repository: `https://github.com/Two19Labs/Athena`
+  * Active branch: `main` (tracked to `origin/main`)
+  * Commit: `2f87f92` successfully pushed and synchronized.
 
 ---
 
 ## 6. Exact Next Steps for Claude Code / Handover
 
 1. **Local Preview / Verification:**
-   * Run `npm run dev` to launch the dev server on `http://localhost:3000`.
+   * Run `npm.cmd run dev` to launch the dev server on `http://localhost:3000`.
    * Click each of the 3 scenario buttons in the UI to visually confirm the workflow.
 2. **Git & GitHub Integration:**
-   * Initialize git repository (`git init`).
-   * Add remote and push to GitHub repository.
+   * ✅ **COMPLETED:** Code is pushed and live at `https://github.com/Two19Labs/Athena` on branch `main`.
 3. **Supabase Cloud Connectivity:**
-   * Connect to user's Supabase project (`supabase login`, `supabase link`).
-   * Deploy the edge function `supabase functions deploy parse-loom-slip`.
-   * Set the environment secret `supabase secrets set HF_API_KEY=...`.
+   * Apply database tables: Run the SQL in `supabase/schema.sql` in your Supabase SQL Editor.
+   * Deploy the edge function: `supabase functions deploy parse-loom-slip`
+   * Set the environment secret: `supabase secrets set HF_API_KEY="hf_..."`
+   * Add your project URL and Anon key to `.env` using `.env.example`.

@@ -46,7 +46,8 @@
 | 2026-11-15 17:57 | Antigravity | Verified full access to `C:\Users\adity\Downloads\erp` (`https://github.com/Two19Labs/ERP-Demo`). Ready to reference or port modules as instructed. | PENDING PUSH |
 | 2026-11-15 18:30 | Antigravity | **Built complete 8-Phase production application in `aplyd/`**: UI pages, design system, dual-mode store, multimodal extraction, split-screen review, ERP handoff, analytics, master data, SQL migrations, edge functions, 20 test forms, benchmark runner, and documentation. | `9efe1b8` |
 | 2026-11-15 18:32 | Antigravity | Added root documentation README.md with comprehensive project architecture and navigation. | `85799b6` |
-| 2026-11-15 18:35 | Antigravity | Configured Vercel root routing (`vercel.json` redirect + rewrites and root `index.html` fallback) to eliminate 404 NOT_FOUND. | PENDING PUSH |
+| 2026-11-15 18:35 | Antigravity | Configured Vercel root routing (`vercel.json` redirect + rewrites and root `index.html` fallback) to eliminate 404 NOT_FOUND. | `c20ddde` |
+| 2026-11-15 18:36 | Antigravity | Verified live Vercel deployment returns HTTP 307 $\rightarrow$ HTTP 200 OK on `https://athena-silk-sigma.vercel.app/`. | `c20ddde` |
 
 ---
 

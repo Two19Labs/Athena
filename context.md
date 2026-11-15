@@ -41,11 +41,29 @@
 | Timestamp | Agent | Action / Changes | Git Commit |
 | :--- | :--- | :--- | :--- |
 | 2026-11-15 17:38 | Antigravity | Wiped codebase clean to zero per user request; reset repo; established multi-agent handover protocol. | `5ac44b1` |
-| 2026-11-15 17:42 | Antigravity | Codified universal Multi-Agent Read-First / Update-Last protocol in `context.md`. | PENDING PUSH |
+| 2026-11-15 17:42 | Antigravity | Codified universal Multi-Agent Read-First / Update-Last protocol in `context.md`. | `1492b13` |
+| 2026-11-15 17:57 | Antigravity | Verified full access to `C:\Users\adity\Downloads\erp` (`https://github.com/Two19Labs/ERP-Demo`). Ready to reference or port modules as instructed. | PENDING PUSH |
 
 ---
 
-## 3. Environment & Tooling Guidelines
+## 3. Reference Repositories & External Codebases Available
+
+* **Two19Labs ERP Demo:** Located locally at `C:\Users\adity\Downloads\erp` (remote: `https://github.com/Two19Labs/ERP-Demo`). Full read access is verified across all files, including:
+  - `purchase-register.html` & `purchase-register.js`
+  - `bill-modal.js`
+  - `stock-ledger.html` & `stock-ledger.js`
+  - `order-stock.html` & `order-stock.js`
+  - `master-data.html` & `master-data.js`
+  - `analytics.html` & `analytics.js`
+  - `dashboard.html`
+  - `alerts.html` & `alerts.js`
+  - `style.css`
+  - `supabase/` (migrations, edge functions)
+  - `TEXTILE_SHOPFLOOR_DIGITIZATION_PRD.md`
+
+---
+
+## 4. Environment & Tooling Guidelines
 
 * **OS:** Windows (PowerShell)
 * **Node.js:** Standardize commands using `npm.cmd` (due to PowerShell script execution policies).

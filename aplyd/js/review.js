@@ -405,6 +405,11 @@ async function renderVerificationFields() {
 
         // Prompt supervisor for optional reason
         const reason = prompt(`Supervisor Edit: Enter reason for updating '${fieldKey}' (or leave blank):`, "Corrected handwriting transcription against document");
+        if (reason === null) {
+          // User cancelled prompt, revert field
+          await renderVerificationFields();
+          return;
+        }
         await window.aplydStore.correctField(activeRecord.id, fieldKey, newVal, reason);
 
         window.toast?.show(`Updated ${fieldKey}. Audit log recorded.`, "success");
@@ -519,6 +524,7 @@ function setupActionButtons() {
 async function handleApprove() {
   try {
     const note = prompt("Supervisor Approval: Enter optional sign-off note:", "Verified physical form handwriting and counter consistency");
+    if (note === null) return; // User cancelled prompt
     const updated = await window.aplydStore.approveRecord(activeRecord.id, note);
 
     window.toast?.show(`Record ${updated.record_number} Approved! Dispatched to Mock ERP.`, "success");

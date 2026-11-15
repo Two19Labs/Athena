@@ -2,8 +2,14 @@
  * APLYD - Manufacturing Analytics & AI Digitization Telemetry Controller
  */
 
+let activeCharts = {};
+
 document.addEventListener("DOMContentLoaded", async () => {
   await renderAnalytics();
+
+  window.addEventListener("themeChanged", () => {
+    renderAnalytics();
+  });
 });
 
 async function renderAnalytics() {
@@ -18,14 +24,13 @@ async function renderAnalytics() {
 }
 
 function renderTelemetryCards(records) {
-  // Aggregate real stats from records
   let totalFieldsEvaluated = 0;
   let correctedFields = 0;
 
   records.forEach(r => {
     const corrections = r.corrections || [];
     correctedFields += corrections.length;
-    totalFieldsEvaluated += 10; // 10 fields per sheet
+    totalFieldsEvaluated += 10;
   });
 
   const correctionRate = totalFieldsEvaluated > 0 
@@ -43,10 +48,35 @@ function renderTelemetryCards(records) {
   if (erpEl) erpEl.textContent = "100%";
 }
 
+function getThemeColors() {
+  const isDark = document.body.classList.contains("dark-theme") || document.documentElement.classList.contains("dark-theme");
+  return {
+    isDark,
+    barPrimary: isDark ? '#3b82f6' : '#18181b',
+    barSecondary: isDark ? '#60a5fa' : '#3f3f46',
+    barWarning: isDark ? '#f59e0b' : '#b45309',
+    barDanger: isDark ? '#ef4444' : '#b91c1c',
+    textColor: isDark ? '#a1a1aa' : '#71717a',
+    gridColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+    doughnutColors: isDark 
+      ? ['#3b82f6', '#8b5cf6', '#06b6d4'] 
+      : ['#18181b', '#71717a', '#a1a1aa']
+  };
+}
+
+function destroyChart(id) {
+  if (activeCharts[id]) {
+    activeCharts[id].destroy();
+    delete activeCharts[id];
+  }
+}
+
 function renderLoomBarChart(records) {
   const canvas = document.getElementById("loomOutputChart");
   if (!canvas || !window.Chart) return;
+  destroyChart("loom");
 
+  const colors = getThemeColors();
   const loomMap = {
     'L-01': 380, 'L-02': 410, 'L-03': 310.5, 'L-04': 295, 
     'L-05': 340, 'L-06': 365, 'L-07': 420, 'L-08': 180,
@@ -60,14 +90,14 @@ function renderLoomBarChart(records) {
     }
   });
 
-  new window.Chart(canvas, {
+  activeCharts["loom"] = new window.Chart(canvas, {
     type: 'bar',
     data: {
       labels: Object.keys(loomMap),
       datasets: [{
         label: 'Metres Produced',
         data: Object.values(loomMap),
-        backgroundColor: '#18181b',
+        backgroundColor: colors.barPrimary,
         borderRadius: 4
       }]
     },
@@ -76,8 +106,15 @@ function renderLoomBarChart(records) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-        x: { grid: { display: false } }
+        y: { 
+          beginAtZero: true, 
+          grid: { color: colors.gridColor },
+          ticks: { color: colors.textColor }
+        },
+        x: { 
+          grid: { display: false },
+          ticks: { color: colors.textColor }
+        }
       }
     }
   });
@@ -86,22 +123,32 @@ function renderLoomBarChart(records) {
 function renderShiftPieChart(records) {
   const canvas = document.getElementById("shiftEfficiencyChart");
   if (!canvas || !window.Chart) return;
+  destroyChart("shift");
 
-  new window.Chart(canvas, {
+  const colors = getThemeColors();
+
+  activeCharts["shift"] = new window.Chart(canvas, {
     type: 'doughnut',
     data: {
       labels: ['Morning (06:00-14:00)', 'Evening (14:00-22:00)', 'Night (22:00-06:00)'],
       datasets: [{
         data: [42, 34, 24],
-        backgroundColor: ['#18181b', '#71717a', '#a1a1aa'],
-        borderWidth: 2
+        backgroundColor: colors.doughnutColors,
+        borderWidth: colors.isDark ? 0 : 2
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+        legend: { 
+          position: 'bottom', 
+          labels: { 
+            boxWidth: 12, 
+            font: { size: 11 },
+            color: colors.textColor
+          } 
+        }
       }
     }
   });
@@ -110,15 +157,18 @@ function renderShiftPieChart(records) {
 function renderDefectParetoChart(records) {
   const canvas = document.getElementById("defectParetoChart");
   if (!canvas || !window.Chart) return;
+  destroyChart("defect");
 
-  new window.Chart(canvas, {
+  const colors = getThemeColors();
+
+  activeCharts["defect"] = new window.Chart(canvas, {
     type: 'bar',
     data: {
       labels: ['Warp Breakage', 'Weft Slubs', 'Reed Marks', 'Oil Stains', 'Tension Float'],
       datasets: [{
         label: 'Incident Count',
         data: [18, 11, 7, 4, 2],
-        backgroundColor: '#b91c1c',
+        backgroundColor: colors.barDanger,
         borderRadius: 4
       }]
     },
@@ -127,8 +177,15 @@ function renderDefectParetoChart(records) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-        x: { grid: { display: false } }
+        y: { 
+          beginAtZero: true, 
+          grid: { color: colors.gridColor },
+          ticks: { color: colors.textColor }
+        },
+        x: { 
+          grid: { display: false },
+          ticks: { color: colors.textColor }
+        }
       }
     }
   });
@@ -137,16 +194,18 @@ function renderDefectParetoChart(records) {
 function renderDowntimeCausesChart(records) {
   const canvas = document.getElementById("downtimeCausesChart");
   if (!canvas || !window.Chart) return;
+  destroyChart("downtime");
 
-  new window.Chart(canvas, {
+  const colors = getThemeColors();
+
+  activeCharts["downtime"] = new window.Chart(canvas, {
     type: 'bar',
-    indexAxis: 'y',
     data: {
-      labels: ['Beam Change & Tie-In', 'Mechanical Breakdown', 'Yarn Replenishment', 'Electrical / Power Cut', 'Quality Inspection'],
+      labels: ['Beam Change', 'Weft Jam', 'Lubrication', 'Motor Maint', 'Clean Shed'],
       datasets: [{
-        label: 'Stoppage Minutes',
-        data: [240, 180, 115, 60, 45],
-        backgroundColor: '#b45309',
+        label: 'Downtime (Minutes)',
+        data: [185, 95, 60, 45, 30],
+        backgroundColor: colors.barWarning,
         borderRadius: 4
       }]
     },
@@ -155,8 +214,15 @@ function renderDowntimeCausesChart(records) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-        y: { grid: { display: false } }
+        y: { 
+          beginAtZero: true, 
+          grid: { color: colors.gridColor },
+          ticks: { color: colors.textColor }
+        },
+        x: { 
+          grid: { display: false },
+          ticks: { color: colors.textColor }
+        }
       }
     }
   });

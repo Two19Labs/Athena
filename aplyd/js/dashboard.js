@@ -2,8 +2,14 @@
  * APLYD - Operations Dashboard Controller
  */
 
+let miniLoomChartInstance = null;
+
 document.addEventListener("DOMContentLoaded", async () => {
   await renderDashboard();
+
+  window.addEventListener("themeChanged", () => {
+    renderMiniLoomChart();
+  });
 });
 
 async function renderDashboard() {
@@ -50,13 +56,18 @@ async function renderDashboard() {
     }
   }
 
-  // Render Mini Loom Production Chart using Chart.js if loaded
-  renderMiniLoomChart();
+  // Render Mini Loom Production Chart
+  await renderMiniLoomChart();
 }
 
 async function renderMiniLoomChart() {
   const canvas = document.getElementById("miniLoomChart");
   if (!canvas || !window.Chart) return;
+
+  if (miniLoomChartInstance) {
+    miniLoomChartInstance.destroy();
+    miniLoomChartInstance = null;
+  }
 
   const records = await window.aplydStore.getRecords();
   const approved = records.filter(r => r.status === 'approved');
@@ -70,14 +81,19 @@ async function renderMiniLoomChart() {
   const labels = Object.keys(loomTotals);
   const data = Object.values(loomTotals);
 
-  new window.Chart(canvas, {
+  const isDark = document.body.classList.contains("dark-theme") || document.documentElement.classList.contains("dark-theme");
+  const barColor = isDark ? '#3b82f6' : '#18181b';
+  const textColor = isDark ? '#a1a1aa' : '#71717a';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+
+  miniLoomChartInstance = new window.Chart(canvas, {
     type: 'bar',
     data: {
       labels: labels.length > 0 ? labels : ['L-01', 'L-03', 'L-12'],
       datasets: [{
         label: 'Approved Metres Produced',
         data: data.length > 0 ? data : [380, 310, 420],
-        backgroundColor: '#18181b',
+        backgroundColor: barColor,
         borderRadius: 4
       }]
     },
@@ -88,8 +104,15 @@ async function renderMiniLoomChart() {
         legend: { display: false }
       },
       scales: {
-        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-        x: { grid: { display: false } }
+        y: { 
+          beginAtZero: true, 
+          grid: { color: gridColor },
+          ticks: { color: textColor }
+        },
+        x: { 
+          grid: { display: false },
+          ticks: { color: textColor }
+        }
       }
     }
   });

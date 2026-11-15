@@ -1,4 +1,4 @@
-// Theme switcher module for Restaurant Stock Control
+// Theme switcher module for APLYD Shop-Floor Digitisation
 // Load in <head> to prevent light-theme flash on dark mode load.
 (function () {
   const currentTheme = localStorage.getItem("theme");

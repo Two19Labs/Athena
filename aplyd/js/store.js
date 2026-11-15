@@ -422,7 +422,10 @@ class AplydStore {
     this.saveDb(db);
 
     // Automatically trigger mock ERP submission on approval
-    await this.submitToErp(recordId);
+    const erpRes = await this.submitToErp(recordId);
+    if (erpRes && erpRes.erp_reference) {
+      record.erp_reference = erpRes.erp_reference;
+    }
 
     return record;
   }

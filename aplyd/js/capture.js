@@ -160,6 +160,7 @@ function resetCapture() {
   if (failureCard) failureCard.classList.add("hidden");
   if (dropzone) dropzone.classList.remove("hidden");
 }
+window.resetCapture = resetCapture;
 
 async function startExtractionPipeline() {
   const previewCard = document.getElementById("preflightPreviewCard");

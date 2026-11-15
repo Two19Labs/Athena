@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "cleanUrls": false,
+  "redirects": [
+    { "source": "/", "destination": "/aplyd/index.html", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/((?!aplyd/).*)", "destination": "/aplyd/$1" }
+  ]
+}

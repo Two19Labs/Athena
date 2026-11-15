@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_05_skew_15deg",
+  "ground_truth": {
+    "machine_code": "L-02",
+    "production_date": "2026-11-15",
+    "shift": "Morning",
+    "production_quantity": 395,
+    "production_unit": "metres",
+    "material_reference": "Poplin 40s",
+    "batch_reference": "POP-40-772",
+    "defects_count": 1,
+    "downtime_minutes": 10,
+    "downtime_reason": "Bobbin check"
+  },
+  "test_attributes": {
+    "test_category": "skew",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

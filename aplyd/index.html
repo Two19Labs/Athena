@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APLYD - Vision-First Shop Floor Digitisation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-box glass-panel animate-fade">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <p class="eyebrow" style="font-size: 13px; font-weight: 700; letter-spacing: 0.05em; color: var(--ink);">APLYD</p>
+        <span style="font-size: 11px; padding: 2px 8px; border-radius: 6px; background: var(--ok-soft); color: var(--ok); font-weight: 600;">Textile Edition</span>
+      </div>
+      <h1 style="font-size: 22px; font-weight: 700; margin-bottom: 6px;">Vision-First Shop Floor Digitisation</h1>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5;">
+        Transform handwritten clipboard forms from weaving sheds and loom stations into verified, structured manufacturing data for your ERP.
+      </p>
+
+      <!-- 1-Click Fast Assessment Evaluation Switcher -->
+      <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+        <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px;">
+          ⚡ Instant Demo Access (Select Persona):
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" class="btn btn-outline demo-login-btn" data-role="supervisor" style="width: 100%; justify-content: flex-start; text-align: left; padding: 9px 12px; font-size: 13px;">
+            <span>📋 <strong>Supervisor:</strong> Priya Sharma (Review, Verify & Approve)</span>
+          </button>
+          <button type="button" class="btn btn-outline demo-login-btn" data-role="operator" style="width: 100%; justify-content: flex-start; text-align: left; padding: 9px 12px; font-size: 13px;">
+            <span>👷 <strong>Operator:</strong> Ramesh Kumar (Capture & Upload Forms)</span>
+          </button>
+          <button type="button" class="btn btn-outline demo-login-btn" data-role="admin" style="width: 100%; justify-content: flex-start; text-align: left; padding: 9px 12px; font-size: 13px;">
+            <span>⚙️ <strong>Admin:</strong> Vikram Mehta (Master Data & System Config)</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="loginForm">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="email" style="font-size: 12px; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 4px;">User Email</label>
+          <input type="email" id="email" class="form-control" value="priya.supervisor@aplyd.demo" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 18px;">
+          <label for="password" style="font-size: 12px; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 4px;">Password</label>
+          <input type="password" id="password" class="form-control" value="••••••••" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;">
+        </div>
+
+        <button type="button" id="loginBtn" class="btn btn-primary auth-submit" style="width: 100%; padding: 12px; font-weight: 600; border-radius: 8px; justify-content: center;">
+          Enter Production Console →
+        </button>
+      </div>
+
+      <div id="loginError" class="login-error" style="display: none; margin-top: 12px;"></div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    document.querySelectorAll(".demo-login-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const role = e.currentTarget.getAttribute("data-role");
+        window.aplydStore.switchUser(role);
+        window.location.href = "dashboard.html";
+      });
+    });
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>

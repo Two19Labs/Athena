@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_09_ambiguous_qty",
+  "ground_truth": {
+    "machine_code": "L-12",
+    "production_date": "2026-11-15",
+    "shift": "Morning",
+    "production_quantity": 350,
+    "production_unit": "metres",
+    "material_reference": "Combed Poplin",
+    "batch_reference": "POP-40-880",
+    "defects_count": 1,
+    "downtime_minutes": 20,
+    "downtime_reason": "Loom cleaning"
+  },
+  "test_attributes": {
+    "test_category": "ambiguous_qty",
+    "has_ambiguity": true,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "uncertain"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_10_ambiguous_shift",
+  "ground_truth": {
+    "machine_code": "L-05",
+    "production_date": "2026-11-15",
+    "shift": "Morning",
+    "production_quantity": 340,
+    "production_unit": "metres",
+    "material_reference": "Linen Blend",
+    "batch_reference": "LIN-35-102",
+    "defects_count": 2,
+    "downtime_minutes": 25,
+    "downtime_reason": "Warp break repair"
+  },
+  "test_attributes": {
+    "test_category": "ambiguous_shift",
+    "has_ambiguity": true,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "uncertain"
+  }
+}

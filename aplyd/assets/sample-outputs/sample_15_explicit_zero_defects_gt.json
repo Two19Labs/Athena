@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_15_explicit_zero_defects",
+  "ground_truth": {
+    "machine_code": "L-03",
+    "production_date": "2026-11-15",
+    "shift": "Evening",
+    "production_quantity": 305,
+    "production_unit": "metres",
+    "material_reference": "Denim Twill",
+    "batch_reference": "DEN-2026-20",
+    "defects_count": 0,
+    "downtime_minutes": 0,
+    "downtime_reason": null
+  },
+  "test_attributes": {
+    "test_category": "explicit_zero",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

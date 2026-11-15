@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_11_cursive_writing",
+  "ground_truth": {
+    "machine_code": "L-11",
+    "production_date": "2026-11-15",
+    "shift": "Evening",
+    "production_quantity": 330,
+    "production_unit": "metres",
+    "material_reference": "Yarn Dyed Check",
+    "batch_reference": "CHK-40-410",
+    "defects_count": 4,
+    "downtime_minutes": 35,
+    "downtime_reason": "Pattern card check"
+  },
+  "test_attributes": {
+    "test_category": "cursive",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

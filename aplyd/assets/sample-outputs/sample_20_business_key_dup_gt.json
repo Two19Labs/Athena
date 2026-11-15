@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_20_business_key_dup",
+  "ground_truth": {
+    "machine_code": "L-01",
+    "production_date": "2026-11-15",
+    "shift": "Morning",
+    "production_quantity": 380,
+    "production_unit": "metres",
+    "material_reference": "Poplin 40s Combed",
+    "batch_reference": "POP-40-771",
+    "defects_count": 1,
+    "downtime_minutes": 15,
+    "downtime_reason": "Yarn replenishment"
+  },
+  "test_attributes": {
+    "test_category": "business_key_dup",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

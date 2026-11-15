@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_18_custom_shift",
+  "ground_truth": {
+    "machine_code": "L-02",
+    "production_date": "2026-11-15",
+    "shift": "Overtime",
+    "production_quantity": 150,
+    "production_unit": "metres",
+    "material_reference": "Poplin 40s",
+    "batch_reference": "POP-40-773",
+    "defects_count": 0,
+    "downtime_minutes": 0,
+    "downtime_reason": null
+  },
+  "test_attributes": {
+    "test_category": "custom_shift",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": true,
+    "expected_model_status": "read"
+  }
+}

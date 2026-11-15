@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_16_blank_batch",
+  "ground_truth": {
+    "machine_code": "L-07",
+    "production_date": "2026-11-15",
+    "shift": "Night",
+    "production_quantity": 410,
+    "production_unit": "metres",
+    "material_reference": "Sheeting 30s",
+    "batch_reference": null,
+    "defects_count": 1,
+    "downtime_minutes": 10,
+    "downtime_reason": "Weft stop"
+  },
+  "test_attributes": {
+    "test_category": "blank_batch",
+    "has_ambiguity": false,
+    "has_missing_field": true,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

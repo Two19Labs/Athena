@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APLYD - Capture Production Sheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/theme.js"></script>
+</head>
+<body class="app-shell">
+  <!-- Sibling Sidebar matching Gawdaam -->
+  <aside class="sidebar">
+    <div class="brand-block">
+      <p class="eyebrow">APLYD</p>
+      <h1>Shop-Floor Textile Production Digitisation</h1>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Primary">
+      <a class="nav-item nav-link" href="dashboard.html">
+        <span>Production Dashboard</span>
+      </a>
+      <a class="nav-item nav-item-active nav-link" href="capture.html">
+        <span>Capture Form</span>
+      </a>
+      <a class="nav-item nav-link" href="review.html" id="navReview">
+        <span>Review Queue</span>
+      </a>
+      <a class="nav-item nav-link" href="production-register.html" id="navRegister">
+        <span>Production Register</span>
+      </a>
+      <a class="nav-item nav-link" href="analytics.html" id="navAnalytics">
+        <span>Analytics</span>
+      </a>
+      <a class="nav-item nav-link" href="machines.html" id="navMachines">
+        <span>Looms Master</span>
+      </a>
+      <a class="nav-item nav-link" href="shifts.html" id="navShifts">
+        <span>Shift Schedules</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-note">
+      <p class="note-label">Current Goal</p>
+      <p>Capture high-quality shop-floor forms, verify boundaries, and run vision extraction.</p>
+    </div>
+  </aside>
+
+  <div class="content-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600;">Shop-Floor Ingestion</p>
+        <h2 style="font-size: 20px; font-weight: 700;">Capture & Digitize Form</h2>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="user-meta">
+          <span id="userEmail">Loading...</span>
+          <span id="userRole" class="role-pill"></span>
+        </div>
+        <button id="logoutBtn" class="btn btn-outline" type="button">Log Out</button>
+      </div>
+    </header>
+
+    <main class="content-main" style="padding: 24px; max-width: 900px; margin: 0 auto;">
+      <!-- Demo Persona Switcher Bar -->
+      <div id="demoPersonaBar" class="demo-persona-bar"></div>
+
+      <section class="hero-panel" style="margin-bottom: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+        <div>
+          <p class="eyebrow" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 4px;">Camera & Upload Console</p>
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Ingest Textile Production Sheet</h3>
+          <p class="supporting-text" style="font-size: 13px; color: var(--ink-2); line-height: 1.5;">
+            Photograph a completed clipboard sheet from the weaving shed or upload an image. The engine auto-corrects orientation, inspects handwriting, and detects ambiguities.
+          </p>
+        </div>
+      </section>
+
+      <!-- Shop-floor Best Practices Banner -->
+      <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--ink-2);">
+        <span>💡 <strong>Shop-Floor Framing Tips:</strong> Ensure all 4 paper corners are visible • Avoid heavy overhead lamp glare • Keep phone parallel to clipboard.</span>
+      </div>
+
+      <!-- Stage 1: Dropzone -->
+      <div id="dropzone" class="preflight-dropzone">
+        <div style="font-size: 38px; margin-bottom: 12px;">📷</div>
+        <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--ink);">
+          Take a photo or drag & drop production sheet
+        </h4>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          On mobile, this opens your camera directly. On desktop, select or drop any JPG or PNG.
+        </p>
+        <button type="button" class="btn btn-primary" style="padding: 10px 20px; font-weight: 600;">
+          Select or Capture Image
+        </button>
+        <p style="font-size: 11px; color: var(--muted); margin-top: 14px;">
+          Supports high-resolution JPG & PNG up to 10 MB
+        </p>
+        <input type="file" id="fileInput" accept="image/png, image/jpeg, image/webp" capture="environment" class="hidden">
+      </div>
+
+      <!-- Stage 2: Preflight Inspection & Preview Card -->
+      <div id="preflightPreviewCard" class="preflight-preview-card hidden">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 700;">Preflight Preview & Quality Check</h4>
+            <span style="font-size: 12px; color: var(--muted);" id="previewFileName">filename.jpg</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="rotateBtn" class="btn btn-outline" type="button" title="Rotate 90 degrees clockwise" style="padding: 8px 12px; font-size: 12px;">
+              🔄 Rotate 90°
+            </button>
+            <button id="removeFileBtn" class="btn btn-outline" type="button" title="Retake or choose different photo" style="padding: 8px 12px; font-size: 12px; color: var(--danger-color);">
+              ✕ Remove
+            </button>
+          </div>
+        </div>
+
+        <div id="duplicateWarningAlert" class="setup-alert hidden" style="margin-top: 8px; font-size: 12px; background: var(--warn-soft); color: var(--warn); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(180,83,9,0.3);"></div>
+
+        <div class="preflight-thumb-wrap">
+          <img id="previewImg" class="preflight-thumb-img" alt="Captured Sheet Preview">
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--muted); background: var(--surface-2); padding: 8px 12px; border-radius: 6px;">
+          <div>Resolution: <strong id="previewDimensions" style="color: var(--ink);">Checking...</strong></div>
+          <div>Size: <strong id="previewFileSize" style="color: var(--ink);">0 KB</strong></div>
+          <div>Preflight Status: <strong style="color: var(--ok);">Ready for Vision AI</strong></div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+          <button id="extractBtn" class="btn btn-primary" type="button" style="padding: 12px 28px; font-weight: 700; font-size: 14px;">
+            Extract Form with Vision AI →
+          </button>
+        </div>
+      </div>
+
+      <!-- Stage 3: Multi-Step Progress Stepper -->
+      <div id="progressSection" class="placeholder-view hidden" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px 24px; text-align: center;">
+        <div class="ocr-spinner" style="margin: 0 auto 16px;"></div>
+        <h4 style="font-size: 17px; font-weight: 700; margin-bottom: 6px;">Multimodal Document Ingestion in Progress</h4>
+        <p style="font-size: 13px; color: var(--muted); max-width: 480px; margin: 0 auto 24px;">
+          The vision AI is reading the clipboard image, transcribing handwriting, identifying meter counts, and checking for ambiguities.
+        </p>
+
+        <div class="progress-stepper" style="max-width: 420px; margin: 0 auto; text-align: left;">
+          <div class="step-item active" id="step1">
+            <span class="step-icon">1</span>
+            <span>Uploading photograph to secure storage vault...</span>
+          </div>
+          <div class="step-item" id="step2">
+            <span class="step-icon">2</span>
+            <span>Inspecting form layout & table boundaries...</span>
+          </div>
+          <div class="step-item" id="step3">
+            <span class="step-icon">3</span>
+            <span>Transcribing handwritten meter readings & downtime...</span>
+          </div>
+          <div class="step-item" id="step4">
+            <span class="step-icon">4</span>
+            <span>Validating against loom master & shift schedules...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage 4: Authentic Error / Failure Card -->
+      <div id="failureCard" class="hidden" style="background: var(--surface); border: 1px solid var(--bad); border-radius: var(--radius); padding: 28px; text-align: center;">
+        <div style="font-size: 36px; margin-bottom: 12px;">⚠️</div>
+        <h4 style="font-size: 16px; font-weight: 700; color: var(--bad); margin-bottom: 6px;">Extraction Failed: Document Unreadable</h4>
+        <p id="failureErrorMsg" style="font-size: 13px; color: var(--ink-2); max-width: 460px; margin: 0 auto 20px;">
+          The system could not detect valid textile production fields. The image may be too blurry, out of focus, or severely occluded.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button type="button" class="btn btn-primary" onclick="resetCapture()">
+            📸 Retake Photograph
+          </button>
+          <button type="button" class="btn btn-outline" onclick="window.location.href='dashboard.html'">
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/security.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/extraction.js"></script>
+  <script src="js/capture.js"></script>
+</body>
+</html>

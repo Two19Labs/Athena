@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APLYD - Review & Verification Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/theme.js"></script>
+</head>
+<body class="app-shell">
+  <!-- Sibling Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-block">
+      <p class="eyebrow">APLYD</p>
+      <h1>Shop-Floor Textile Production Digitisation</h1>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Primary">
+      <a class="nav-item nav-link" href="dashboard.html">
+        <span>Production Dashboard</span>
+      </a>
+      <a class="nav-item nav-link" href="capture.html">
+        <span>Capture Form</span>
+      </a>
+      <a class="nav-item nav-item-active nav-link" href="review.html" id="navReview">
+        <span>Review Queue</span>
+      </a>
+      <a class="nav-item nav-link" href="production-register.html" id="navRegister">
+        <span>Production Register</span>
+      </a>
+      <a class="nav-item nav-link" href="analytics.html" id="navAnalytics">
+        <span>Analytics</span>
+      </a>
+      <a class="nav-item nav-link" href="machines.html" id="navMachines">
+        <span>Looms Master</span>
+      </a>
+      <a class="nav-item nav-link" href="shifts.html" id="navShifts">
+        <span>Shift Schedules</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-note">
+      <p class="note-label">Current Goal</p>
+      <p>Inspect extracted fields alongside physical sheet, correct ambiguities, and approve records.</p>
+    </div>
+  </aside>
+
+  <div class="content-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600;">Quality & Verification</p>
+        <h2 style="font-size: 20px; font-weight: 700;">Supervisor Review Console</h2>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="user-meta">
+          <span id="userEmail">Loading...</span>
+          <span id="userRole" class="role-pill"></span>
+        </div>
+        <button id="logoutBtn" class="btn btn-outline" type="button">Log Out</button>
+      </div>
+    </header>
+
+    <main class="content-main" style="padding: 24px;">
+      <!-- Demo Persona Switcher Bar -->
+      <div id="demoPersonaBar" class="demo-persona-bar"></div>
+
+      <!-- ==================================================================== -->
+      <!-- VIEW 1: SUPERVISOR QUEUE LIST -->
+      <!-- ==================================================================== -->
+      <section id="queueSection">
+        <div class="panel-header panel-header-spread" style="margin-bottom: 20px;">
+          <div>
+            <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600;">Inbox</p>
+            <h3 style="font-size: 18px; font-weight: 700;">Forms Awaiting Verification</h3>
+          </div>
+          <div>
+            <a href="capture.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px; font-weight: 600;">
+              + Ingest New Form
+            </a>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center;">
+          <div style="flex: 2; min-width: 220px;">
+            <input type="text" id="queueSearchInput" class="form-control" placeholder="Search record #, loom, or batch...">
+          </div>
+          <div style="flex: 1; min-width: 180px;">
+            <select id="queueStatusFilter" class="select-control" style="width: 100%;">
+              <option value="pending_review">Status: Pending Review</option>
+              <option value="returned_for_correction">Status: Returned for Correction</option>
+              <option value="approved">Status: Approved</option>
+              <option value="rejected">Status: Rejected</option>
+              <option value="all">All Submissions</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Queue Table -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto;">
+          <table class="bill-items-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); background: var(--surface-2); color: var(--muted); text-align: left; font-size: 11px; text-transform: uppercase;">
+                <th style="padding: 10px 8px;">Record #</th>
+                <th style="padding: 10px 8px;">Date</th>
+                <th style="padding: 10px 8px;">Loom</th>
+                <th style="padding: 10px 8px;">Shift</th>
+                <th style="padding: 10px 8px;">Output</th>
+                <th style="padding: 10px 8px;">AI Flags</th>
+                <th style="padding: 10px 8px;">Status</th>
+                <th style="padding: 10px 8px; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="queueTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 30px; color: var(--muted);">Loading queue...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==================================================================== -->
+      <!-- VIEW 2: SPLIT-SCREEN VERIFICATION HERO -->
+      <!-- ==================================================================== -->
+      <section id="detailSection" class="hidden">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <a href="review.html" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">
+              ← Back to Queue
+            </a>
+            <div>
+              <h3 id="detailRecordNumber" style="font-size: 18px; font-weight: 700; margin-bottom: 2px;">PR-2026-XXXX</h3>
+              <p id="detailRecordMeta" style="font-size: 12px; color: var(--muted);">Loom: L-12 | Shift: Morning</p>
+            </div>
+          </div>
+          <div>
+            <span id="detailStatusBadge" class="badge-uncertain">NEEDS REVIEW</span>
+          </div>
+        </div>
+
+        <div class="review-split-container">
+          <!-- Left: High-Res Document Viewer -->
+          <div class="document-viewer-card">
+            <div class="document-toolbar">
+              <span style="font-size: 12px; font-weight: 600; color: var(--ink-2);">
+                📄 Source Shop-Floor Sheet
+              </span>
+              <div class="toolbar-actions">
+                <button type="button" class="toolbar-btn" id="zoomInBtn" title="Zoom In">+</button>
+                <button type="button" class="toolbar-btn" id="zoomOutBtn" title="Zoom Out">-</button>
+                <button type="button" class="toolbar-btn" id="zoomResetBtn" title="Reset (100%)">↺</button>
+              </div>
+            </div>
+
+            <div class="canvas-viewport" id="canvasViewport">
+              <img id="canvasImg" class="document-img" alt="Captured Sheet Document">
+            </div>
+            
+            <div style="padding: 8px 12px; background: var(--surface-2); border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); display: flex; justify-content: space-between;">
+              <span>Drag to pan • Click fields on the right to inspect</span>
+              <span id="signedUrlHint">🔒 Protected Private Storage</span>
+            </div>
+          </div>
+
+          <!-- Right: Structured Verification Form -->
+          <div class="verification-form-card">
+            <div id="verificationFieldsContainer" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Dynamically populated by review.js -->
+            </div>
+
+            <!-- Append-Only Audit Trail Table -->
+            <div id="auditTrailContainer" class="hidden" style="margin-top: 10px; border-top: 1px solid var(--border); padding-top: 14px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 12px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.05em;">
+                  🛡️ Human Correction History (Audit Trail)
+                </span>
+                <span style="font-size: 11px; color: var(--ok); font-weight: 600;">Immutable Log</span>
+              </div>
+              <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--border); font-size: 11px; color: var(--muted); text-align: left;">
+                      <th style="padding: 6px;">Field</th>
+                      <th style="padding: 6px;">Original AI</th>
+                      <th style="padding: 6px;">Corrected</th>
+                      <th style="padding: 6px;">Editor</th>
+                      <th style="padding: 6px;">Time</th>
+                      <th style="padding: 6px;">Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditTrailList"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Supervisor Action Bar -->
+        <div class="sticky-action-bar">
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-outline" id="returnBtn" style="color: var(--warn); border-color: rgba(180,83,9,0.3);">
+              ↩ Return for Correction
+            </button>
+            <button type="button" class="btn btn-outline" id="rejectBtn" style="color: var(--danger-color); border-color: rgba(185,28,28,0.3);">
+              ✕ Reject Form
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="button" class="btn btn-primary" id="approveBtn" style="padding: 12px 24px; font-weight: 700; font-size: 14px;">
+              ✓ Approve & Submit to Mock ERP →
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/security.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/review.js"></script>
+</body>
+</html>

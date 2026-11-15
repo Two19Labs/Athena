@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_03_clean_loom_03",
+  "ground_truth": {
+    "machine_code": "L-03",
+    "production_date": "2026-11-15",
+    "shift": "Morning",
+    "production_quantity": 310,
+    "production_unit": "metres",
+    "material_reference": "Heavy Denim 3/1",
+    "batch_reference": "DEN-2026-19",
+    "defects_count": 2,
+    "downtime_minutes": 30,
+    "downtime_reason": "Warp tie-in"
+  },
+  "test_attributes": {
+    "test_category": "clean",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

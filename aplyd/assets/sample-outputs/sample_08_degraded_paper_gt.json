@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_08_degraded_paper",
+  "ground_truth": {
+    "machine_code": "L-10",
+    "production_date": "2026-11-15",
+    "shift": "Night",
+    "production_quantity": 375,
+    "production_unit": "metres",
+    "material_reference": "Cotton Satin 50s",
+    "batch_reference": "SAT-50-901",
+    "defects_count": 1,
+    "downtime_minutes": 15,
+    "downtime_reason": "Nozzle clearing"
+  },
+  "test_attributes": {
+    "test_category": "creased",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

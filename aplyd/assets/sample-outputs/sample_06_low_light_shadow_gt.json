@@ -1,0 +1,22 @@
+{
+  "sample_id": "sample_06_low_light_shadow",
+  "ground_truth": {
+    "machine_code": "L-06",
+    "production_date": "2026-11-15",
+    "shift": "Night",
+    "production_quantity": 350,
+    "production_unit": "metres",
+    "material_reference": "Voile 60s",
+    "batch_reference": "VOI-60-201",
+    "defects_count": 3,
+    "downtime_minutes": 40,
+    "downtime_reason": "Tension float adjustment"
+  },
+  "test_attributes": {
+    "test_category": "shadow",
+    "has_ambiguity": false,
+    "has_missing_field": false,
+    "has_anomaly": false,
+    "expected_model_status": "read"
+  }
+}

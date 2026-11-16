@@ -4,3 +4,6 @@ node_modules/
 .vercel/
 tests/output/
 *.log
+
+# Local multi-agent handover notes (kept on disk, not published)
+context.md

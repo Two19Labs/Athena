@@ -437,6 +437,7 @@ async function overflow(page) {
     const csv = csvFile ? fs.readFileSync(path.join(OUT, csvFile), 'utf8') : '';
     check(csv.includes('record_number,production_date') && csv.includes('"<img src=x onerror=""window.__xss=1"">"'), 'CSV export escapes quotes and keeps all rows', csv.split('\n').length + ' lines');
 
+    // ── 12. Mobile review layout ──
     console.log('\n12. Mobile review layout');
     const mob = await newPage(browser, base, { width: 390, height: 844, isMobile: true, hasTouch: true });
     await as(mob, 'supervisor');
@@ -447,6 +448,7 @@ async function overflow(page) {
     check(mob.errors.length === 0, 'no errors on mobile review', mob.errors.join('|'));
     await mob.close();
 
+    // ── 13. Older-browser fallbacks ──
     console.log('\n13. Older-browser fallbacks (no createImageBitmap, no crypto.subtle)');
     const old = await newPage(browser, base);
     await old.evaluateOnNewDocument(() => {
@@ -456,11 +458,12 @@ async function overflow(page) {
     await as(old, 'operator');
     const n1 = await recordCount(old);
     await capture(old, path.join(SAMPLES, 'form-11-sideways.jpg'), { status: 200, json: formReply({ machine: f('L-06') }, '06/10/2026') });
-    check(old.url().includes('review.html?id='),'capture works without createImageBitmap and without crypto.subtle', old.url());
+    check(old.url().includes('review.html?id='), 'capture works without createImageBitmap and without crypto.subtle', old.url());
     check(await recordCount(old) === n1 + 1, 'record saved on the fallback path');
     check(old.errors.length === 0, 'no errors on the fallback path', old.errors.join('|'));
     await old.close();
 
+    // ── Whole-run sanity ──
     check(page.errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'no unexpected browser errors across the whole flow', page.errors.join(' | '));
   } catch (err) {
     failures.push(`crashed: ${err.stack}`);

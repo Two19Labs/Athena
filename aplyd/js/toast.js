@@ -30,5 +30,4 @@
   }
 
   window.toast = { show };
-  window.showToast = show;
 })();

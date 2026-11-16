@@ -24,7 +24,7 @@
   color-scheme: light;
 }
 
-html.dark-theme, body.dark-theme {
+html.dark-theme {
   --bg: #0b0b0d;
   --surface: #161618;
   --surface-2: #1c1c1f;
@@ -139,6 +139,7 @@ code { font-family: var(--mono); font-size: 12px; background: var(--surface-2); 
 .btn-warn { color: var(--warn); }
 .btn-bad { color: var(--bad); }
 .btn-small { padding: 6px 11px; font-size: 12.5px; }
+.btn-icon { padding: 8px 10px; line-height: 0; }
 .btn-tiny { padding: 4px 9px; font-size: 12px; align-self: flex-start; }
 .btn-large { padding: 12px 22px; font-size: 14.5px; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }

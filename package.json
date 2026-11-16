@@ -4,10 +4,11 @@
   "private": true,
   "description": "Photo of a handwritten textile production form -> AI extraction -> human review -> ERP-ready record.",
   "scripts": {
+    "start": "node dev-server.js",
     "dev": "node dev-server.js",
     "test": "node --test tests/unit.test.js",
     "test:e2e": "node tests/e2e.test.js",
-    "test:all": "node --test tests/unit.test.js && node tests/e2e.test.js",
+    "test:all": "npm test && npm run test:e2e",
     "samples": "node tests/generate-samples.js",
     "benchmark": "node tests/benchmark.js"
   },

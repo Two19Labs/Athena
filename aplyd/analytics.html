@@ -3,165 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APLYD - Manufacturing Analytics</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2318181b%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2717%27 font-family=%27Arial%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EA%3C/text%3E%3C/svg%3E">
+  <title>Analytics &amp; Reliability · APLYD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="js/theme.js"></script>
 </head>
-<body class="app-shell">
-  <!-- Sibling Sidebar -->
-  <aside class="sidebar">
-    <div class="brand-block">
-      <p class="eyebrow">APLYD</p>
-      <h1>Shop-Floor Textile Production Digitisation</h1>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="Primary">
-      <a class="nav-item nav-link" href="dashboard.html">
-        <span>Production Dashboard</span>
-      </a>
-      <a class="nav-item nav-link" href="capture.html">
-        <span>Capture Form</span>
-      </a>
-      <a class="nav-item nav-link" href="review.html" id="navReview">
-        <span>Review Queue</span>
-      </a>
-      <a class="nav-item nav-link" href="production-register.html" id="navRegister">
-        <span>Production Register</span>
-      </a>
-      <a class="nav-item nav-item-active nav-link" href="analytics.html" id="navAnalytics">
-        <span>Analytics</span>
-      </a>
-      <a class="nav-item nav-link" href="machines.html" id="navMachines">
-        <span>Looms Master</span>
-      </a>
-      <a class="nav-item nav-link" href="shifts.html" id="navShifts">
-        <span>Shift Schedules</span>
-      </a>
-    </nav>
-
-    <div class="sidebar-note">
-      <p class="note-label">Current Goal</p>
-      <p>Analyze shift efficiency, monitor defect trends, and evaluate AI extraction accuracy.</p>
-    </div>
-  </aside>
+<body class="app-shell" data-page="analytics">
+  <aside class="sidebar" id="appSidebar"></aside>
 
   <div class="content-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600;">Plant Intelligence</p>
-        <h2 style="font-size: 20px; font-weight: 700;">Manufacturing Analytics & AI Telemetry</h2>
+        <p class="page-eyebrow">Measure &amp; improve</p>
+        <h2 class="page-title">Analytics &amp; Reliability</h2>
       </div>
-
-      <div class="topbar-actions">
-        <div class="user-meta">
-          <span id="userEmail">Loading...</span>
-          <span id="userRole" class="role-pill"></span>
-        </div>
-        <button id="logoutBtn" class="btn btn-outline" type="button">Log Out</button>
-      </div>
+      <div class="topbar-actions"></div>
     </header>
 
-    <main class="content-main" style="padding: 24px;">
-      <!-- Demo Persona Switcher Bar -->
+    <main class="content-main">
       <div id="demoPersonaBar" class="demo-persona-bar"></div>
 
-      <!-- Hero Panel -->
-      <section class="hero-panel" style="margin-bottom: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
-        <div>
-          <p class="eyebrow" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 4px;">Operational Telemetry</p>
-          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Weaving Telemetry & Vision AI Performance</h3>
-          <p class="supporting-text" style="font-size: 13px; color: var(--ink-2); line-height: 1.5;">
-            Quantified reliability metrics from digitized shop-floor logs, tracking model extraction precision, supervisor corrections, and downtime Pareto distributions.
-          </p>
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>AI reliability in live use</h3>
+            <p class="muted small">Measured from what supervisors changed on AI-read records (approved or rejected).</p>
+          </div>
+        </div>
+        <p id="relEmpty" class="inline-alert hidden">No AI-read records have been reviewed in this browser yet. Capture and review a few forms to populate these numbers.</p>
+        <div class="kpi-grid">
+          <div class="kpi-card"><p class="kpi-label">Forms read by AI</p><p class="kpi-value" id="relForms">0</p><p class="kpi-note" id="relFormsNote"></p></div>
+          <div class="kpi-card"><p class="kpi-label">Field correction rate</p><p class="kpi-value" id="relCorrection">—</p><p class="kpi-note" id="relCorrectionNote"></p></div>
+          <div class="kpi-card"><p class="kpi-label">Silent error rate</p><p class="kpi-value bad" id="relSilent">—</p><p class="kpi-note" id="relSilentNote"></p></div>
+          <div class="kpi-card"><p class="kpi-label">Flag precision</p><p class="kpi-value" id="relFlagPrecision">—</p><p class="kpi-note" id="relFlagPrecisionNote"></p></div>
+          <div class="kpi-card"><p class="kpi-label">First-pass yield</p><p class="kpi-value" id="relFirstPass">—</p><p class="kpi-note" id="relFirstPassNote"></p></div>
+          <div class="kpi-card"><p class="kpi-label">Median AI read time</p><p class="kpi-value" id="relLatency">—</p><p class="kpi-note">ERP acknowledged: <strong id="relErp">—</strong></p></div>
+        </div>
+
+        <p class="section-label">Silent errors: AI was confident and wrong</p>
+        <div class="table-scroll">
+          <table class="data-table data-table-compact">
+            <thead><tr><th>Record</th><th>Field</th><th>Written (AI saw)</th><th>AI value → human value</th><th>Reason</th></tr></thead>
+            <tbody id="silentTable"></tbody>
+          </table>
         </div>
       </section>
 
-      <!-- AI Telemetry Stat Cards -->
-      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Field-Level Accuracy</p>
-          <h3 id="telemetryFieldAccuracy" style="font-size: 24px; font-weight: 700; color: var(--ok); margin-bottom: 4px;">96.4%</h3>
-          <span style="font-size: 11px; color: var(--muted);">Against Verified Ground Truth</span>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Uncertainty Recall</p>
-          <h3 id="telemetryUncertaintyRecall" style="font-size: 24px; font-weight: 700; color: var(--warn); margin-bottom: 4px;">100%</h3>
-          <span style="font-size: 11px; color: var(--muted);">Ambiguous Digits Flagged</span>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Supervisor Correction Rate</p>
-          <h3 id="telemetryCorrectionRate" style="font-size: 24px; font-weight: 700; color: #1d4ed8; margin-bottom: 4px;">8.5%</h3>
-          <span style="font-size: 11px; color: var(--muted);">Fields Adjusted in Review</span>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Mock ERP Sync Rate</p>
-          <h3 id="telemetryErpSuccess" style="font-size: 24px; font-weight: 700; color: var(--ok); margin-bottom: 4px;">100%</h3>
-          <span style="font-size: 11px; color: var(--muted);">Idempotent Acknowledgment</span>
-        </div>
+      <section class="panel">
+        <div class="panel-head"><h3>Offline benchmark (labelled sample forms)</h3></div>
+        <div id="benchmarkBody"><p class="muted">Loading…</p></div>
       </section>
 
-      <!-- Charts Grid 2x2 -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
-        <!-- Chart 1: Loom Station Output -->
-        <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-          <div style="margin-bottom: 14px;">
-            <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">Station Output</p>
-            <h3 style="font-size: 16px; font-weight: 700;">Production by Loom (Metres)</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="loomOutputChart"></canvas>
-          </div>
-        </section>
-
-        <!-- Chart 2: Shift Efficiency -->
-        <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-          <div style="margin-bottom: 14px;">
-            <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">Shift Efficiency</p>
-            <h3 style="font-size: 16px; font-weight: 700;">Shift Share Distribution (%)</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="shiftEfficiencyChart"></canvas>
-          </div>
-        </section>
-
-        <!-- Chart 3: Defect Pareto -->
-        <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-          <div style="margin-bottom: 14px;">
-            <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">Quality Control</p>
-            <h3 style="font-size: 16px; font-weight: 700;">Defect Classification Pareto</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="defectParetoChart"></canvas>
-          </div>
-        </section>
-
-        <!-- Chart 4: Downtime Stoppage -->
-        <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-          <div style="margin-bottom: 14px;">
-            <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">Root Causes</p>
-            <h3 style="font-size: 16px; font-weight: 700;">Downtime Stoppages (Minutes)</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="downtimeCausesChart"></canvas>
-          </div>
-        </section>
+      <p id="chartsEmpty" class="inline-alert hidden">No approved records in the last 30 days.</p>
+      <div class="chart-grid">
+        <section class="panel"><div class="panel-head"><h3>Approved metres by loom · 30 days</h3></div><div class="chart-box"><canvas id="loomOutputChart"></canvas></div></section>
+        <section class="panel"><div class="panel-head"><h3>Output share by shift</h3></div><div class="chart-box"><canvas id="shiftChart"></canvas></div></section>
+        <section class="panel"><div class="panel-head"><h3>Downtime by reason (minutes)</h3></div><div class="chart-box"><canvas id="downtimeChart"></canvas></div></section>
+        <section class="panel"><div class="panel-head"><h3>Defects by loom</h3></div><div class="chart-box"><canvas id="defectChart"></canvas></div></section>
       </div>
-
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/security.js"></script>
   <script src="js/toast.js"></script>
+  <script src="js/rules.js"></script>
   <script src="js/store.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/charts.js"></script>
   <script src="js/analytics.js"></script>
 </body>
 </html>

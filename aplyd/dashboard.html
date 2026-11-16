@@ -3,169 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APLYD - Production Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2318181b%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2717%27 font-family=%27Arial%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EA%3C/text%3E%3C/svg%3E">
+  <title>Dashboard · APLYD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="js/theme.js"></script>
 </head>
-<body class="app-shell">
-  <!-- Sibling Sidebar -->
-  <aside class="sidebar">
-    <div class="brand-block">
-      <p class="eyebrow">APLYD</p>
-      <h1>Shop-Floor Textile Production Digitisation</h1>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="Primary">
-      <a class="nav-item nav-item-active nav-link" href="dashboard.html">
-        <span>Production Dashboard</span>
-      </a>
-      <a class="nav-item nav-link" href="capture.html">
-        <span>Capture Form</span>
-      </a>
-      <a class="nav-item nav-link" href="review.html" id="navReview">
-        <span>Review Queue</span>
-      </a>
-      <a class="nav-item nav-link" href="production-register.html" id="navRegister">
-        <span>Production Register</span>
-      </a>
-      <a class="nav-item nav-link" href="analytics.html" id="navAnalytics">
-        <span>Analytics</span>
-      </a>
-      <a class="nav-item nav-link" href="machines.html" id="navMachines">
-        <span>Looms Master</span>
-      </a>
-      <a class="nav-item nav-link" href="shifts.html" id="navShifts">
-        <span>Shift Schedules</span>
-      </a>
-    </nav>
-
-    <div class="sidebar-note">
-      <p class="note-label">Current Goal</p>
-      <p>Monitor daily loom shed output, track pending form reviews, and verify shop-floor telemetry.</p>
-    </div>
-  </aside>
+<body class="app-shell" data-page="dashboard">
+  <aside class="sidebar" id="appSidebar"></aside>
 
   <div class="content-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600;">Operations Console</p>
-        <h2 style="font-size: 20px; font-weight: 700;">Weaving Production Dashboard</h2>
+        <p class="page-eyebrow">Weaving shed</p>
+        <h2 class="page-title">Production Dashboard</h2>
       </div>
-
-      <div class="topbar-actions">
-        <div class="user-meta">
-          <span id="userEmail">Loading...</span>
-          <span id="userRole" class="role-pill"></span>
-        </div>
-        <button id="logoutBtn" class="btn btn-outline" type="button">Log Out</button>
-      </div>
+      <div class="topbar-actions"></div>
     </header>
 
-    <main class="content-main" style="padding: 24px;">
-      <!-- Demo Persona Switcher Bar -->
+    <main class="content-main">
       <div id="demoPersonaBar" class="demo-persona-bar"></div>
 
-      <!-- Hero Panel -->
-      <section class="hero-panel" style="margin-bottom: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <section class="hero-panel">
         <div>
-          <p class="eyebrow" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 4px;">Live Facility Metrics</p>
-          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Weaving Shed Daily Performance</h3>
-          <p class="supporting-text" style="font-size: 13px; color: var(--ink-2); line-height: 1.5;">
-            Real-time telemetry aggregated from vision-digitized paper logs across Shed A, Shed B, and Shed C.
-          </p>
+          <h3>Paper forms in, verified ERP records out</h3>
+          <p class="muted">Photograph a shift form, let the AI read it, have a supervisor check it against the photo, then send it to the ERP.</p>
         </div>
+        <a href="capture.html" class="btn btn-primary btn-large" id="primaryCta">+ Capture a form</a>
+      </section>
 
-        <div>
-          <a href="capture.html" class="btn btn-primary" style="padding: 12px 24px; font-weight: 700; font-size: 14px;">
-            + Ingest New Production Form
-          </a>
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <p class="kpi-label">Approved output · 7 days</p>
+          <p class="kpi-value" id="kpiMetres">0 m</p>
+          <p class="kpi-note">Supervisor-approved records only</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-label">Forms captured today</p>
+          <p class="kpi-value" id="kpiFormsToday">0</p>
+          <p class="kpi-note">Photos read by the AI</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-label">Pending review</p>
+          <p class="kpi-value warn" id="kpiPending">0</p>
+          <p class="kpi-note"><a href="review.html">Open the queue →</a></p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-label">Open exceptions</p>
+          <p class="kpi-value bad" id="kpiExceptions">0</p>
+          <p class="kpi-note" id="kpiExceptionsNote"></p>
         </div>
       </section>
 
-      <!-- KPI Stat Cards (4 columns) -->
-      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Total Approved Metres</p>
-          <h3 id="kpiMetersToday" style="font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 4px;">0 m</h3>
-          <span style="font-size: 11px; color: var(--ok); font-weight: 600;">✓ Verified Production Only</span>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Forms Processed</p>
-          <h3 id="kpiFormsToday" style="font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 4px;">0</h3>
-          <span style="font-size: 11px; color: var(--muted);">Today's Ingestions</span>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Pending Reviews</p>
-          <h3 id="kpiPendingReview" style="font-size: 24px; font-weight: 700; color: var(--warn); margin-bottom: 4px;">0</h3>
-          <span style="font-size: 11px; color: var(--warn); font-weight: 600;">Awaiting Supervisor</span>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;">
-          <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px;">Active Exceptions</p>
-          <h3 id="kpiActiveAlerts" style="font-size: 24px; font-weight: 700; color: var(--bad); margin-bottom: 4px;">0</h3>
-          <span style="font-size: 11px; color: var(--bad); font-weight: 600;">Stoppage / Defect Alerts</span>
-        </div>
-      </section>
-
-      <!-- Dashboard Grid: Recent Submissions & Loom Output Chart -->
-      <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; align-items: start;">
-        <!-- Recent Submissions Table -->
-        <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-            <div>
-              <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">Ingestion Feed</p>
-              <h3 style="font-size: 16px; font-weight: 700;">Recent Submissions</h3>
-            </div>
-            <a href="production-register.html" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">View All →</a>
+      <div class="dash-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Recent records</h3>
+            <a href="review.html" class="btn btn-outline btn-small">All →</a>
           </div>
-
-          <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
-            <table class="bill-items-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
-              <thead>
-                <tr style="border-bottom: 1px solid var(--border); background: var(--surface-2); color: var(--muted); text-align: left; font-size: 11px; text-transform: uppercase;">
-                  <th style="padding: 8px;">Record #</th>
-                  <th style="padding: 8px;">Loom</th>
-                  <th style="padding: 8px;">Shift</th>
-                  <th style="padding: 8px;">Output</th>
-                  <th style="padding: 8px;">Status</th>
-                  <th style="padding: 8px; text-align: right;">Action</th>
-                </tr>
-              </thead>
-              <tbody id="recentSubmissionsBody">
-                <tr>
-                  <td colspan="6" style="text-align: center; padding: 24px; color: var(--muted);">Loading submissions...</td>
-                </tr>
-              </tbody>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>Record</th><th>Loom</th><th>Shift</th><th class="num">Output</th><th>Status</th><th></th></tr></thead>
+              <tbody id="recentSubmissionsBody"></tbody>
             </table>
           </div>
         </section>
 
-        <!-- Mini Loom Output Chart -->
-        <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-          <div style="margin-bottom: 14px;">
-            <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">Output Distribution</p>
-            <h3 style="font-size: 16px; font-weight: 700;">Production by Loom Station</h3>
-          </div>
-          <div style="height: 260px; position: relative;">
-            <canvas id="miniLoomChart"></canvas>
-          </div>
+        <section class="panel">
+          <div class="panel-head"><h3>Approved metres by loom · 7 days</h3></div>
+          <div class="chart-box"><canvas id="loomChart" aria-label="Approved metres by loom"></canvas></div>
+          <p id="chartEmpty" class="muted small hidden">No approved output in the last 7 days.</p>
         </section>
       </div>
-
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/security.js"></script>
   <script src="js/toast.js"></script>
+  <script src="js/rules.js"></script>
   <script src="js/store.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/charts.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
 </html>

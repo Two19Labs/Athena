@@ -3,181 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APLYD - Looms Master Data</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2318181b%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2717%27 font-family=%27Arial%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EA%3C/text%3E%3C/svg%3E">
+  <title>Looms Master · APLYD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="js/theme.js"></script>
 </head>
-<body class="app-shell">
-  <!-- Sibling Sidebar -->
-  <aside class="sidebar">
-    <div class="brand-block">
-      <p class="eyebrow">APLYD</p>
-      <h1>Shop-Floor Textile Production Digitisation</h1>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="Primary">
-      <a class="nav-item nav-link" href="dashboard.html">
-        <span>Production Dashboard</span>
-      </a>
-      <a class="nav-item nav-link" href="capture.html">
-        <span>Capture Form</span>
-      </a>
-      <a class="nav-item nav-link" href="review.html" id="navReview">
-        <span>Review Queue</span>
-      </a>
-      <a class="nav-item nav-link" href="production-register.html" id="navRegister">
-        <span>Production Register</span>
-      </a>
-      <a class="nav-item nav-link" href="analytics.html" id="navAnalytics">
-        <span>Analytics</span>
-      </a>
-      <a class="nav-item nav-item-active nav-link" href="machines.html" id="navMachines">
-        <span>Looms Master</span>
-      </a>
-      <a class="nav-item nav-link" href="shifts.html" id="navShifts">
-        <span>Shift Schedules</span>
-      </a>
-    </nav>
-
-    <div class="sidebar-note">
-      <p class="note-label">Current Goal</p>
-      <p>Configure weaving machines, output thresholds, and active loom stations.</p>
-    </div>
-  </aside>
+<body class="app-shell" data-page="machines">
+  <aside class="sidebar" id="appSidebar"></aside>
 
   <div class="content-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600;">Master Configuration</p>
-        <h2 style="font-size: 20px; font-weight: 700;">Looms Master Catalogue</h2>
+        <p class="page-eyebrow">Master data</p>
+        <h2 class="page-title">Looms Master</h2>
       </div>
-
-      <div class="topbar-actions">
-        <div class="user-meta">
-          <span id="userEmail">Loading...</span>
-          <span id="userRole" class="role-pill"></span>
-        </div>
-        <button id="logoutBtn" class="btn btn-outline" type="button">Log Out</button>
-      </div>
+      <div class="topbar-actions"></div>
     </header>
 
-    <main class="content-main" style="padding: 24px;">
-      <!-- Demo Persona Switcher Bar -->
+    <main class="content-main">
       <div id="demoPersonaBar" class="demo-persona-bar"></div>
 
-      <!-- Hero Panel -->
-      <section class="hero-panel" style="margin-bottom: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <section class="hero-panel">
         <div>
-          <p class="eyebrow" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 4px;">Machinery Assets</p>
-          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Loom Shed Equipment Registry</h3>
-          <p class="supporting-text" style="font-size: 13px; color: var(--ink-2); line-height: 1.5;">
-            Master directory of weaving looms (Air-jet, Rapier, Shuttle) used for deterministic fuzzy-matching during vision extraction.
-          </p>
+          <h3>Registered looms</h3>
+          <p class="muted">The AI's loom reading is matched against this list. The expected range drives the "check for a misread digit" warning during review.</p>
         </div>
-
-        <div>
-          <button id="openMachineModalBtn" class="btn btn-primary" type="button" style="font-weight: 700; font-size: 13px;">
-            + Add New Loom
-          </button>
-        </div>
+        <button id="openMachineModalBtn" class="btn btn-primary" type="button">+ Add loom</button>
       </section>
 
-      <!-- Table Panel -->
-      <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-        <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
-          <table class="bill-items-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--border); background: var(--surface-2); color: var(--muted); text-align: left; font-size: 11px; text-transform: uppercase;">
-                <th style="padding: 10px 8px;">Loom Code</th>
-                <th style="padding: 10px 8px;">Station Name</th>
-                <th style="padding: 10px 8px;">Type</th>
-                <th style="padding: 10px 8px;">Unit</th>
-                <th style="padding: 10px 8px;">Capacity Range</th>
-                <th style="padding: 10px 8px;">Location / Notes</th>
-                <th style="padding: 10px 8px;">Status</th>
-                <th style="padding: 10px 8px; text-align: right;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="machinesTableBody">
-              <tr>
-                <td colspan="8" style="text-align: center; padding: 30px; color: var(--muted);">Loading looms...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- MODAL: ADD / EDIT LOOM -->
-      <div id="machineModal" class="modal-overlay hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;">
-        <div class="modal-box" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 500px; padding: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
-            <h3 id="machineModalTitle" style="font-size: 18px; font-weight: 700;">Add New Loom</h3>
-            <button type="button" class="btn btn-outline" id="closeMachineModalBtn" style="padding: 4px 8px;">✕</button>
-          </div>
-
-          <input type="hidden" id="machineId">
-
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <div>
-              <label for="machineCode" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Loom Code (e.g. L-13)</label>
-              <input type="text" id="machineCode" class="form-control" placeholder="L-13">
-            </div>
-
-            <div>
-              <label for="machineName" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Display Name</label>
-              <input type="text" id="machineName" class="form-control" placeholder="Loom 13 (Air-Jet High Speed)">
-            </div>
-
-            <div>
-              <label for="machineType" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Weaving Type</label>
-              <select id="machineType" class="select-control" style="width: 100%;">
-                <option value="Air-Jet">Air-Jet (High Speed)</option>
-                <option value="Rapier">Rapier (Flexible / Heavy)</option>
-                <option value="Shuttle">Shuttle (Traditional)</option>
-              </select>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div>
-                <label for="machineMinQty" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Min Shift Output (m)</label>
-                <input type="number" id="machineMinQty" class="form-control" value="100">
-              </div>
-              <div>
-                <label for="machineMaxQty" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Max Shift Output (m)</label>
-                <input type="number" id="machineMaxQty" class="form-control" value="800">
-              </div>
-            </div>
-
-            <div>
-              <label for="machineNotes" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Location / Fabric Notes</label>
-              <input type="text" id="machineNotes" class="form-control" placeholder="Shed A - Combed Poplin">
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-              <input type="checkbox" id="machineIsActive" checked>
-              <label for="machineIsActive" style="font-size: 13px; font-weight: 600;">Active for Shop-Floor Logging</label>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 18px;">
-            <button type="button" class="btn btn-primary" id="saveMachineBtn" style="font-weight: 600;">
-              Save Loom
-            </button>
-          </div>
-        </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead><tr><th>Code</th><th>Name</th><th>Type</th><th class="num">Expected range</th><th>Notes</th><th>Status</th><th></th></tr></thead>
+          <tbody id="machinesTableBody"></tbody>
+        </table>
       </div>
 
+      <div id="machineModal" class="modal-overlay hidden">
+        <form class="modal-box modal-box-sm" id="machineForm" role="dialog" aria-modal="true" aria-labelledby="machineModalTitle" novalidate>
+          <div class="modal-head">
+            <h3 id="machineModalTitle">Add loom</h3>
+            <button type="button" class="btn btn-outline btn-small" data-close aria-label="Close">✕</button>
+          </div>
+          <input type="hidden" id="machineId">
+          <div class="form-grid">
+            <label>Loom code <span class="req">*</span><input type="text" id="machineCode" class="form-control" placeholder="L-13" required></label>
+            <label>Type<select id="machineType" class="select-control"><option>Air-Jet</option><option>Rapier</option><option>Shuttle</option><option>Water-Jet</option><option>Projectile</option></select></label>
+            <label class="span-2">Name <span class="req">*</span><input type="text" id="machineName" class="form-control" placeholder="Loom 13 (Air-Jet)" required></label>
+            <label>Expected min (m/shift)<input type="number" id="machineMinQty" class="form-control" min="0" step="1"></label>
+            <label>Expected max (m/shift)<input type="number" id="machineMaxQty" class="form-control" min="1" step="1"></label>
+            <label class="span-2">Notes<input type="text" id="machineNotes" class="form-control" placeholder="Shed A · Combed Poplin"></label>
+            <label class="check span-2"><input type="checkbox" id="machineIsActive" checked> Active</label>
+          </div>
+          <p id="machineFormError" class="field-msg bad hidden" role="alert"></p>
+          <div class="modal-foot">
+            <button type="button" class="btn btn-outline" data-close>Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveMachineBtn">Save loom</button>
+          </div>
+        </form>
+      </div>
     </main>
   </div>
 
   <script src="js/config.js"></script>
   <script src="js/security.js"></script>
   <script src="js/toast.js"></script>
+  <script src="js/rules.js"></script>
   <script src="js/store.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/master-data.js"></script>
 </body>
 </html>

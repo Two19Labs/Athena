@@ -1,119 +1,49 @@
-/**
- * APLYD - Operations Dashboard Controller
- */
+/** APLYD - Dashboard: KPIs, recent activity and 7-day loom output. All numbers come from the store. */
+(function () {
+  const store = window.aplydStore;
+  const L = window.AplydLayout;
+  const esc = window.security.escapeHtml;
+  const $ = (id) => document.getElementById(id);
+  let metrics = null;
 
-let miniLoomChartInstance = null;
+  document.addEventListener('DOMContentLoaded', async () => {
+    metrics = await store.getDashboardMetrics();
+    const user = store.getCurrentUser();
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await renderDashboard();
+    $('kpiMetres').textContent = `${metrics.approvedMetres7d.toLocaleString()} m`;
+    $('kpiFormsToday').textContent = metrics.formsToday;
+    $('kpiPending').textContent = metrics.pendingReviews;
+    $('kpiExceptions').textContent = metrics.openExceptions;
+    $('kpiExceptionsNote').textContent = metrics.erpFailed ? `${metrics.erpFailed} approved record(s) not yet in ERP` : 'Blockers + warnings on pending records';
 
-  window.addEventListener("themeChanged", () => {
-    renderMiniLoomChart();
-  });
-});
-
-async function renderDashboard() {
-  const metrics = await window.aplydStore.getDashboardMetrics();
-
-  // Populate Stat Cards
-  const kpiMetersEl = document.getElementById("kpiMetersToday");
-  const kpiFormsEl = document.getElementById("kpiFormsToday");
-  const kpiPendingEl = document.getElementById("kpiPendingReview");
-  const kpiAlertsEl = document.getElementById("kpiActiveAlerts");
-
-  if (kpiMetersEl) kpiMetersEl.textContent = metrics.totalMetersToday.toLocaleString() + " m";
-  if (kpiFormsEl) kpiFormsEl.textContent = metrics.formsToday;
-  if (kpiPendingEl) kpiPendingEl.textContent = metrics.pendingReviews;
-  if (kpiAlertsEl) kpiAlertsEl.textContent = metrics.activeExceptions;
-
-  // Render Recent Activity Feed
-  const recentTbody = document.getElementById("recentSubmissionsBody");
-  if (recentTbody) {
-    if (metrics.recentRecords.length === 0) {
-      recentTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No submissions logged today.</td></tr>`;
-    } else {
-      recentTbody.innerHTML = metrics.recentRecords.map(r => {
-        const statusPillClass = 
-          r.status === 'approved' ? 'badge-read' :
-          r.status === 'pending_review' ? 'badge-uncertain' :
-          r.status === 'returned_for_correction' ? 'badge-corrected' : 'badge-illegible';
-
-        return `
-          <tr style="border-bottom: 1px solid var(--border);">
-            <td style="padding:10px 8px; font-weight:700; font-family:monospace;">${window.security.escapeHtml(r.record_number)}</td>
-            <td style="padding:10px 8px; font-weight:600;">${window.security.escapeHtml(r.machine?.machine_code || r.machine_id_raw || 'Unknown')}</td>
-            <td style="padding:10px 8px;">${window.security.escapeHtml(r.shift?.name || r.shift_raw || 'N/A')}</td>
-            <td style="padding:10px 8px; font-weight:700;">${r.production_quantity !== null ? Number(r.production_quantity).toLocaleString() + ' ' + (r.production_unit || 'm') : '-'}</td>
-            <td style="padding:10px 8px;"><span class="${statusPillClass}">${r.status.replace('_', ' ').toUpperCase()}</span></td>
-            <td style="padding:10px 8px; text-align:right;">
-              <a href="review.html?id=${r.id}" class="btn btn-outline" style="padding:4px 10px; font-size:11px; font-weight:600;">
-                Verify →
-              </a>
-            </td>
-          </tr>
-        `;
-      }).join('');
+    if (user.role === 'operator') {
+      $('primaryCta').textContent = '📷 Capture a form';
     }
-  }
 
-  // Render Mini Loom Production Chart
-  await renderMiniLoomChart();
-}
+    const rows = metrics.recentRecords;
+    $('recentSubmissionsBody').innerHTML = rows.length ? rows.map(r => `
+      <tr>
+        <td class="mono strong">${esc(r.record_number)}${r.seed ? ' <span class="tag">seed</span>' : ''}</td>
+        <td class="strong">${esc((r.machine && r.machine.machine_code) || r.machine_raw || '—')}</td>
+        <td>${esc((r.shift && r.shift.shift_code) || r.shift_raw || '—')}</td>
+        <td class="num strong">${esc(L.fmtNum(r.production_quantity, r.production_unit))}</td>
+        <td><span class="${L.statusClass(r.status)}">${esc(L.statusLabel(r.status))}</span></td>
+        <td class="right"><a href="review.html?id=${encodeURIComponent(r.id)}" class="btn btn-outline btn-small">Open</a></td>
+      </tr>`).join('') : '<tr><td colspan="6" class="empty-cell">No records yet.</td></tr>';
 
-async function renderMiniLoomChart() {
-  const canvas = document.getElementById("miniLoomChart");
-  if (!canvas || !window.Chart) return;
-
-  if (miniLoomChartInstance) {
-    miniLoomChartInstance.destroy();
-    miniLoomChartInstance = null;
-  }
-
-  const records = await window.aplydStore.getRecords();
-  const approved = records.filter(r => r.status === 'approved');
-
-  const loomTotals = {};
-  approved.forEach(r => {
-    const code = r.machine?.machine_code || r.machine_id_raw || 'Other';
-    loomTotals[code] = (loomTotals[code] || 0) + (Number(r.production_quantity) || 0);
+    renderChart();
+    window.addEventListener('themeChanged', renderChart);
   });
 
-  const labels = Object.keys(loomTotals);
-  const data = Object.values(loomTotals);
-
-  const isDark = document.body.classList.contains("dark-theme") || document.documentElement.classList.contains("dark-theme");
-  const barColor = isDark ? '#3b82f6' : '#18181b';
-  const textColor = isDark ? '#a1a1aa' : '#71717a';
-  const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
-
-  miniLoomChartInstance = new window.Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: labels.length > 0 ? labels : ['L-01', 'L-03', 'L-12'],
-      datasets: [{
-        label: 'Approved Metres Produced',
-        data: data.length > 0 ? data : [380, 310, 420],
-        backgroundColor: barColor,
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        y: { 
-          beginAtZero: true, 
-          grid: { color: gridColor },
-          ticks: { color: textColor }
-        },
-        x: { 
-          grid: { display: false },
-          ticks: { color: textColor }
-        }
-      }
+  function renderChart() {
+    const totals = {};
+    for (const r of metrics.approved7d) {
+      if ((r.production_unit || 'metres') !== 'metres') continue;
+      const code = (r.machine && r.machine.machine_code) || 'Unknown';
+      totals[code] = (totals[code] || 0) + (Number(r.production_quantity) || 0);
     }
-  });
-}
+    const labels = Object.keys(totals).sort();
+    $('chartEmpty').classList.toggle('hidden', labels.length > 0);
+    window.AplydCharts.bar('loomChart', labels, labels.map(l => totals[l]), { label: 'Metres' });
+  }
+})();

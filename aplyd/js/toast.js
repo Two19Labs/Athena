@@ -1,32 +1,34 @@
-// Lightweight toast helper shared across pages.
-// Exposed on window so each page's script (which redeclares its own
-// top-level consts) doesn't clash with this file.
+// Lightweight toast notifications. Use window.toast.show(message, type)
+// where type is "info" | "success" | "warning" | "error".
 (function () {
   let containerEl = null;
 
   function ensureContainer() {
     if (containerEl && document.body.contains(containerEl)) return containerEl;
-    containerEl = document.createElement("div");
-    containerEl.className = "toast-container";
+    containerEl = document.createElement('div');
+    containerEl.className = 'toast-container';
+    containerEl.setAttribute('role', 'status');
+    containerEl.setAttribute('aria-live', 'polite');
     document.body.appendChild(containerEl);
     return containerEl;
   }
 
-  window.showToast = function (message, type) {
+  function show(message, type) {
     if (!message) return;
     const container = ensureContainer();
-    const toast = document.createElement("div");
-    toast.className = "toast toast-" + (type || "info");
-    toast.textContent = message;
-    container.appendChild(toast);
-
-    requestAnimationFrame(() => toast.classList.add("toast-visible"));
-
-    const lifetime = type === "error" ? 5500 : 3500;
+    const el = document.createElement('div');
+    el.className = 'toast toast-' + (type || 'info');
+    el.textContent = message;
+    container.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('toast-visible'));
+    const lifetime = type === 'error' ? 6500 : 4000;
     setTimeout(() => {
-      toast.classList.remove("toast-visible");
-      toast.classList.add("toast-leaving");
-      setTimeout(() => toast.remove(), 250);
+      el.classList.remove('toast-visible');
+      el.classList.add('toast-leaving');
+      setTimeout(() => el.remove(), 250);
     }, lifetime);
-  };
+  }
+
+  window.toast = { show };
+  window.showToast = show;
 })();

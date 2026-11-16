@@ -1,0 +1,184 @@
+{
+  "sample": "form-10-faded-torn",
+  "condition": "Faded pencil-like writing and a torn bottom corner (remarks lost)",
+  "http_status": 200,
+  "latency_ms": 58982,
+  "response": {
+    "success": true,
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "latency_ms": 58980,
+    "attempts": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.8-flash",
+        "ok": false,
+        "ms": 55002,
+        "error": "The AI model took too long to respond."
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "ok": true,
+        "ms": 3978
+      }
+    ],
+    "data": {
+      "schema_version": "2.0",
+      "overall_status": "ready_for_approval",
+      "image_issues": [],
+      "fields": {
+        "machine": {
+          "value": "L-08",
+          "raw_value": "L-08",
+          "status": "read",
+          "reason": null
+        },
+        "production_date": {
+          "value": "2026-11-10",
+          "raw_value": "10/11/2026",
+          "status": "read",
+          "reason": null
+        },
+        "shift": {
+          "value": "E",
+          "raw_value": "E",
+          "status": "read",
+          "reason": null
+        },
+        "production_quantity": {
+          "value": 214,
+          "raw_value": "214 m",
+          "status": "read",
+          "reason": null
+        },
+        "production_unit": {
+          "value": "metres",
+          "raw_value": "m",
+          "status": "read",
+          "reason": null
+        },
+        "material_reference": {
+          "value": "Selvedge Drill",
+          "raw_value": "Selvedge Drill",
+          "status": "read",
+          "reason": null
+        },
+        "batch_reference": {
+          "value": "DRL-14-207",
+          "raw_value": "DRL-14-207",
+          "status": "read",
+          "reason": null
+        },
+        "defects_count": {
+          "value": 4,
+          "raw_value": "4",
+          "status": "read",
+          "reason": null
+        },
+        "defect_details": {
+          "value": "Broken pick",
+          "raw_value": "Broken pick",
+          "status": "read",
+          "reason": null
+        },
+        "downtime_minutes": {
+          "value": 60,
+          "raw_value": "60 min",
+          "status": "read",
+          "reason": null
+        },
+        "downtime_reason": {
+          "value": "Shuttle replacement",
+          "raw_value": "Shuttle replacement",
+          "status": "read",
+          "reason": null
+        },
+        "remarks": {
+          "value": null,
+          "raw_value": null,
+          "status": "missing",
+          "reason": null
+        }
+      }
+    },
+    "model_output": {
+      "is_production_form": true,
+      "image_issues": [],
+      "fields": {
+        "machine": {
+          "value": "L-08",
+          "raw_value": "L-08",
+          "status": "read",
+          "reason": null
+        },
+        "production_date": {
+          "value": "2026-11-10",
+          "raw_value": "10/11/2026",
+          "status": "read",
+          "reason": null
+        },
+        "shift": {
+          "value": "E",
+          "raw_value": "E",
+          "status": "read",
+          "reason": null
+        },
+        "production_quantity": {
+          "value": 214,
+          "raw_value": "214 m",
+          "status": "read",
+          "reason": null
+        },
+        "production_unit": {
+          "value": "m",
+          "raw_value": "m",
+          "status": "read",
+          "reason": null
+        },
+        "material_reference": {
+          "value": "Selvedge Drill",
+          "raw_value": "Selvedge Drill",
+          "status": "read",
+          "reason": null
+        },
+        "batch_reference": {
+          "value": "DRL-14-207",
+          "raw_value": "DRL-14-207",
+          "status": "read",
+          "reason": null
+        },
+        "defects_count": {
+          "value": 4,
+          "raw_value": "4",
+          "status": "read",
+          "reason": null
+        },
+        "defect_details": {
+          "value": "Broken pick",
+          "raw_value": "Broken pick",
+          "status": "read",
+          "reason": null
+        },
+        "downtime_minutes": {
+          "value": 60,
+          "raw_value": "60 min",
+          "status": "read",
+          "reason": null
+        },
+        "downtime_reason": {
+          "value": "Shuttle replacement",
+          "raw_value": "Shuttle replacement",
+          "status": "read",
+          "reason": null
+        },
+        "remarks": {
+          "value": null,
+          "raw_value": null,
+          "status": "missing",
+          "reason": null
+        }
+      }
+    }
+  }
+}

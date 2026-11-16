@@ -1,0 +1,97 @@
+{
+  "description": "Synthetic shop-floor form photos rendered by tests/generate-samples.js. Handwriting is simulated with handwriting fonts; conditions (skew, low light, glare, stains, tears, blanks, ambiguous digits) are simulated with image effects. Replace or extend with real photographed forms for a true field evaluation: add an image to aplyd/assets/samples/ and an entry here.",
+  "samples": [
+    {
+      "id": "form-01-clean",
+      "condition": "Clean, well-lit, flat",
+      "layout": "standard",
+      "truth": { "machine": "L-12", "production_date": "2026-11-14", "shift": "M", "production_quantity": 612, "production_unit": "metres", "material_reference": "Combed Poplin 40s", "batch_reference": "POP-40-881", "defects_count": 0, "defect_details": null, "downtime_minutes": 20, "downtime_reason": "Beam knotting", "remarks": "Smooth run" },
+      "expect": {}
+    },
+    {
+      "id": "form-02-skewed",
+      "condition": "Photographed at an angle (perspective + 11° rotation)",
+      "layout": "standard",
+      "effects": ["skew"],
+      "truth": { "machine": "L-03", "production_date": "2026-11-14", "shift": "E", "production_quantity": 318.5, "production_unit": "metres", "material_reference": "Denim 3/1", "batch_reference": "DEN-26-120", "defects_count": 3, "defect_details": "Reed marks", "downtime_minutes": 45, "downtime_reason": "Warp break repair", "remarks": null },
+      "expect": { "blank": ["remarks"] }
+    },
+    {
+      "id": "form-03-low-light",
+      "condition": "Night shift, dim light with noise",
+      "layout": "standard",
+      "effects": ["dark"],
+      "truth": { "machine": "L-07", "production_date": "2026-11-13", "shift": "N", "production_quantity": 540, "production_unit": "metres", "material_reference": "Sheeting 30s", "batch_reference": "SHT-30-081", "defects_count": 1, "defect_details": "Thick place", "downtime_minutes": 30, "downtime_reason": "Lubrication", "remarks": null },
+      "expect": { "blank": ["remarks"] }
+    },
+    {
+      "id": "form-04-glare",
+      "condition": "Overhead lamp glare across the top half",
+      "layout": "standard",
+      "effects": ["glare"],
+      "truth": { "machine": "L-01", "production_date": "2026-11-13", "shift": "M", "production_quantity": 402, "production_unit": "metres", "material_reference": "Cotton Cambric", "batch_reference": "CMB-60-022", "defects_count": 2, "defect_details": "Oil spots", "downtime_minutes": 35, "downtime_reason": "Nozzle cleaning", "remarks": "Check nozzle 4" },
+      "expect": {}
+    },
+    {
+      "id": "form-05-ambiguous-qty",
+      "condition": "Quantity first digit is written so it could be 3 or 8",
+      "layout": "standard",
+      "effects": ["ambiguous_qty"],
+      "truth": { "machine": "L-12", "production_date": "2026-11-12", "shift": "M", "production_quantity": 350, "production_unit": "metres", "material_reference": "Combed Poplin 40s", "batch_reference": "POP-40-880", "defects_count": 1, "defect_details": "Weft slub", "downtime_minutes": 20, "downtime_reason": "Loom cleaning", "remarks": null },
+      "expect": { "flag": ["production_quantity"], "blank": ["remarks"] }
+    },
+    {
+      "id": "form-06-oil-stain",
+      "condition": "Oil stain over the downtime reason",
+      "layout": "standard",
+      "effects": ["stain_downtime_reason"],
+      "truth": { "machine": "L-05", "production_date": "2026-11-12", "shift": "E", "production_quantity": 377, "production_unit": "metres", "material_reference": "Linen Blend", "batch_reference": "LIN-55-034", "defects_count": 1, "defect_details": "Float", "downtime_minutes": 90, "downtime_reason": "Motor overheating", "remarks": null },
+      "expect": { "flag": ["downtime_reason"], "blank": ["remarks"] }
+    },
+    {
+      "id": "form-07-blank-and-zero",
+      "condition": "Batch left blank; defects written as an explicit 0",
+      "layout": "standard",
+      "truth": { "machine": "L-10", "production_date": "2026-11-11", "shift": "M", "production_quantity": 590, "production_unit": "metres", "material_reference": "Cotton Satin 50s", "batch_reference": null, "defects_count": 0, "defect_details": null, "downtime_minutes": 0, "downtime_reason": null, "remarks": "Batch tag missing" },
+      "expect": { "blank": ["batch_reference", "defect_details", "downtime_reason"] }
+    },
+    {
+      "id": "form-08-unknown-loom",
+      "condition": "Loom number not in the loom master (L-19)",
+      "layout": "standard",
+      "truth": { "machine": "L-19", "production_date": "2026-11-11", "shift": "N", "production_quantity": 455, "production_unit": "metres", "material_reference": "Voile 60s", "batch_reference": "VOI-60-011", "defects_count": 2, "defect_details": "Weft slub", "downtime_minutes": 25, "downtime_reason": "Pirn change", "remarks": null },
+      "expect": { "invalid": ["machine"], "blank": ["remarks"] }
+    },
+    {
+      "id": "form-09-ledger-layout",
+      "condition": "Different form layout (horizontal ledger), written shift name, short date, downtime in hours",
+      "layout": "ledger",
+      "truth": { "machine": "L-11", "production_date": "2026-11-10", "shift": "N", "production_quantity": 421, "production_unit": "metres", "material_reference": "Yarn Dyed Check", "batch_reference": "YDC-22-019", "defects_count": 1, "defect_details": "Colour bleed", "downtime_minutes": 75, "downtime_reason": "Beam change", "remarks": null },
+      "expect": { "blank": ["remarks"] },
+      "written": { "production_date": "10-11-26", "shift": "Night", "downtime_minutes": "1 hr 15 min" }
+    },
+    {
+      "id": "form-10-faded-torn",
+      "condition": "Faded pencil-like writing and a torn bottom corner (remarks lost)",
+      "layout": "standard",
+      "effects": ["faded", "torn"],
+      "truth": { "machine": "L-08", "production_date": "2026-11-10", "shift": "E", "production_quantity": 214, "production_unit": "metres", "material_reference": "Selvedge Drill", "batch_reference": "DRL-14-207", "defects_count": 4, "defect_details": "Broken pick", "downtime_minutes": 60, "downtime_reason": "Shuttle replacement", "remarks": null },
+      "expect": { "blank": ["remarks"] }
+    },
+    {
+      "id": "form-11-sideways",
+      "condition": "Photo taken sideways (rotated 90°), rough handwriting",
+      "layout": "standard",
+      "effects": ["rotate90", "rough_hand"],
+      "truth": { "machine": "L-06", "production_date": "2026-11-09", "shift": "M", "production_quantity": 488, "production_unit": "metres", "material_reference": "Voile 60s", "batch_reference": "VOI-60-009", "defects_count": 2, "defect_details": "Weft slub", "downtime_minutes": 40, "downtime_reason": "Lubrication", "remarks": null },
+      "expect": { "blank": ["remarks"] }
+    },
+    {
+      "id": "form-12-not-a-form",
+      "condition": "Close-up of woven fabric, no form in frame (operator mistake)",
+      "layout": "none",
+      "truth": null,
+      "expect": { "unreadable": true }
+    }
+  ]
+}

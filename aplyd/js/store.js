@@ -1,567 +1,588 @@
 /**
- * APLYD - Data Store & Persistence Engine
- * Supports Dual-Mode Operation:
- * 1. Cloud Mode (Supabase PostgreSQL + Storage + Edge Functions)
- * 2. Autonomous Local Mode (IndexedDB / LocalStorage) with full relational integrity
+ * APLYD - Browser data store.
+ *
+ * Prototype persistence (documented assumption): structured records live in
+ * localStorage, form photos live in IndexedDB (photos are too large for
+ * localStorage). Each browser therefore has its own data set. The production
+ * design (shared Postgres + object storage) is described in docs/.
  */
+(function () {
+  const Rules = window.AplydRules;
+  const DB_KEY = 'aplyd_db_v2';
+  const LEGACY_KEYS = ['aplyd_local_db_v1'];
+  const SESSION_KEY = 'aplyd_session_v2';
 
-const SEED_MACHINES = [
-  { id: 'a0000000-0000-0000-0000-000000000001', machine_code: 'L-01', name: 'Loom 01 (Air-Jet)', machine_type: 'Air-Jet', default_unit: 'metres', min_expected_quantity: 150, max_expected_quantity: 750, is_active: true, notes: 'Shed A - Fine Cotton Cambric' },
-  { id: 'a0000000-0000-0000-0000-000000000002', machine_code: 'L-02', name: 'Loom 02 (Air-Jet)', machine_type: 'Air-Jet', default_unit: 'metres', min_expected_quantity: 150, max_expected_quantity: 750, is_active: true, notes: 'Shed A - Poplin 40s' },
-  { id: 'a0000000-0000-0000-0000-000000000003', machine_code: 'L-03', name: 'Loom 03 (Rapier)', machine_type: 'Rapier', default_unit: 'metres', min_expected_quantity: 100, max_expected_quantity: 500, is_active: true, notes: 'Shed B - Heavy Twill / Denim 3/1' },
-  { id: 'a0000000-0000-0000-0000-000000000004', machine_code: 'L-04', name: 'Loom 04 (Rapier)', machine_type: 'Rapier', default_unit: 'metres', min_expected_quantity: 100, max_expected_quantity: 500, is_active: true, notes: 'Shed B - Oxford Shirting' },
-  { id: 'a0000000-0000-0000-0000-000000000005', machine_code: 'L-05', name: 'Loom 05 (Rapier)', machine_type: 'Rapier', default_unit: 'metres', min_expected_quantity: 100, max_expected_quantity: 550, is_active: true, notes: 'Shed B - Linen Blend' },
-  { id: 'a0000000-0000-0000-0000-000000000006', machine_code: 'L-06', name: 'Loom 06 (Air-Jet)', machine_type: 'Air-Jet', default_unit: 'metres', min_expected_quantity: 150, max_expected_quantity: 750, is_active: true, notes: 'Shed A - Voile 60s' },
-  { id: 'a0000000-0000-0000-0000-000000000007', machine_code: 'L-07', name: 'Loom 07 (Air-Jet)', machine_type: 'Air-Jet', default_unit: 'metres', min_expected_quantity: 150, max_expected_quantity: 750, is_active: true, notes: 'Shed A - Sheeting 30s' },
-  { id: 'a0000000-0000-0000-0000-000000000008', machine_code: 'L-08', name: 'Loom 08 (Shuttle)', machine_type: 'Shuttle', default_unit: 'metres', min_expected_quantity: 50, max_expected_quantity: 300, is_active: true, notes: 'Shed C - Selvedge Drill' },
-  { id: 'a0000000-0000-0000-0000-000000000009', machine_code: 'L-09', name: 'Loom 09 (Shuttle)', machine_type: 'Shuttle', default_unit: 'metres', min_expected_quantity: 50, max_expected_quantity: 300, is_active: true, notes: 'Shed C - Heavy Duck Canvas' },
-  { id: 'a0000000-0000-0000-0000-000000000010', machine_code: 'L-10', name: 'Loom 10 (Air-Jet)', machine_type: 'Air-Jet', default_unit: 'metres', min_expected_quantity: 150, max_expected_quantity: 750, is_active: true, notes: 'Shed A - Cotton Satin 50s' },
-  { id: 'a0000000-0000-0000-0000-000000000011', machine_code: 'L-11', name: 'Loom 11 (Rapier)', machine_type: 'Rapier', default_unit: 'metres', min_expected_quantity: 100, max_expected_quantity: 550, is_active: true, notes: 'Shed B - Yarn Dyed Check' },
-  { id: 'a0000000-0000-0000-0000-000000000012', machine_code: 'L-12', name: 'Loom 12 (Air-Jet High Speed)', machine_type: 'Air-Jet', default_unit: 'metres', min_expected_quantity: 150, max_expected_quantity: 800, is_active: true, notes: 'Shed A - Premium Combed Poplin' }
-];
+  const SEED_MACHINES = [
+    ['01', 'Air-Jet', 150, 750, 'Shed A - Fine Cotton Cambric'],
+    ['02', 'Air-Jet', 150, 750, 'Shed A - Poplin 40s'],
+    ['03', 'Rapier', 100, 500, 'Shed B - Heavy Twill / Denim 3/1'],
+    ['04', 'Rapier', 100, 500, 'Shed B - Oxford Shirting'],
+    ['05', 'Rapier', 100, 550, 'Shed B - Linen Blend'],
+    ['06', 'Air-Jet', 150, 750, 'Shed A - Voile 60s'],
+    ['07', 'Air-Jet', 150, 750, 'Shed A - Sheeting 30s'],
+    ['08', 'Shuttle', 50, 300, 'Shed C - Selvedge Drill'],
+    ['09', 'Shuttle', 50, 300, 'Shed C - Heavy Duck Canvas'],
+    ['10', 'Air-Jet', 150, 750, 'Shed A - Cotton Satin 50s'],
+    ['11', 'Rapier', 100, 550, 'Shed B - Yarn Dyed Check'],
+    ['12', 'Air-Jet', 150, 800, 'Shed A - Premium Combed Poplin']
+  ].map(([n, type, min, max, notes]) => ({
+    id: `mach-${n}`, machine_code: `L-${n}`, name: `Loom ${n} (${type})`, machine_type: type,
+    default_unit: 'metres', min_expected_quantity: min, max_expected_quantity: max, is_active: true, notes
+  }));
 
-const SEED_SHIFTS = [
-  { id: 'b0000000-0000-0000-0000-000000000001', shift_code: 'M', name: 'Morning Shift', start_time: '06:00', end_time: '14:00', duration_minutes: 480, is_active: true },
-  { id: 'b0000000-0000-0000-0000-000000000002', shift_code: 'E', name: 'Evening Shift', start_time: '14:00', end_time: '22:00', duration_minutes: 480, is_active: true },
-  { id: 'b0000000-0000-0000-0000-000000000003', shift_code: 'N', name: 'Night Shift', start_time: '22:00', end_time: '06:00', duration_minutes: 480, is_active: true }
-];
+  const SEED_SHIFTS = [
+    { id: 'shift-m', shift_code: 'M', name: 'Morning Shift', start_time: '06:00', end_time: '14:00', is_active: true },
+    { id: 'shift-e', shift_code: 'E', name: 'Evening Shift', start_time: '14:00', end_time: '22:00', is_active: true },
+    { id: 'shift-n', shift_code: 'N', name: 'Night Shift', start_time: '22:00', end_time: '06:00', is_active: true }
+  ];
 
-const SEED_PROFILES = [
-  { id: 'c0000000-0000-0000-0000-000000000001', full_name: 'Ramesh Kumar (Operator)', role: 'operator', is_active: true, email: 'ramesh.operator@aplyd.demo' },
-  { id: 'c0000000-0000-0000-0000-000000000002', full_name: 'Priya Sharma (Supervisor)', role: 'supervisor', is_active: true, email: 'priya.supervisor@aplyd.demo' },
-  { id: 'c0000000-0000-0000-0000-000000000003', full_name: 'Vikram Mehta (Plant Admin)', role: 'admin', is_active: true, email: 'vikram.admin@aplyd.demo' }
-];
+  const PROFILES = [
+    { id: 'user-operator', full_name: 'Ramesh Kumar', role: 'operator' },
+    { id: 'user-supervisor', full_name: 'Priya Sharma', role: 'supervisor' },
+    { id: 'user-admin', full_name: 'Vikram Mehta', role: 'admin' }
+  ];
 
-// Seed Historical Records for Day 1 Testing
-const SEED_RECORDS = [
-  {
-    id: 'd0000000-0000-0000-0000-000000000001',
-    record_number: 'PR-2026-0001',
-    production_form_id: 'f0000000-0000-0000-0000-000000000001',
-    machine_id: 'a0000000-0000-0000-0000-000000000012',
-    machine_id_raw: 'L-12',
-    shift_id: 'b0000000-0000-0000-0000-000000000001',
-    shift_raw: 'M',
-    production_date: '2026-11-15',
-    production_date_raw: '15/11/2026',
-    production_quantity: 420.0,
-    production_unit: 'metres',
-    material_reference: 'Cotton 40s Cambric',
-    batch_reference: 'LOT-C40-882',
-    defects_count: 0,
-    defect_details: null,
-    downtime_minutes: 0,
-    downtime_reason: null,
-    remarks: 'Smooth operation across shift',
-    status: 'approved',
-    validation_status: 'pass',
-    submitted_by: 'c0000000-0000-0000-0000-000000000001',
-    reviewed_by: 'c0000000-0000-0000-0000-000000000002',
-    reviewed_at: '2026-11-15T14:45:00Z',
-    approval_note: 'Verified against loom counter',
-    erp_reference: 'APLYD-ERP-2026-1042',
-    created_at: '2026-11-15T14:10:00Z'
-  },
-  {
-    id: 'd0000000-0000-0000-0000-000000000002',
-    record_number: 'PR-2026-0002',
-    production_form_id: 'f0000000-0000-0000-0000-000000000002',
-    machine_id: 'a0000000-0000-0000-0000-000000000003',
-    machine_id_raw: 'Loom 03',
-    shift_id: 'b0000000-0000-0000-0000-000000000001',
-    shift_raw: 'Morning',
-    production_date: '2026-11-15',
-    production_date_raw: '15/11/2026',
-    production_quantity: 310.5,
-    production_unit: 'metres',
-    material_reference: 'Heavy Denim 3/1',
-    batch_reference: 'DEN-2026-19',
-    defects_count: 3,
-    defect_details: 'Weft slub on selvedge',
-    downtime_minutes: 45,
-    downtime_reason: 'Warp thread replenishment',
-    remarks: 'Batch completed mid-shift',
-    status: 'approved',
-    validation_status: 'pass',
-    submitted_by: 'c0000000-0000-0000-0000-000000000001',
-    reviewed_by: 'c0000000-0000-0000-0000-000000000002',
-    reviewed_at: '2026-11-15T15:00:00Z',
-    approval_note: 'Downtime verified with maintenance log',
-    erp_reference: 'APLYD-ERP-2026-1043',
-    created_at: '2026-11-15T14:15:00Z'
-  },
-  {
-    id: 'd0000000-0000-0000-0000-000000000003',
-    record_number: 'PR-2026-0003',
-    production_form_id: 'f0000000-0000-0000-0000-000000000003',
-    machine_id: 'a0000000-0000-0000-0000-000000000001',
-    machine_id_raw: 'L-01',
-    shift_id: 'b0000000-0000-0000-0000-000000000002',
-    shift_raw: 'E',
-    production_date: '2026-11-15',
-    production_date_raw: '15/11/2026',
-    production_quantity: 380.0,
-    production_unit: 'metres',
-    material_reference: 'Cotton Poplin 40s',
-    batch_reference: 'POP-40-771',
-    defects_count: 5,
-    defect_details: 'Uneven weave, 2 oil spots',
-    downtime_minutes: 30,
-    downtime_reason: 'Lubrication & nozzle check',
-    remarks: 'Awaiting supervisor sign-off',
-    status: 'pending_review',
-    validation_status: 'warning',
-    submitted_by: 'c0000000-0000-0000-0000-000000000001',
-    reviewed_by: null,
-    reviewed_at: null,
-    approval_note: null,
-    erp_reference: null,
-    created_at: '2026-11-15T16:30:00Z'
+  function nowIso() { return new Date().toISOString(); }
+  function daysAgo(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return Rules.todayIso(d);
   }
-];
-
-class AplydStore {
-  constructor() {
-    this.storageKey = 'aplyd_local_db_v1';
-    this.sessionKey = 'aplyd_active_session';
-    this.init();
+  function uid(prefix) {
+    return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
-  init() {
-    let data = localStorage.getItem(this.storageKey);
-    if (!data) {
-      const initialDb = {
-        machines: SEED_MACHINES,
-        shifts: SEED_SHIFTS,
-        profiles: SEED_PROFILES,
-        production_forms: [],
-        production_records: SEED_RECORDS,
-        production_corrections: [],
-        production_alerts: [
-          {
-            id: 'alt-001',
-            production_record_id: 'd0000000-0000-0000-0000-000000000003',
-            alert_type: 'defect_threshold_exceeded',
-            severity: 'warning',
-            field_key: 'defects_count',
-            message: 'Defects count (5) is higher than normal shift baseline (<=2)',
-            status: 'active',
-            created_at: '2026-11-15T16:31:00Z'
-          }
-        ],
-        erp_submissions: [
-          {
-            id: 'erp-001',
-            production_record_id: 'd0000000-0000-0000-0000-000000000001',
-            idempotency_key: 'ERP-IDEMPOTENCY-d0000000-0000-0000-0000-000000000001',
-            request_payload: SEED_RECORDS[0],
-            response_payload: { status: 'ACKNOWLEDGED', erp_reference: 'APLYD-ERP-2026-1042' },
-            status: 'submitted',
-            attempt_count: 1,
-            external_reference: 'APLYD-ERP-2026-1042',
-            submitted_at: '2026-11-15T14:46:00Z'
-          },
-          {
-            id: 'erp-002',
-            production_record_id: 'd0000000-0000-0000-0000-000000000002',
-            idempotency_key: 'ERP-IDEMPOTENCY-d0000000-0000-0000-0000-000000000002',
-            request_payload: SEED_RECORDS[1],
-            response_payload: { status: 'ACKNOWLEDGED', erp_reference: 'APLYD-ERP-2026-1043' },
-            status: 'submitted',
-            attempt_count: 1,
-            external_reference: 'APLYD-ERP-2026-1043',
-            submitted_at: '2026-11-15T15:01:00Z'
-          }
-        ]
-      };
-      localStorage.setItem(this.storageKey, JSON.stringify(initialDb));
-    }
-
-    // Default session: Supervisor Priya Sharma
-    if (!sessionStorage.getItem(this.sessionKey)) {
-      sessionStorage.setItem(this.sessionKey, JSON.stringify(SEED_PROFILES[1]));
-    }
-  }
-
-  getDb() {
-    try {
-      return JSON.parse(localStorage.getItem(this.storageKey)) || {};
-    } catch {
-      return {};
-    }
-  }
-
-  saveDb(db) {
-    localStorage.setItem(this.storageKey, JSON.stringify(db));
-  }
-
-  // --- SESSION & PERSONA SWITCHER ---
-  getCurrentUser() {
-    try {
-      return JSON.parse(sessionStorage.getItem(this.sessionKey)) || SEED_PROFILES[1];
-    } catch {
-      return SEED_PROFILES[1];
-    }
-  }
-
-  switchUser(role) {
-    const db = this.getDb();
-    const profile = (db.profiles || SEED_PROFILES).find(p => p.role === role) || SEED_PROFILES[1];
-    sessionStorage.setItem(this.sessionKey, JSON.stringify(profile));
-    return profile;
-  }
-
-  // --- MASTER DATA ---
-  async getMachines() {
-    return this.getDb().machines || SEED_MACHINES;
-  }
-
-  async getShifts() {
-    return this.getDb().shifts || SEED_SHIFTS;
-  }
-
-  async saveMachine(machine) {
-    const db = this.getDb();
-    db.machines = db.machines || [];
-    if (!machine.id) {
-      machine.id = 'mach-' + Date.now();
-      db.machines.push(machine);
-    } else {
-      const idx = db.machines.findIndex(m => m.id === machine.id);
-      if (idx !== -1) db.machines[idx] = machine;
-    }
-    this.saveDb(db);
-    return machine;
-  }
-
-  async saveShift(shift) {
-    const db = this.getDb();
-    db.shifts = db.shifts || [];
-    if (!shift.id) {
-      shift.id = 'shift-' + Date.now();
-      db.shifts.push(shift);
-    } else {
-      const idx = db.shifts.findIndex(s => s.id === shift.id);
-      if (idx !== -1) db.shifts[idx] = shift;
-    }
-    this.saveDb(db);
-    return shift;
-  }
-
-  // --- PRODUCTION FORMS & EXTRACTION ---
-  async saveProductionForm(form) {
-    const db = this.getDb();
-    db.production_forms = db.production_forms || [];
-    if (!form.id) {
-      form.id = 'form-' + Date.now();
-      form.form_number = 'PF-2026-' + String(db.production_forms.length + 1).padStart(4, '0');
-      form.uploaded_at = new Date().toISOString();
-      db.production_forms.push(form);
-    } else {
-      const idx = db.production_forms.findIndex(f => f.id === form.id);
-      if (idx !== -1) db.production_forms[idx] = form;
-    }
-    this.saveDb(db);
-    return form;
-  }
-
-  async getFormBySha256(sha256) {
-    if (!sha256) return null;
-    const forms = this.getDb().production_forms || [];
-    return forms.find(f => f.file_sha256 === sha256) || null;
-  }
-
-  async getFormById(formId) {
-    const forms = this.getDb().production_forms || [];
-    return forms.find(f => f.id === formId) || null;
-  }
-
-  // --- PRODUCTION RECORDS ---
-  async getRecords(filters = {}) {
-    let records = this.getDb().production_records || [];
-    const machines = await this.getMachines();
-    const shifts = await this.getShifts();
-
-    // Attach machine and shift objects
-    records = records.map(r => ({
-      ...r,
-      machine: machines.find(m => m.id === r.machine_id) || { machine_code: r.machine_id_raw || 'Unknown', name: r.machine_id_raw || 'Unknown Loom' },
-      shift: shifts.find(s => s.id === r.shift_id) || { shift_code: r.shift_raw || 'N/A', name: r.shift_raw || 'N/A' }
-    }));
-
-    if (filters.status && filters.status !== 'all') {
-      records = records.filter(r => r.status === filters.status);
-    }
-    if (filters.machine_id) {
-      records = records.filter(r => r.machine_id === filters.machine_id);
-    }
-    if (filters.shift_id) {
-      records = records.filter(r => r.shift_id === filters.shift_id);
-    }
-    if (filters.date) {
-      records = records.filter(r => r.production_date === filters.date);
-    }
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      records = records.filter(r =>
-        (r.record_number && r.record_number.toLowerCase().includes(q)) ||
-        (r.machine && r.machine.machine_code.toLowerCase().includes(q)) ||
-        (r.material_reference && r.material_reference.toLowerCase().includes(q)) ||
-        (r.batch_reference && r.batch_reference.toLowerCase().includes(q))
-      );
-    }
-
-    // Sort descending by created_at
-    records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    return records;
-  }
-
-  async getRecordById(id) {
-    const records = await this.getRecords();
-    const record = records.find(r => r.id === id);
-    if (!record) return null;
-
-    const db = this.getDb();
-    record.corrections = (db.production_corrections || []).filter(c => c.production_record_id === id);
-    record.alerts = (db.production_alerts || []).filter(a => a.production_record_id === id);
-    record.form = (db.production_forms || []).find(f => f.id === record.production_form_id) || null;
-    record.erp_submission = (db.erp_submissions || []).find(e => e.production_record_id === id) || null;
-
-    return record;
-  }
-
-  async saveRecord(record) {
-    const db = this.getDb();
-    db.production_records = db.production_records || [];
-    if (!record.id) {
-      record.id = 'rec-' + Date.now();
-      record.record_number = 'PR-2026-' + String(db.production_records.length + 1).padStart(4, '0');
-      record.created_at = new Date().toISOString();
-      db.production_records.push(record);
-    } else {
-      const idx = db.production_records.findIndex(r => r.id === record.id);
-      if (idx !== -1) {
-        db.production_records[idx] = { ...db.production_records[idx], ...record, updated_at: new Date().toISOString() };
-      }
-    }
-    this.saveDb(db);
-    return record;
-  }
-
-  // --- AUDIT TRAIL / CORRECTION ENGINE ---
-  async correctField(recordId, fieldKey, newValue, reason = '') {
-    const db = this.getDb();
-    const recordIdx = (db.production_records || []).findIndex(r => r.id === recordId);
-    if (recordIdx === -1) throw new Error("Record not found");
-
-    const record = db.production_records[recordIdx];
-    const originalValue = record[fieldKey];
-
-    // Log append-only audit trail
-    const correction = {
-      id: 'corr-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
-      production_record_id: recordId,
-      field_key: fieldKey,
-      original_value: originalValue,
-      corrected_value: newValue,
-      reason: reason || 'Supervisor manual adjustment during verification',
-      changed_by: this.getCurrentUser().id,
-      changed_by_name: this.getCurrentUser().full_name,
-      changed_at: new Date().toISOString()
-    };
-
-    db.production_corrections = db.production_corrections || [];
-    db.production_corrections.push(correction);
-
-    // Update field value on record
-    record[fieldKey] = newValue;
-    record.updated_at = new Date().toISOString();
-
-    // Re-check validation
-    if (record.status === 'returned_for_correction') {
-      record.status = 'pending_review';
-    }
-
-    db.production_records[recordIdx] = record;
-    this.saveDb(db);
-
-    return { record, correction };
-  }
-
-  // --- APPROVAL WORKFLOW (ROLE RESTRICTED) ---
-  async approveRecord(recordId, approvalNote = '') {
-    const currentUser = this.getCurrentUser();
-    if (currentUser.role === 'operator') {
-      throw new Error("Permission Denied: Operators cannot approve production records. An authorized supervisor or admin must review.");
-    }
-
-    const db = this.getDb();
-    const recordIdx = (db.production_records || []).findIndex(r => r.id === recordId);
-    if (recordIdx === -1) throw new Error("Record not found");
-
-    const record = db.production_records[recordIdx];
-
-    // Hard blockers verification
-    if (!record.machine_id || !record.production_date || !record.shift_id || record.production_quantity === null || record.production_quantity === undefined) {
-      throw new Error("Validation Blocker: Cannot approve. Machine, Date, Shift, and Quantity are mandatory.");
-    }
-
-    if (Number(record.production_quantity) < 0) {
-      throw new Error("Validation Blocker: Production quantity cannot be negative.");
-    }
-
-    record.status = 'approved';
-    record.validation_status = 'pass';
-    record.reviewed_by = currentUser.id;
-    record.reviewed_by_name = currentUser.full_name;
-    record.reviewed_at = new Date().toISOString();
-    record.approval_note = approvalNote || 'Verified and approved for downstream ERP handoff';
-    record.updated_at = new Date().toISOString();
-
-    db.production_records[recordIdx] = record;
-    this.saveDb(db);
-
-    // Automatically trigger mock ERP submission on approval
-    const erpRes = await this.submitToErp(recordId);
-    if (erpRes && erpRes.erp_reference) {
-      record.erp_reference = erpRes.erp_reference;
-    }
-
-    return record;
-  }
-
-  async rejectRecord(recordId, rejectionReason = '') {
-    const currentUser = this.getCurrentUser();
-    if (currentUser.role === 'operator') {
-      throw new Error("Permission Denied: Operators cannot reject records.");
-    }
-    const db = this.getDb();
-    const recordIdx = (db.production_records || []).findIndex(r => r.id === recordId);
-    if (recordIdx === -1) throw new Error("Record not found");
-
-    db.production_records[recordIdx].status = 'rejected';
-    db.production_records[recordIdx].rejection_reason = rejectionReason || 'Rejected by supervisor';
-    db.production_records[recordIdx].reviewed_by = currentUser.id;
-    db.production_records[recordIdx].reviewed_at = new Date().toISOString();
-    this.saveDb(db);
-    return db.production_records[recordIdx];
-  }
-
-  async returnForCorrection(recordId, reason = '') {
-    const currentUser = this.getCurrentUser();
-    if (currentUser.role === 'operator') {
-      throw new Error("Permission Denied: Operators cannot return records.");
-    }
-    const db = this.getDb();
-    const recordIdx = (db.production_records || []).findIndex(r => r.id === recordId);
-    if (recordIdx === -1) throw new Error("Record not found");
-
-    db.production_records[recordIdx].status = 'returned_for_correction';
-    db.production_records[recordIdx].rejection_reason = reason || 'Returned to operator for clarification';
-    this.saveDb(db);
-    return db.production_records[recordIdx];
-  }
-
-  // --- DOWNSTREAM MOCK ERP HANDOFF ---
-  async submitToErp(recordId, simulateFailure = false) {
-    const db = this.getDb();
-    const record = (db.production_records || []).find(r => r.id === recordId);
-    if (!record) throw new Error("Record not found");
-    if (record.status !== 'approved') {
-      throw new Error("Cannot submit to ERP: Only approved records can be dispatched.");
-    }
-
-    const idempotencyKey = `ERP-IDEMPOTENCY-${recordId}`;
-    db.erp_submissions = db.erp_submissions || [];
-
-    // Idempotency check: if already submitted, replay existing reference
-    const existing = db.erp_submissions.find(e => e.idempotency_key === idempotencyKey);
-    if (existing && existing.status === 'submitted') {
+  /** A week of approved history so the dashboard and register are not empty. Clearly marked as seeded. */
+  function seedHistory() {
+    const rows = [
+      [6, '12', 'm', 612, 'Combed Poplin 40s', 'POP-40-861', 1, 'Weft slub near selvedge', 20, 'Beam knotting'],
+      [6, '03', 'e', 318, 'Denim 3/1', 'DEN-26-112', 3, 'Reed marks', 45, 'Warp break repair'],
+      [5, '07', 'm', 540, 'Sheeting 30s', 'SHT-30-077', 0, null, 0, null],
+      [5, '01', 'n', 402, 'Cotton Cambric', 'CMB-60-019', 2, 'Oil spot x2', 35, 'Lubrication'],
+      [4, '12', 'e', 655, 'Combed Poplin 40s', 'POP-40-862', 0, null, 15, 'Pirn change'],
+      [4, '08', 'm', 214, 'Selvedge Drill', 'DRL-14-203', 4, 'Float, broken pick', 60, 'Shuttle replacement'],
+      [3, '05', 'n', 377, 'Linen Blend', 'LIN-55-031', 1, 'Thick place', 30, 'Weft jam'],
+      [3, '10', 'm', 590, 'Cotton Satin 50s', 'SAT-50-090', 0, null, 10, 'Cleaning'],
+      [2, '03', 'm', 296, 'Denim 3/1', 'DEN-26-113', 2, 'Reed marks', 50, 'Warp break repair'],
+      [2, '11', 'e', 421, 'Yarn Dyed Check', 'YDC-22-014', 1, 'Colour bleed', 25, 'Beam knotting'],
+      [1, '12', 'm', 634, 'Combed Poplin 40s', 'POP-40-863', 0, null, 0, null],
+      [1, '06', 'n', 488, 'Voile 60s', 'VOI-60-008', 2, 'Weft slub', 40, 'Lubrication']
+    ];
+    return rows.map((r, i) => {
+      const [ago, loom, sh, qty, mat, batch, defects, defDetails, dt, dtReason] = r;
+      const date = daysAgo(ago);
+      const reviewedAt = `${date}T16:${String(10 + i).padStart(2, '0')}:00.000Z`;
       return {
-        success: true,
-        message: "Record previously submitted to ERP (Idempotent replay)",
-        erp_reference: existing.external_reference,
-        is_replay: true
+        id: `seed-${String(i + 1).padStart(3, '0')}`,
+        record_number: `PR-${date.slice(0, 4)}-${String(i + 1).padStart(4, '0')}`,
+        seed: true,
+        form_id: null,
+        machine_id: `mach-${loom}`,
+        shift_id: `shift-${sh}`,
+        production_date: date,
+        production_quantity: qty,
+        production_unit: 'metres',
+        material_reference: mat,
+        batch_reference: batch,
+        defects_count: defects,
+        defect_details: defDetails,
+        downtime_minutes: dt,
+        downtime_reason: dtReason,
+        remarks: null,
+        final_payload: null,
+        status: 'approved',
+        submitted_by: 'user-operator', submitted_by_name: 'Ramesh Kumar',
+        reviewed_by: 'user-supervisor', reviewed_by_name: 'Priya Sharma',
+        reviewed_at: reviewedAt,
+        approval_note: 'Seeded history record',
+        erp_status: 'submitted',
+        erp_reference: Rules.erpReference(`APLYD-seed-${i + 1}`, reviewedAt),
+        erp_attempts: 1,
+        created_at: `${date}T15:00:00.000Z`
+      };
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // IndexedDB for photos
+  // ---------------------------------------------------------------------------
+  const imageDb = {
+    _db: null,
+    open() {
+      if (this._db) return Promise.resolve(this._db);
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error('This browser does not support IndexedDB, so photos cannot be stored.'));
+        const req = indexedDB.open('aplyd_images', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('images');
+        req.onsuccess = () => { this._db = req.result; resolve(this._db); };
+        req.onerror = () => reject(req.error || new Error('Could not open image storage.'));
+      });
+    },
+    async put(key, blob) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite');
+        tx.objectStore('images').put(blob, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error('Could not save photo (storage may be full).'));
+      });
+    },
+    async get(key) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction('images', 'readonly').objectStore('images').get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async clear() {
+      const db = await this.open();
+      return new Promise((resolve) => {
+        const tx = db.transaction('images', 'readwrite');
+        tx.objectStore('images').clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Store
+  // ---------------------------------------------------------------------------
+  class AplydStore {
+    constructor() {
+      LEGACY_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (_) { /* ignore */ } });
+      if (!this._read()) this._write(this._freshDb());
+    }
+
+    _freshDb() {
+      return {
+        version: 2,
+        machines: SEED_MACHINES.map(m => ({ ...m })),
+        shifts: SEED_SHIFTS.map(s => ({ ...s })),
+        forms: [],
+        records: seedHistory(),
+        corrections: []
       };
     }
 
-    if (simulateFailure) {
-      const failedEntry = {
-        id: 'erp-' + Date.now(),
-        production_record_id: recordId,
-        idempotency_key: idempotencyKey,
-        request_payload: record,
-        response_payload: { error: 'ERP Gateway Timeout 504' },
-        status: 'failed',
-        attempt_count: (existing?.attempt_count || 0) + 1,
-        last_error: 'ERP Gateway Timeout 504',
-        submitted_at: new Date().toISOString()
-      };
-      if (existing) {
-        Object.assign(existing, failedEntry);
-      } else {
-        db.erp_submissions.push(failedEntry);
+    _read() {
+      try {
+        const db = JSON.parse(localStorage.getItem(DB_KEY));
+        return db && db.version === 2 ? db : null;
+      } catch (_) {
+        return null;
       }
-      this.saveDb(db);
-      throw new Error("ERP Gateway Timeout 504: Simulated destination server unavailable");
     }
 
-    // Success dispatch
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const erpRef = `APLYD-ERP-${new Date().getFullYear()}-${randomSuffix}`;
-    const submissionEntry = {
-      id: 'erp-' + Date.now(),
-      production_record_id: recordId,
-      idempotency_key: idempotencyKey,
-      request_payload: record,
-      response_payload: {
-        status: 'ACKNOWLEDGED',
-        erp_reference: erpRef,
-        message: 'Textile shop-floor production telemetry ingested into manufacturing ledger.'
-      },
-      status: 'submitted',
-      attempt_count: (existing?.attempt_count || 0) + 1,
-      external_reference: erpRef,
-      submitted_at: new Date().toISOString()
-    };
+    _db() { return this._read() || this._freshDb(); }
 
-    if (existing) {
-      Object.assign(existing, submissionEntry);
-    } else {
-      db.erp_submissions.push(submissionEntry);
+    _write(db) {
+      try {
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+      } catch (err) {
+        throw new Error('Browser storage is full. Export the register and use "Reset demo data" on the sign-in page.');
+      }
     }
 
-    // Stamp erp_reference on record
-    record.erp_reference = erpRef;
-    this.saveDb(db);
+    async resetDemo() {
+      this._write(this._freshDb());
+      try { await imageDb.clear(); } catch (_) { /* ignore */ }
+    }
 
-    return {
-      success: true,
-      message: "Production record successfully ingested by Mock ERP endpoint",
-      erp_reference: erpRef,
-      is_replay: false
-    };
+    // --- Session / personas (prototype has no real authentication) ---
+    getCurrentUser() {
+      try {
+        const u = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+        if (u && PROFILES.some(p => p.id === u.id)) return u;
+      } catch (_) { /* ignore */ }
+      return PROFILES[1];
+    }
+
+    switchUser(role) {
+      const profile = PROFILES.find(p => p.role === role) || PROFILES[1];
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(profile));
+      return profile;
+    }
+
+    can(action, record) {
+      const u = this.getCurrentUser();
+      const reviewer = u.role === 'supervisor' || u.role === 'admin';
+      switch (action) {
+        case 'review': return reviewer && record && record.status === 'pending_review';
+        case 'edit':
+          if (!record) return false;
+          if (reviewer) return record.status === 'pending_review';
+          return u.role === 'operator' && record.status === 'returned_for_correction' && record.submitted_by === u.id;
+        case 'resubmit': return u.role === 'operator' && record && record.status === 'returned_for_correction' && record.submitted_by === u.id;
+        case 'dispatch_erp': return reviewer && record && record.status === 'approved';
+        case 'manage_master': return u.role === 'admin';
+        default: return false;
+      }
+    }
+
+    // --- Master data ---
+    async getMachines() { return this._db().machines; }
+    async getShifts() { return this._db().shifts; }
+
+    async saveMachine(machine) {
+      if (!this.can('manage_master')) throw new Error('Only an admin can change loom master data.');
+      const db = this._db();
+      const code = Rules.normalizeMachineCode(machine.machine_code);
+      if (!code) throw new Error('Loom code must contain a number, e.g. L-13.');
+      if (!machine.name || !String(machine.name).trim()) throw new Error('Loom name is required.');
+      const min = Number(machine.min_expected_quantity);
+      const max = Number(machine.max_expected_quantity);
+      if (!(min >= 0) || !(max > 0) || min >= max) throw new Error('Expected range must satisfy 0 <= min < max.');
+      if (db.machines.some(m => m.machine_code === code && m.id !== machine.id)) throw new Error(`Loom ${code} already exists.`);
+      const clean = { ...machine, machine_code: code, name: String(machine.name).trim(), min_expected_quantity: min, max_expected_quantity: max, default_unit: machine.default_unit || 'metres' };
+      if (!clean.id) {
+        clean.id = uid('mach');
+        db.machines.push(clean);
+      } else {
+        const i = db.machines.findIndex(m => m.id === clean.id);
+        if (i === -1) throw new Error('Loom not found.');
+        db.machines[i] = clean;
+      }
+      this._write(db);
+      return clean;
+    }
+
+    async saveShift(shift) {
+      if (!this.can('manage_master')) throw new Error('Only an admin can change shift schedules.');
+      const db = this._db();
+      const code = String(shift.shift_code || '').trim().toUpperCase();
+      if (!/^[A-Z0-9]{1,3}$/.test(code)) throw new Error('Shift code must be 1-3 letters or digits.');
+      if (!shift.name || !String(shift.name).trim()) throw new Error('Shift name is required.');
+      if (!/^\d{2}:\d{2}$/.test(shift.start_time || '') || !/^\d{2}:\d{2}$/.test(shift.end_time || '')) throw new Error('Start and end time are required.');
+      if (shift.start_time === shift.end_time) throw new Error('Start and end time cannot be the same.');
+      if (db.shifts.some(s => s.shift_code === code && s.id !== shift.id)) throw new Error(`Shift code ${code} already exists.`);
+      const clean = { ...shift, shift_code: code, name: String(shift.name).trim(), is_active: shift.is_active !== false };
+      if (!clean.id) {
+        clean.id = uid('shift');
+        db.shifts.push(clean);
+      } else {
+        const i = db.shifts.findIndex(s => s.id === clean.id);
+        if (i === -1) throw new Error('Shift not found.');
+        db.shifts[i] = clean;
+      }
+      this._write(db);
+      return clean;
+    }
+
+    // --- Forms & photos ---
+    async findFormBySha256(sha256) {
+      if (!sha256) return null;
+      return this._db().forms.find(f => f.file_sha256 === sha256) || null;
+    }
+
+    async getFormImageUrl(formId) {
+      if (!formId) return null;
+      const blob = await imageDb.get(formId);
+      return blob ? URL.createObjectURL(blob) : null;
+    }
+
+    _nextNumber(list, prefix, field) {
+      const year = new Date().getFullYear();
+      const re = new RegExp(`^${prefix}-${year}-(\\d+)$`);
+      const max = list.reduce((acc, x) => {
+        const m = String(x[field] || '').match(re);
+        return m ? Math.max(acc, Number(m[1])) : acc;
+      }, 0);
+      return `${prefix}-${year}-${String(max + 1).padStart(4, '0')}`;
+    }
+
+    /**
+     * Persist the photo, the form metadata and a draft record built from the AI output.
+     * extraction: { provider, model, latency_ms, data: <contract> }
+     */
+    async createRecordFromExtraction({ file, sha256, imageBlob, extraction }) {
+      const user = this.getCurrentUser();
+      const db = this._db();
+      const fields = extraction.data.fields;
+      const machine = fields.machine.value ? db.machines.find(m => m.machine_code === fields.machine.value) : null;
+      const shift = fields.shift.value ? db.shifts.find(s => s.shift_code === fields.shift.value) : null;
+
+      const form = {
+        id: uid('form'),
+        form_number: this._nextNumber(db.forms, 'PF', 'form_number'),
+        original_filename: file.name,
+        mime_type: imageBlob.type,
+        original_size_bytes: file.size,
+        stored_size_bytes: imageBlob.size,
+        file_sha256: sha256,
+        uploaded_by: user.id,
+        uploaded_at: nowIso(),
+        extraction_provider: extraction.provider,
+        extraction_model: extraction.model,
+        extraction_latency_ms: extraction.latency_ms,
+        extraction_payload: extraction.data,
+        model_output: extraction.model_output || null
+      };
+      await imageDb.put(form.id, imageBlob);
+
+      const val = (k) => fields[k] ? fields[k].value : null;
+      const record = {
+        id: uid('rec'),
+        record_number: this._nextNumber(db.records, 'PR', 'record_number'),
+        form_id: form.id,
+        form_number: form.form_number,
+        file_sha256: sha256,
+        extraction_provider: extraction.provider,
+        extraction_model: extraction.model,
+        final_payload: extraction.data,
+        machine_id: machine ? machine.id : null,
+        machine_raw: fields.machine.raw_value,
+        shift_id: shift ? shift.id : null,
+        shift_raw: fields.shift.raw_value,
+        production_date: val('production_date'),
+        production_date_raw: fields.production_date.raw_value,
+        production_quantity: val('production_quantity'),
+        production_unit: val('production_unit') || (machine && machine.default_unit) || 'metres',
+        material_reference: val('material_reference'),
+        batch_reference: val('batch_reference'),
+        defects_count: val('defects_count'),
+        defect_details: val('defect_details'),
+        downtime_minutes: val('downtime_minutes'),
+        downtime_reason: val('downtime_reason'),
+        remarks: val('remarks'),
+        status: 'pending_review',
+        submitted_by: user.id,
+        submitted_by_name: user.full_name,
+        created_at: nowIso()
+      };
+
+      db.forms.push(form);
+      db.records.push(record);
+      this._write(db);
+      return record;
+    }
+
+    // --- Records ---
+    _hydrate(r, db) {
+      return {
+        ...r,
+        machine: db.machines.find(m => m.id === r.machine_id) || null,
+        shift: db.shifts.find(s => s.id === r.shift_id) || null,
+        corrections: db.corrections.filter(c => c.record_id === r.id)
+      };
+    }
+
+    async getRecords(filters = {}) {
+      const db = this._db();
+      let rows = db.records.map(r => this._hydrate(r, db));
+      if (filters.status && filters.status !== 'all') rows = rows.filter(r => r.status === filters.status);
+      if (filters.submitted_by) rows = rows.filter(r => r.submitted_by === filters.submitted_by);
+      if (filters.machine_id) rows = rows.filter(r => r.machine_id === filters.machine_id);
+      if (filters.shift_id) rows = rows.filter(r => r.shift_id === filters.shift_id);
+      if (filters.date) rows = rows.filter(r => r.production_date === filters.date);
+      if (filters.search) {
+        const q = String(filters.search).toLowerCase();
+        rows = rows.filter(r => [r.record_number, r.machine && r.machine.machine_code, r.machine_raw, r.material_reference, r.batch_reference]
+          .some(v => v && String(v).toLowerCase().includes(q)));
+      }
+      rows.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+      return rows;
+    }
+
+    async getRecordById(id) {
+      const db = this._db();
+      const r = db.records.find(x => x.id === id);
+      if (!r) return null;
+      const full = this._hydrate(r, db);
+      full.form = db.forms.find(f => f.id === r.form_id) || null;
+      return full;
+    }
+
+    async validationFor(record) {
+      const db = this._db();
+      const full = record.corrections ? record : this._hydrate(record, db);
+      return Rules.validateRecord(full, { machines: db.machines, shifts: db.shifts, records: db.records, today: Rules.todayIso() });
+    }
+
+    _mutate(recordId, fn) {
+      const db = this._db();
+      const i = db.records.findIndex(r => r.id === recordId);
+      if (i === -1) throw new Error('Record not found.');
+      const result = fn(db.records[i], db);
+      db.records[i].updated_at = nowIso();
+      this._write(db);
+      return result;
+    }
+
+    _coerce(recordKey, value) {
+      const def = Rules.FIELD_DEFS.find(d => d.recordKey === recordKey);
+      if (!def) throw new Error(`Unknown field ${recordKey}.`);
+      if (value === '' || value === undefined) return null;
+      if (['number', 'integer', 'duration'].includes(def.type)) {
+        const n = Number(value);
+        if (Number.isNaN(n)) throw new Error(`${def.label} must be a number.`);
+        if (n < 0) throw new Error(`${def.label} cannot be negative.`);
+        if (def.type === 'integer' && !Number.isInteger(n)) throw new Error(`${def.label} must be a whole number.`);
+        return n;
+      }
+      return typeof value === 'string' ? value.trim() || null : value;
+    }
+
+    async correctField(recordId, recordKey, newValue, reason) {
+      const record = await this.getRecordById(recordId);
+      if (!record) throw new Error('Record not found.');
+      if (!this.can('edit', record)) throw new Error('You cannot edit this record in its current status.');
+      const value = this._coerce(recordKey, newValue);
+      const user = this.getCurrentUser();
+      return this._mutate(recordId, (r, db) => {
+        const original = r[recordKey] === undefined ? null : r[recordKey];
+        if (original === value) return null;
+        const entry = {
+          id: uid('corr'), record_id: recordId, field_key: recordKey, kind: 'correction',
+          original_value: original, corrected_value: value,
+          reason: (reason || '').trim() || null,
+          changed_by: user.id, changed_by_name: user.full_name, changed_by_role: user.role, changed_at: nowIso()
+        };
+        db.corrections.push(entry);
+        r[recordKey] = value;
+        return entry;
+      });
+    }
+
+    async confirmField(recordId, recordKey, note) {
+      const record = await this.getRecordById(recordId);
+      if (!record) throw new Error('Record not found.');
+      if (!this.can('review', record)) throw new Error('Only a supervisor or admin can confirm an AI-flagged value.');
+      const user = this.getCurrentUser();
+      return this._mutate(recordId, (r, db) => {
+        const entry = {
+          id: uid('corr'), record_id: recordId, field_key: recordKey, kind: 'confirmation',
+          original_value: r[recordKey] === undefined ? null : r[recordKey], corrected_value: r[recordKey] === undefined ? null : r[recordKey],
+          reason: (note || '').trim() || 'Confirmed against the photo',
+          changed_by: user.id, changed_by_name: user.full_name, changed_by_role: user.role, changed_at: nowIso()
+        };
+        db.corrections.push(entry);
+        return entry;
+      });
+    }
+
+    async approveRecord(recordId, note) {
+      const record = await this.getRecordById(recordId);
+      if (!record) throw new Error('Record not found.');
+      if (!this.can('review', record)) throw new Error('Only a supervisor or admin can approve a record that is pending review.');
+      const { blockers } = await this.validationFor(record);
+      if (blockers.length) throw new Error('Cannot approve yet:\n- ' + blockers.map(b => b.message).join('\n- '));
+      const user = this.getCurrentUser();
+      this._mutate(recordId, (r) => {
+        r.status = 'approved';
+        r.reviewed_by = user.id;
+        r.reviewed_by_name = user.full_name;
+        r.reviewed_at = nowIso();
+        r.approval_note = (note || '').trim() || null;
+        r.erp_status = 'pending';
+      });
+      return this.getRecordById(recordId);
+    }
+
+    async rejectRecord(recordId, reason) {
+      const record = await this.getRecordById(recordId);
+      if (!record || !this.can('review', record)) throw new Error('Only a supervisor or admin can reject a record that is pending review.');
+      if (!reason || !reason.trim()) throw new Error('A rejection reason is required.');
+      const user = this.getCurrentUser();
+      this._mutate(recordId, (r) => {
+        r.status = 'rejected';
+        r.rejection_reason = reason.trim();
+        r.reviewed_by = user.id;
+        r.reviewed_by_name = user.full_name;
+        r.reviewed_at = nowIso();
+      });
+    }
+
+    async returnForCorrection(recordId, reason) {
+      const record = await this.getRecordById(recordId);
+      if (!record || !this.can('review', record)) throw new Error('Only a supervisor or admin can return a record that is pending review.');
+      if (!reason || !reason.trim()) throw new Error('Tell the operator what to fix.');
+      const user = this.getCurrentUser();
+      this._mutate(recordId, (r) => {
+        r.status = 'returned_for_correction';
+        r.return_reason = reason.trim();
+        r.returned_by_name = user.full_name;
+        r.returned_at = nowIso();
+      });
+    }
+
+    async resubmitRecord(recordId) {
+      const record = await this.getRecordById(recordId);
+      if (!record || !this.can('resubmit', record)) throw new Error('Only the submitting operator can resubmit a returned record.');
+      this._mutate(recordId, (r) => { r.status = 'pending_review'; r.resubmitted_at = nowIso(); });
+    }
+
+    async buildErpPayload(recordId) {
+      const record = await this.getRecordById(recordId);
+      const db = this._db();
+      return Rules.buildErpPayload(record, { machines: db.machines, shifts: db.shifts });
+    }
+
+    /** POST the approved record to the mock ERP. Safe to call repeatedly (idempotent by key). */
+    async submitToErp(recordId, { simulateFailure = false } = {}) {
+      const record = await this.getRecordById(recordId);
+      if (!record) throw new Error('Record not found.');
+      if (!this.can('dispatch_erp', record)) throw new Error('Only approved records can be sent to the ERP, by a supervisor or admin.');
+      const payload = await this.buildErpPayload(recordId);
+      let status = 0;
+      let body = null;
+      try {
+        const resp = await fetch(`${window.APLYD_CONFIG.API_BASE}/api/erp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payload, simulate_failure: simulateFailure })
+        });
+        status = resp.status;
+        body = await resp.json().catch(() => null);
+      } catch (err) {
+        body = { error: `ERP endpoint unreachable: ${err.message}` };
+      }
+
+      const ok = status === 200 && body && body.status === 'ACKNOWLEDGED';
+      this._mutate(recordId, (r) => {
+        r.erp_attempts = (r.erp_attempts || 0) + 1;
+        r.erp_payload = payload;
+        r.erp_response = body;
+        r.erp_last_attempt_at = nowIso();
+        if (ok) {
+          r.erp_status = 'submitted';
+          r.erp_reference = body.erp_reference;
+          r.erp_last_error = null;
+        } else {
+          // A failed re-send never downgrades a record the ERP already acknowledged.
+          if (r.erp_status !== 'submitted') r.erp_status = 'failed';
+          r.erp_last_error = (body && (body.error || (body.errors && body.errors.join('; ')))) || `HTTP ${status}`;
+        }
+      });
+      if (!ok) throw new Error(`ERP did not accept the record: ${(body && (body.error || (body.errors && body.errors.join('; ')))) || `HTTP ${status}`}`);
+      return body;
+    }
+
+    // --- Metrics ---
+    async getDashboardMetrics() {
+      const records = await this.getRecords();
+      const today = Rules.todayIso();
+      const weekAgo = Rules.todayIso(new Date(Date.now() - 6 * 864e5));
+      const approved7d = records.filter(r => r.status === 'approved' && r.production_date >= weekAgo && r.production_date <= today);
+      const pending = records.filter(r => r.status === 'pending_review');
+      let exceptions = 0;
+      for (const r of pending) {
+        const v = await this.validationFor(r);
+        exceptions += v.blockers.length + v.warnings.length;
+      }
+      return {
+        approvedMetres7d: Math.round(approved7d.filter(r => (r.production_unit || 'metres') === 'metres').reduce((s, r) => s + (Number(r.production_quantity) || 0), 0) * 10) / 10,
+        formsToday: records.filter(r => String(r.created_at || '').slice(0, 10) === today && !r.seed).length,
+        pendingReviews: pending.length,
+        returned: records.filter(r => r.status === 'returned_for_correction').length,
+        openExceptions: exceptions,
+        erpFailed: records.filter(r => r.status === 'approved' && r.erp_status !== 'submitted').length,
+        recentRecords: records.slice(0, 6),
+        approved7d
+      };
+    }
   }
 
-  // --- DASHBOARD & ANALYTICS AGGREGATIONS ---
-  async getDashboardMetrics() {
-    const records = await this.getRecords();
-    const today = new Date().toISOString().split('T')[0];
-
-    const approvedToday = records.filter(r => r.status === 'approved' && r.production_date === today);
-    const totalMetersToday = approvedToday.reduce((sum, r) => sum + (Number(r.production_quantity) || 0), 0);
-    const formsToday = records.filter(r => (r.created_at || '').startsWith(today)).length;
-    const pendingReviews = records.filter(r => r.status === 'pending_review').length;
-    const activeExceptions = (this.getDb().production_alerts || []).filter(a => a.status === 'active').length;
-
-    return {
-      totalMetersToday: Math.round(totalMetersToday * 10) / 10,
-      formsToday: formsToday || records.length,
-      pendingReviews,
-      activeExceptions,
-      recentRecords: records.slice(0, 5)
-    };
-  }
-}
-
-window.aplydStore = new AplydStore();
+  window.aplydStore = new AplydStore();
+})();

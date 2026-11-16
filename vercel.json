@@ -1,10 +1,14 @@
 {
   "version": 2,
   "cleanUrls": false,
+  "functions": {
+    "api/extract.js": { "maxDuration": 60 },
+    "api/erp.js": { "maxDuration": 10 }
+  },
   "redirects": [
     { "source": "/", "destination": "/aplyd/index.html", "permanent": false }
   ],
   "rewrites": [
-    { "source": "/((?!aplyd/).*)", "destination": "/aplyd/$1" }
+    { "source": "/((?!aplyd/|api/).*)", "destination": "/aplyd/$1" }
   ]
 }

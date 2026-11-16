@@ -1,229 +1,130 @@
 /**
- * APLYD - Manufacturing Analytics & AI Digitization Telemetry Controller
+ * APLYD - Analytics & reliability.
+ *
+ * Reliability is measured from what supervisors actually did to AI output:
+ *  - correction rate: share of AI-read fields a human changed
+ *  - silent errors:   fields the AI marked "read" (confident) that a human changed. The key risk metric.
+ *  - flag precision:  of the fields the AI flagged, how many really needed a change
+ *  - first-pass yield: approved AI records that needed no correction
+ * Plus the offline benchmark (npm run benchmark) when its results file exists.
  */
+(function () {
+  const store = window.aplydStore;
+  const Rules = window.AplydRules;
+  const esc = window.security.escapeHtml;
+  const $ = (id) => document.getElementById(id);
+  let records = [];
 
-let activeCharts = {};
-
-document.addEventListener("DOMContentLoaded", async () => {
-  await renderAnalytics();
-
-  window.addEventListener("themeChanged", () => {
-    renderAnalytics();
-  });
-});
-
-async function renderAnalytics() {
-  const records = await window.aplydStore.getRecords();
-  const approvedRecords = records.filter(r => r.status === 'approved');
-
-  renderTelemetryCards(records);
-  renderLoomBarChart(approvedRecords);
-  renderShiftPieChart(approvedRecords);
-  renderDefectParetoChart(records);
-  renderDowntimeCausesChart(records);
-}
-
-function renderTelemetryCards(records) {
-  let totalFieldsEvaluated = 0;
-  let correctedFields = 0;
-
-  records.forEach(r => {
-    const corrections = r.corrections || [];
-    correctedFields += corrections.length;
-    totalFieldsEvaluated += 10;
+  document.addEventListener('DOMContentLoaded', async () => {
+    records = await store.getRecords();
+    renderReliability();
+    await renderBenchmark();
+    renderCharts();
+    window.addEventListener('themeChanged', renderCharts);
   });
 
-  const correctionRate = totalFieldsEvaluated > 0 
-    ? ((correctedFields / totalFieldsEvaluated) * 100).toFixed(1) 
-    : "8.5";
+  const pct = (n, d) => (d ? `${((n / d) * 100).toFixed(1)}%` : '—');
 
-  const accEl = document.getElementById("telemetryFieldAccuracy");
-  const uncertEl = document.getElementById("telemetryUncertaintyRecall");
-  const corrEl = document.getElementById("telemetryCorrectionRate");
-  const erpEl = document.getElementById("telemetryErpSuccess");
+  function renderReliability() {
+    const ai = records.filter(r => r.final_payload);
+    const reviewed = ai.filter(r => r.status === 'approved' || r.status === 'rejected');
+    const approved = ai.filter(r => r.status === 'approved');
 
-  if (accEl) accEl.textContent = "96.4%";
-  if (uncertEl) uncertEl.textContent = "100%";
-  if (corrEl) corrEl.textContent = `${correctionRate}%`;
-  if (erpEl) erpEl.textContent = "100%";
-}
+    let fields = 0, flagged = 0, corrected = 0, silent = 0, flaggedCorrected = 0;
+    const silentRows = [];
+    for (const r of reviewed) {
+      for (const def of Rules.FIELD_DEFS) {
+        const f = r.final_payload.fields[def.key];
+        if (!f) continue;
+        fields++;
+        const isFlag = ['uncertain', 'illegible', 'invalid'].includes(f.status) || (def.required && f.status === 'missing');
+        const changed = (r.corrections || []).some(c => c.field_key === def.recordKey && c.kind !== 'confirmation');
+        if (isFlag) flagged++;
+        if (changed) corrected++;
+        if (isFlag && changed) flaggedCorrected++;
+        if (changed && f.status === 'read') {
+          silent++;
+          const c = r.corrections.filter(x => x.field_key === def.recordKey && x.kind !== 'confirmation').pop();
+          silentRows.push({ r, def, f, c });
+        }
+      }
+    }
+    const firstPass = approved.filter(r => !(r.corrections || []).some(c => c.kind !== 'confirmation')).length;
+    const latencies = ai.map(r => r.form && r.form.extraction_latency_ms).filter(Boolean).sort((a, b) => a - b);
+    const median = latencies.length ? latencies[Math.floor(latencies.length / 2)] : null;
+    const erpOk = approved.filter(r => r.erp_status === 'submitted').length;
 
-function getThemeColors() {
-  const isDark = document.body.classList.contains("dark-theme") || document.documentElement.classList.contains("dark-theme");
-  return {
-    isDark,
-    barPrimary: isDark ? '#3b82f6' : '#18181b',
-    barSecondary: isDark ? '#60a5fa' : '#3f3f46',
-    barWarning: isDark ? '#f59e0b' : '#b45309',
-    barDanger: isDark ? '#ef4444' : '#b91c1c',
-    textColor: isDark ? '#a1a1aa' : '#71717a',
-    gridColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
-    doughnutColors: isDark 
-      ? ['#3b82f6', '#8b5cf6', '#06b6d4'] 
-      : ['#18181b', '#71717a', '#a1a1aa']
-  };
-}
+    $('relForms').textContent = ai.length;
+    $('relFormsNote').textContent = `${reviewed.length} reviewed · ${ai.length - reviewed.length} open`;
+    $('relCorrection').textContent = pct(corrected, fields);
+    $('relCorrectionNote').textContent = `${corrected} of ${fields} fields changed by a human`;
+    $('relSilent').textContent = pct(silent, fields);
+    $('relSilentNote').textContent = `${silent} confident AI reading${silent === 1 ? ' was' : 's were'} wrong`;
+    $('relFlagPrecision').textContent = pct(flaggedCorrected, flagged);
+    $('relFlagPrecisionNote').textContent = `${flagged} fields flagged, ${flaggedCorrected} needed a change`;
+    $('relFirstPass').textContent = pct(firstPass, approved.length);
+    $('relFirstPassNote').textContent = `${firstPass} of ${approved.length} approved with no correction`;
+    $('relLatency').textContent = median ? `${(median / 1000).toFixed(1)} s` : '—';
+    $('relErp').textContent = pct(erpOk, approved.length);
 
-function destroyChart(id) {
-  if (activeCharts[id]) {
-    activeCharts[id].destroy();
-    delete activeCharts[id];
+    $('relEmpty').classList.toggle('hidden', reviewed.length > 0);
+    $('silentTable').innerHTML = silentRows.length ? silentRows.slice(-15).reverse().map(({ r, def, f, c }) => `
+      <tr>
+        <td><a href="review.html?id=${encodeURIComponent(r.id)}" class="mono">${esc(r.record_number)}</a></td>
+        <td>${esc(def.label)}</td>
+        <td class="mono">${esc(f.raw_value ?? '—')}</td>
+        <td class="mono"><del>${esc(String(c.original_value ?? '—'))}</del> → <strong>${esc(String(c.corrected_value ?? '—'))}</strong></td>
+        <td>${esc(c.reason || '')}</td>
+      </tr>`).join('') : '<tr><td colspan="5" class="empty-cell">No silent errors recorded yet.</td></tr>';
   }
-}
 
-function renderLoomBarChart(records) {
-  const canvas = document.getElementById("loomOutputChart");
-  if (!canvas || !window.Chart) return;
-  destroyChart("loom");
-
-  const colors = getThemeColors();
-  const loomMap = {
-    'L-01': 380, 'L-02': 410, 'L-03': 310.5, 'L-04': 295, 
-    'L-05': 340, 'L-06': 365, 'L-07': 420, 'L-08': 180,
-    'L-09': 210, 'L-10': 390, 'L-11': 335, 'L-12': 420
-  };
-
-  records.forEach(r => {
-    const code = r.machine?.machine_code || r.machine_id_raw;
-    if (code && loomMap[code] !== undefined) {
-      loomMap[code] = Math.max(loomMap[code], Number(r.production_quantity) || 0);
+  async function renderBenchmark() {
+    const el = $('benchmarkBody');
+    try {
+      const resp = await fetch('assets/benchmark/results.json', { cache: 'no-store' });
+      if (!resp.ok) throw new Error('missing');
+      const b = await resp.json();
+      if (b.status !== 'complete' || !b.summary) throw new Error('not run');
+      const s = b.summary;
+      el.innerHTML = `
+        <p class="muted small">Run ${esc(new Date(b.generated_at).toLocaleString())} · ${esc(b.provider)} / ${esc(b.model)} · ${esc(s.samples)} sample forms (${esc(b.sample_set)})</p>
+        <div class="kpi-grid kpi-grid-tight">
+          ${[
+            ['Field accuracy', s.field_accuracy, `${s.fields_correct}/${s.fields_total} fields exactly right`],
+            ['Silent error rate', s.silent_error_rate, 'wrong but marked "read"'],
+            ['Flag recall', s.flag_recall, 'hard fields the AI flagged'],
+            ['Blank detection', s.blank_detection, 'blank fields left blank']
+          ].map(([k, v, n]) => `<div class="kpi-card"><p class="kpi-label">${esc(k)}</p><p class="kpi-value">${esc(v === null ? '—' : `${(v * 100).toFixed(1)}%`)}</p><p class="kpi-note">${esc(n)}</p></div>`).join('')}
+        </div>
+        <p class="small"><a href="assets/benchmark/results.json" target="_blank" rel="noopener">Per-sample results (JSON)</a></p>`;
+    } catch (_) {
+      el.innerHTML = '<p class="muted">The offline benchmark has not been run on this deployment yet. Run <code>npm run benchmark</code> with an API key to measure field accuracy against the labelled sample forms.</p>';
     }
-  });
+  }
 
-  activeCharts["loom"] = new window.Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: Object.keys(loomMap),
-      datasets: [{
-        label: 'Metres Produced',
-        data: Object.values(loomMap),
-        backgroundColor: colors.barPrimary,
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { 
-          beginAtZero: true, 
-          grid: { color: colors.gridColor },
-          ticks: { color: colors.textColor }
-        },
-        x: { 
-          grid: { display: false },
-          ticks: { color: colors.textColor }
-        }
-      }
-    }
-  });
-}
+  function renderCharts() {
+    const C = window.AplydCharts;
+    const p = C.palette();
+    const since = Rules.todayIso(new Date(Date.now() - 29 * 864e5));
+    const approved = records.filter(r => r.status === 'approved' && r.production_date >= since);
+    $('chartsEmpty').classList.toggle('hidden', approved.length > 0);
 
-function renderShiftPieChart(records) {
-  const canvas = document.getElementById("shiftEfficiencyChart");
-  if (!canvas || !window.Chart) return;
-  destroyChart("shift");
+    const sumBy = (keyFn, valFn, rows) => rows.reduce((acc, r) => { const k = keyFn(r); if (k) acc[k] = (acc[k] || 0) + (Number(valFn(r)) || 0); return acc; }, {});
+    const metres = approved.filter(r => (r.production_unit || 'metres') === 'metres');
 
-  const colors = getThemeColors();
+    const byLoom = sumBy(r => r.machine && r.machine.machine_code, r => r.production_quantity, metres);
+    const loomLabels = Object.keys(byLoom).sort();
+    C.bar('loomOutputChart', loomLabels, loomLabels.map(k => byLoom[k]), { label: 'Metres' });
 
-  activeCharts["shift"] = new window.Chart(canvas, {
-    type: 'doughnut',
-    data: {
-      labels: ['Morning (06:00-14:00)', 'Evening (14:00-22:00)', 'Night (22:00-06:00)'],
-      datasets: [{
-        data: [42, 34, 24],
-        backgroundColor: colors.doughnutColors,
-        borderWidth: colors.isDark ? 0 : 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { 
-          position: 'bottom', 
-          labels: { 
-            boxWidth: 12, 
-            font: { size: 11 },
-            color: colors.textColor
-          } 
-        }
-      }
-    }
-  });
-}
+    const byShift = sumBy(r => r.shift && r.shift.name, r => r.production_quantity, metres);
+    C.doughnut('shiftChart', Object.keys(byShift), Object.values(byShift));
 
-function renderDefectParetoChart(records) {
-  const canvas = document.getElementById("defectParetoChart");
-  if (!canvas || !window.Chart) return;
-  destroyChart("defect");
+    const byReason = sumBy(r => (r.downtime_reason || '').trim().toLowerCase().replace(/^\w/, c => c.toUpperCase()) || null, r => r.downtime_minutes, approved);
+    const reasons = Object.entries(byReason).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    C.bar('downtimeChart', reasons.map(x => x[0]), reasons.map(x => x[1]), { color: p.warn, horizontal: true, label: 'Minutes' });
 
-  const colors = getThemeColors();
-
-  activeCharts["defect"] = new window.Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: ['Warp Breakage', 'Weft Slubs', 'Reed Marks', 'Oil Stains', 'Tension Float'],
-      datasets: [{
-        label: 'Incident Count',
-        data: [18, 11, 7, 4, 2],
-        backgroundColor: colors.barDanger,
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { 
-          beginAtZero: true, 
-          grid: { color: colors.gridColor },
-          ticks: { color: colors.textColor }
-        },
-        x: { 
-          grid: { display: false },
-          ticks: { color: colors.textColor }
-        }
-      }
-    }
-  });
-}
-
-function renderDowntimeCausesChart(records) {
-  const canvas = document.getElementById("downtimeCausesChart");
-  if (!canvas || !window.Chart) return;
-  destroyChart("downtime");
-
-  const colors = getThemeColors();
-
-  activeCharts["downtime"] = new window.Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: ['Beam Change', 'Weft Jam', 'Lubrication', 'Motor Maint', 'Clean Shed'],
-      datasets: [{
-        label: 'Downtime (Minutes)',
-        data: [185, 95, 60, 45, 30],
-        backgroundColor: colors.barWarning,
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { 
-          beginAtZero: true, 
-          grid: { color: colors.gridColor },
-          ticks: { color: colors.textColor }
-        },
-        x: { 
-          grid: { display: false },
-          ticks: { color: colors.textColor }
-        }
-      }
-    }
-  });
-}
+    const defects = sumBy(r => r.machine && r.machine.machine_code, r => r.defects_count, approved);
+    const dLabels = Object.keys(defects).sort();
+    C.bar('defectChart', dLabels, dLabels.map(k => defects[k]), { color: p.bad, label: 'Defects', integer: true });
+  }
+})();

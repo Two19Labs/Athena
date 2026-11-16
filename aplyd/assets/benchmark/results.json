@@ -1,0 +1,1065 @@
+{
+  "status": "complete",
+  "generated_at": "2026-11-16T19:02:07.604Z",
+  "provider": "gemini",
+  "model": "gemini-3.5-flash-lite",
+  "sample_set": "synthetic (tests/generate-samples.js)",
+  "summary": {
+    "samples": 12,
+    "fields_total": 132,
+    "fields_correct": 131,
+    "field_accuracy": 0.9924,
+    "silent_error_rate": 0.0076,
+    "flag_recall": 0.3333,
+    "blank_detection": 1,
+    "unreadable_caught": 1,
+    "median_latency_ms": 57897
+  },
+  "per_field_accuracy": {
+    "machine": 1,
+    "production_date": 1,
+    "shift": 1,
+    "production_quantity": 0.9091,
+    "production_unit": 1,
+    "material_reference": 1,
+    "batch_reference": 1,
+    "defects_count": 1,
+    "defect_details": 1,
+    "downtime_minutes": 1,
+    "downtime_reason": 1,
+    "remarks": 1
+  },
+  "samples": [
+    {
+      "id": "form-01-clean",
+      "condition": "Clean, well-lit, flat",
+      "status": 200,
+      "latency_ms": 69688,
+      "fields": {
+        "machine": {
+          "truth": "L-12",
+          "value": "L-12",
+          "raw": "L-12",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-14",
+          "value": "2026-11-14",
+          "raw": "14/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "M",
+          "value": "M",
+          "raw": "M",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 612,
+          "value": 612,
+          "raw": "612",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Combed Poplin 40s",
+          "value": "Combed Poplin 40s",
+          "raw": "Combed Poplin 40s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "POP-40-881",
+          "value": "POP-40-881",
+          "raw": "POP-40-881",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 0,
+          "value": 0,
+          "raw": "0",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 20,
+          "value": 20,
+          "raw": "20 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Beam knotting",
+          "value": "Beam knotting",
+          "raw": "Beam knotting",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": "Smooth run",
+          "value": "Smooth run",
+          "raw": "Smooth run",
+          "status": "read",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-02-skewed",
+      "condition": "Photographed at an angle (perspective + 11° rotation)",
+      "status": 200,
+      "latency_ms": 23505,
+      "fields": {
+        "machine": {
+          "truth": "L-03",
+          "value": "L-03",
+          "raw": "L-03",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-14",
+          "value": "2026-11-14",
+          "raw": "14/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "E",
+          "value": "E",
+          "raw": "E",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 318.5,
+          "value": 318.5,
+          "raw": "318.5",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Denim 3/1",
+          "value": "Denim 3/1",
+          "raw": "Denim 3/1",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "DEN-26-120",
+          "value": "DEN-26-120",
+          "raw": "DEN-26-120",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 3,
+          "value": 3,
+          "raw": "3",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Reed marks",
+          "value": "Reed marks",
+          "raw": "Reed marks",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 45,
+          "value": 45,
+          "raw": "45 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Warp break repair",
+          "value": "Warp break repair",
+          "raw": "Warp break repair",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-03-low-light",
+      "condition": "Night shift, dim light with noise",
+      "status": 200,
+      "latency_ms": 19768,
+      "fields": {
+        "machine": {
+          "truth": "L-07",
+          "value": "L-07",
+          "raw": "L-07",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-13",
+          "value": "2026-11-13",
+          "raw": "13/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "N",
+          "value": "N",
+          "raw": "N",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 540,
+          "value": 540,
+          "raw": "540 m",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Sheeting 30s",
+          "value": "Sheeting 30s",
+          "raw": "Sheeting 30s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "SHT-30-081",
+          "value": "SHT-30-081",
+          "raw": "SHT-30-081",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 1,
+          "value": 1,
+          "raw": "1",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Thick place",
+          "value": "Thick place",
+          "raw": "Thick place",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 30,
+          "value": 30,
+          "raw": "30 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Lubrication",
+          "value": "Lubrication",
+          "raw": "Lubrication",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-04-glare",
+      "condition": "Overhead lamp glare across the top half",
+      "status": 200,
+      "latency_ms": 64843,
+      "fields": {
+        "machine": {
+          "truth": "L-01",
+          "value": "L-01",
+          "raw": "L-01",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-13",
+          "value": "2026-11-13",
+          "raw": "13/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "M",
+          "value": "M",
+          "raw": "M",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 402,
+          "value": 402,
+          "raw": "402",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Cotton Cambric",
+          "value": "Cotton Cambric",
+          "raw": "Cotton Cambric",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "CMB-60-022",
+          "value": "CMB-60-022",
+          "raw": "CMB-60-022",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 2,
+          "value": 2,
+          "raw": "2",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Oil spots",
+          "value": "Oil spots",
+          "raw": "Oil spots",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 35,
+          "value": 35,
+          "raw": "35 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Nozzle cleaning",
+          "value": "Nozzle cleaning",
+          "raw": "Nozzle cleaning",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": "Check nozzle 4",
+          "value": "Check nozzle 4",
+          "raw": "Check nozzle 4",
+          "status": "read",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-05-ambiguous-qty",
+      "condition": "Quantity first digit is written so it could be 3 or 8",
+      "status": 200,
+      "latency_ms": 34570,
+      "fields": {
+        "machine": {
+          "truth": "L-12",
+          "value": "L-12",
+          "raw": "L-12",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-12",
+          "value": "2026-11-12",
+          "raw": "12/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "M",
+          "value": "M",
+          "raw": "M",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 350,
+          "value": 850,
+          "raw": "850 m",
+          "status": "read",
+          "correct": false
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Combed Poplin 40s",
+          "value": "Combed Poplin 40s",
+          "raw": "Combed Poplin 40s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "POP-40-880",
+          "value": "POP-40-880",
+          "raw": "POP-40-880",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 1,
+          "value": 1,
+          "raw": "1",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Weft slub",
+          "value": "Weft slub",
+          "raw": "Weft slub",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 20,
+          "value": 20,
+          "raw": "20 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Loom cleaning",
+          "value": "Loom cleaning",
+          "raw": "Loom cleaning",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "11/12 fields correct"
+    },
+    {
+      "id": "form-06-oil-stain",
+      "condition": "Oil stain over the downtime reason",
+      "status": 200,
+      "latency_ms": 15980,
+      "fields": {
+        "machine": {
+          "truth": "L-05",
+          "value": "L-05",
+          "raw": "L-05",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-12",
+          "value": "2026-11-12",
+          "raw": "12/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "E",
+          "value": "E",
+          "raw": "E",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 377,
+          "value": 377,
+          "raw": "377 m",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Linen Blend",
+          "value": "Linen Blend",
+          "raw": "Linen Blend",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "LIN-55-034",
+          "value": "LIN-55-034",
+          "raw": "LIN-55-034",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 1,
+          "value": 1,
+          "raw": "1",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Float",
+          "value": "Float",
+          "raw": "Float",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 90,
+          "value": 90,
+          "raw": "90 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Motor overheating",
+          "value": "Motor overheating",
+          "raw": "Motor overheating",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-07-blank-and-zero",
+      "condition": "Batch left blank; defects written as an explicit 0",
+      "status": 200,
+      "latency_ms": 66290,
+      "fields": {
+        "machine": {
+          "truth": "L-10",
+          "value": "L-10",
+          "raw": "L-10",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-11",
+          "value": "2026-11-11",
+          "raw": "11/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "M",
+          "value": "M",
+          "raw": "M",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 590,
+          "value": 590,
+          "raw": "590",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Cotton Satin 50s",
+          "value": "Cotton Satin 50s",
+          "raw": "Cotton Satin 50s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 0,
+          "value": 0,
+          "raw": "0",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 0,
+          "value": 0,
+          "raw": "0",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        },
+        "remarks": {
+          "truth": "Batch tag missing",
+          "value": "Batch tag missing",
+          "raw": "Batch tag missing",
+          "status": "read",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-08-unknown-loom",
+      "condition": "Loom number not in the loom master (L-19)",
+      "status": 200,
+      "latency_ms": 59474,
+      "fields": {
+        "machine": {
+          "truth": "L-19",
+          "value": "L-19",
+          "raw": "L-19",
+          "status": "invalid",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-11",
+          "value": "2026-11-11",
+          "raw": "11/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "N",
+          "value": "N",
+          "raw": "N",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 455,
+          "value": 455,
+          "raw": "455 m",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Voile 60s",
+          "value": "Voile 60s",
+          "raw": "Voile 60s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "VOI-60-011",
+          "value": "VOI-60-011",
+          "raw": "VOI-60-011",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 2,
+          "value": 2,
+          "raw": "2",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Weft slub",
+          "value": "Weft slub",
+          "raw": "Weft slub",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 25,
+          "value": 25,
+          "raw": "25 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Pirn change",
+          "value": "Pirn change",
+          "raw": "Pirn change",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-09-ledger-layout",
+      "condition": "Different form layout (horizontal ledger), written shift name, short date, downtime in hours",
+      "status": 200,
+      "latency_ms": 57897,
+      "fields": {
+        "machine": {
+          "truth": "L-11",
+          "value": "L-11",
+          "raw": "L-11",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-10",
+          "value": "2026-11-10",
+          "raw": "10-11-26",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "N",
+          "value": "N",
+          "raw": "Night",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 421,
+          "value": 421,
+          "raw": "421",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "Mtrs",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Yarn Dyed Check",
+          "value": "Yarn Dyed Check",
+          "raw": "Yarn Dyed Check",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "YDC-22-019",
+          "value": "YDC-22-019",
+          "raw": "YDC-22-019",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 1,
+          "value": 1,
+          "raw": "1",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Colour bleed",
+          "value": "Colour bleed",
+          "raw": "Colour bleed",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 75,
+          "value": 75,
+          "raw": "1 hr 15 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Beam change",
+          "value": "Beam change",
+          "raw": "Beam change",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-10-faded-torn",
+      "condition": "Faded pencil-like writing and a torn bottom corner (remarks lost)",
+      "status": 200,
+      "latency_ms": 58982,
+      "fields": {
+        "machine": {
+          "truth": "L-08",
+          "value": "L-08",
+          "raw": "L-08",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-10",
+          "value": "2026-11-10",
+          "raw": "10/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "E",
+          "value": "E",
+          "raw": "E",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 214,
+          "value": 214,
+          "raw": "214 m",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Selvedge Drill",
+          "value": "Selvedge Drill",
+          "raw": "Selvedge Drill",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "DRL-14-207",
+          "value": "DRL-14-207",
+          "raw": "DRL-14-207",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 4,
+          "value": 4,
+          "raw": "4",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Broken pick",
+          "value": "Broken pick",
+          "raw": "Broken pick",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 60,
+          "value": 60,
+          "raw": "60 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Shuttle replacement",
+          "value": "Shuttle replacement",
+          "raw": "Shuttle replacement",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-11-sideways",
+      "condition": "Photo taken sideways (rotated 90°), rough handwriting",
+      "status": 200,
+      "latency_ms": 4683,
+      "fields": {
+        "machine": {
+          "truth": "L-06",
+          "value": "L-06",
+          "raw": "L-06",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-09",
+          "value": "2026-11-09",
+          "raw": "09/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "M",
+          "value": "M",
+          "raw": "M",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 488,
+          "value": 488,
+          "raw": "488",
+          "status": "read",
+          "correct": true
+        },
+        "production_unit": {
+          "truth": "metres",
+          "value": "metres",
+          "raw": "m",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Voile 60s",
+          "value": "Voile 60s",
+          "raw": "Voile 60s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "VOI-60-009",
+          "value": "VOI-60-009",
+          "raw": "VOI-60-009",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 2,
+          "value": 2,
+          "raw": "2",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": "Weft slub",
+          "value": "Weft slub",
+          "raw": "Weft slub",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 40,
+          "value": 40,
+          "raw": "40 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Lubrication",
+          "value": "Lubrication",
+          "raw": "Lubrication",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "12/12 fields correct"
+    },
+    {
+      "id": "form-12-not-a-form",
+      "condition": "Close-up of woven fabric, no form in frame (operator mistake)",
+      "status": 422,
+      "latency_ms": 58155,
+      "fields": {},
+      "result": "refused (correct)"
+    }
+  ]
+}

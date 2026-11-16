@@ -3,239 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APLYD - Production Register</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2318181b%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2717%27 font-family=%27Arial%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EA%3C/text%3E%3C/svg%3E">
+  <title>Production Register · APLYD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="js/theme.js"></script>
 </head>
-<body class="app-shell">
-  <!-- Sibling Sidebar -->
-  <aside class="sidebar">
-    <div class="brand-block">
-      <p class="eyebrow">APLYD</p>
-      <h1>Shop-Floor Textile Production Digitisation</h1>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="Primary">
-      <a class="nav-item nav-link" href="dashboard.html">
-        <span>Production Dashboard</span>
-      </a>
-      <a class="nav-item nav-link" href="capture.html">
-        <span>Capture Form</span>
-      </a>
-      <a class="nav-item nav-link" href="review.html" id="navReview">
-        <span>Review Queue</span>
-      </a>
-      <a class="nav-item nav-item-active nav-link" href="production-register.html" id="navRegister">
-        <span>Production Register</span>
-      </a>
-      <a class="nav-item nav-link" href="analytics.html" id="navAnalytics">
-        <span>Analytics</span>
-      </a>
-      <a class="nav-item nav-link" href="machines.html" id="navMachines">
-        <span>Looms Master</span>
-      </a>
-      <a class="nav-item nav-link" href="shifts.html" id="navShifts">
-        <span>Shift Schedules</span>
-      </a>
-    </nav>
-
-    <div class="sidebar-note">
-      <p class="note-label">Current Goal</p>
-      <p>Audit verified manufacturing telemetry, monitor downstream ERP handoffs, and export batches.</p>
-    </div>
-  </aside>
+<body class="app-shell" data-page="register">
+  <aside class="sidebar" id="appSidebar"></aside>
 
   <div class="content-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600;">Production Ledger</p>
-        <h2 style="font-size: 20px; font-weight: 700;">Textile Production Register</h2>
+        <p class="page-eyebrow">Ledger &amp; ERP handoff</p>
+        <h2 class="page-title">Production Register</h2>
       </div>
-
-      <div class="topbar-actions">
-        <div class="user-meta">
-          <span id="userEmail">Loading...</span>
-          <span id="userRole" class="role-pill"></span>
-        </div>
-        <button id="logoutBtn" class="btn btn-outline" type="button">Log Out</button>
-      </div>
+      <div class="topbar-actions"></div>
     </header>
 
-    <main class="content-main" style="padding: 24px;">
-      <!-- Demo Persona Switcher Bar -->
+    <main class="content-main">
       <div id="demoPersonaBar" class="demo-persona-bar"></div>
 
-      <!-- Hero Panel -->
-      <section class="hero-panel" style="margin-bottom: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <div>
-          <p class="eyebrow" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 4px;">Audit & Compliance Console</p>
-          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Manufacturing Production Register</h3>
-          <p class="supporting-text" style="font-size: 13px; color: var(--ink-2); line-height: 1.5;">
-            Permanent ledger of daily shift production forms, supervisor approvals, and downstream ERP transmission acknowledgments.
-          </p>
+      <div class="filter-bar">
+        <input id="searchRecords" class="form-control" type="search" placeholder="Search record #, loom, sort or batch" aria-label="Search">
+        <select id="filterMachineSelect" class="select-control" aria-label="Loom"></select>
+        <select id="filterShiftSelect" class="select-control" aria-label="Shift"></select>
+        <div class="date-filter">
+          <input id="filterDate" class="form-control" type="date" aria-label="Date">
+          <button id="clearDateBtn" class="btn btn-outline btn-small" type="button" aria-label="Clear date">✕</button>
         </div>
-
-        <div style="display: flex; gap: 10px;">
-          <button id="exportCsvBtn" class="btn btn-outline" type="button" style="font-weight: 600; font-size: 13px;">
-            📥 Export CSV
-          </button>
-          <button id="exportJsonBtn" class="btn btn-outline" type="button" style="font-weight: 600; font-size: 13px;">
-            📄 Export JSON
-          </button>
-          <a href="capture.html" class="btn btn-primary" style="font-weight: 700; font-size: 13px;">
-            + Ingest New Form
-          </a>
-        </div>
-      </section>
-
-      <!-- Main Register Panel -->
-      <section class="panel" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-        <!-- Filters Row -->
-        <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
-          <div style="flex: 2; min-width: 200px;">
-            <label for="searchRecords" style="font-size: 11px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px;">Search Record # / Sort / Batch</label>
-            <input id="searchRecords" class="form-control" type="text" placeholder="Type record #, lot, or sort...">
-          </div>
-
-          <div style="flex: 1; min-width: 140px;">
-            <label for="filterMachineSelect" style="font-size: 11px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px;">Filter Loom</label>
-            <select id="filterMachineSelect" class="select-control" style="width: 100%;">
-              <option value="">All Looms</option>
-            </select>
-          </div>
-
-          <div style="flex: 1; min-width: 130px;">
-            <label for="filterShiftSelect" style="font-size: 11px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px;">Filter Shift</label>
-            <select id="filterShiftSelect" class="select-control" style="width: 100%;">
-              <option value="">All Shifts</option>
-            </select>
-          </div>
-
-          <div style="flex: 1; min-width: 140px;">
-            <label for="filterDate" style="font-size: 11px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px;">Filter Date</label>
-            <div style="display: flex; gap: 4px;">
-              <input id="filterDate" class="form-control" type="date">
-              <button id="clearDateBtn" class="btn btn-outline" type="button" title="Clear date">&times;</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Status Tab Strip -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <div class="tab-strip" role="tablist">
-            <button class="tab-button tab-button-active" data-status="all" type="button">All Records</button>
-            <button class="tab-button" data-status="approved" type="button">Approved</button>
-            <button class="tab-button" data-status="pending_review" type="button">Pending Review</button>
-            <button class="tab-button" data-status="returned_for_correction" type="button">Returned</button>
-            <button class="tab-button" data-status="rejected" type="button">Rejected</button>
-          </div>
-          <span id="registerCount" style="font-size: 12px; color: var(--muted); font-weight: 600;">0 records</span>
-        </div>
-
-        <!-- Data Table -->
-        <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
-          <table class="bill-items-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--border); background: var(--surface-2); color: var(--muted); text-align: left; font-size: 11px; text-transform: uppercase;">
-                <th style="padding: 10px 8px;">Record #</th>
-                <th style="padding: 10px 8px;">Date</th>
-                <th style="padding: 10px 8px;">Loom</th>
-                <th style="padding: 10px 8px;">Shift</th>
-                <th style="padding: 10px 8px;">Output</th>
-                <th style="padding: 10px 8px;">Material / Sort</th>
-                <th style="padding: 10px 8px;">Batch</th>
-                <th style="padding: 10px 8px;">Downtime</th>
-                <th style="padding: 10px 8px;">Verification</th>
-                <th style="padding: 10px 8px;">ERP Status</th>
-              </tr>
-            </thead>
-            <tbody id="registerTableBody">
-              <tr>
-                <td colspan="10" style="text-align: center; padding: 40px; color: var(--muted);">Loading records...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- ==================================================================== -->
-      <!-- MODAL: DEEP RECORD INSPECTION & ERP LOGS -->
-      <!-- ==================================================================== -->
-      <div id="recordModal" class="modal-overlay hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;">
-        <div class="modal-box" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
-            <div>
-              <h3 id="modalRecordTitle" style="font-size: 18px; font-weight: 700;">PR-2026-0001</h3>
-              <p style="font-size: 12px; color: var(--muted);">Production Record Audit & Telemetry</p>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <span id="modalStatusBadge" class="badge-read">APPROVED</span>
-              <button type="button" class="btn btn-outline" onclick="closeDetailModal()" style="padding: 4px 8px; font-size: 14px;">✕</button>
-            </div>
-          </div>
-
-          <!-- Downstream ERP Box -->
-          <div id="modalErpBox" style="margin-bottom: 16px;"></div>
-
-          <!-- Station Specs Grid -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; margin-bottom: 16px; background: var(--surface-2); padding: 12px; border-radius: 8px;">
-            <div><strong>Loom / Machine:</strong> <span id="modalLoomCode">-</span></div>
-            <div><strong>Shift:</strong> <span id="modalShiftName">-</span></div>
-            <div><strong>Production Date:</strong> <span id="modalProdDate">-</span></div>
-            <div><strong>Net Output:</strong> <span id="modalQuantity" style="font-weight: 700; color: var(--ink);">-</span></div>
-            <div><strong>Fabric Quality:</strong> <span id="modalMaterial">-</span></div>
-            <div><strong>Batch / Lot:</strong> <span id="modalBatch">-</span></div>
-            <div><strong>Defects:</strong> <span id="modalDefects">-</span></div>
-            <div><strong>Stoppage Downtime:</strong> <span id="modalDowntime">-</span></div>
-          </div>
-
-          <div style="font-size: 12px; color: var(--ink-2); margin-bottom: 16px;">
-            <strong>Operator Remarks:</strong> <span id="modalRemarks">None</span>
-          </div>
-
-          <!-- Audit History Table -->
-          <div style="margin-bottom: 20px;">
-            <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">
-              🛡️ Supervisor Correction Audit Trail
-            </p>
-            <div style="border: 1px solid var(--border); border-radius: 6px; overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <thead>
-                  <tr style="background: var(--surface-2); border-bottom: 1px solid var(--border); text-align: left;">
-                    <th style="padding: 6px;">Field</th>
-                    <th style="padding: 6px;">Original AI</th>
-                    <th style="padding: 6px;">Corrected</th>
-                    <th style="padding: 6px;">Changed By</th>
-                    <th style="padding: 6px;">Reason</th>
-                  </tr>
-                </thead>
-                <tbody id="modalAuditList"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 14px;">
-            <a id="modalReviewLink" href="review.html" class="btn btn-outline" style="font-size: 12px;">
-              Open Verification Console →
-            </a>
-            <button type="button" class="btn btn-primary" onclick="closeDetailModal()" style="font-size: 13px; font-weight: 600;">
-              Close
-            </button>
-          </div>
+        <div class="btn-row">
+          <button id="exportCsvBtn" class="btn btn-outline" type="button">Export CSV</button>
+          <button id="exportJsonBtn" class="btn btn-outline" type="button" title="Approved records in the ERP payload format">Export ERP JSON</button>
         </div>
       </div>
 
+      <div class="tabs-row">
+        <div class="tab-strip" role="tablist">
+          <button class="tab-button tab-button-active" data-status="all" type="button" role="tab" aria-selected="true">All</button>
+          <button class="tab-button" data-status="approved" type="button" role="tab" aria-selected="false">Approved</button>
+          <button class="tab-button" data-status="pending_review" type="button" role="tab" aria-selected="false">Pending</button>
+          <button class="tab-button" data-status="returned_for_correction" type="button" role="tab" aria-selected="false">Returned</button>
+          <button class="tab-button" data-status="rejected" type="button" role="tab" aria-selected="false">Rejected</button>
+        </div>
+        <span id="registerCount" class="muted small"></span>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>Record</th><th>Date</th><th>Loom</th><th>Shift</th><th class="num">Output</th><th>Material</th><th class="num">Downtime</th><th>Status</th><th>ERP</th></tr>
+          </thead>
+          <tbody id="registerTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="recordModal" class="modal-overlay hidden">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalRecordTitle">
+          <div class="modal-head">
+            <div>
+              <h3 id="modalRecordTitle"></h3>
+              <span id="modalStatusBadge"></span>
+            </div>
+            <button type="button" class="btn btn-outline btn-small" data-close aria-label="Close">✕</button>
+          </div>
+          <div id="modalErpBox"></div>
+          <dl id="modalFields" class="kv-grid"></dl>
+          <p class="section-label">Human changes</p>
+          <ul id="modalAudit" class="audit-list"></ul>
+          <div class="modal-foot">
+            <a id="modalReviewLink" href="review.html" class="btn btn-outline">Open with photo →</a>
+            <button type="button" class="btn btn-primary" data-close>Close</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
   <script src="js/config.js"></script>
   <script src="js/security.js"></script>
   <script src="js/toast.js"></script>
+  <script src="js/rules.js"></script>
   <script src="js/store.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/production-register.js"></script>
 </body>
 </html>

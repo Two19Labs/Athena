@@ -13,7 +13,7 @@
 
 * **What:** submission for the APLYD (Athena Infonomics) internship brief "Vision-First Shop Floor Digitisation". Brief: `C:\Users\adity\Downloads\APLYD_Textile_Shopfloor_Internship_Challenge_Updated.pdf`.
 * **Repo:** `https://github.com/Two19Labs/Athena`, branch `main`.
-* **Live (OLD build until redeployed):** `https://athena-silk-sigma.vercel.app`
+* **Live (v2, verified 2026-11-17):** `https://athena-silk-sigma.vercel.app`. `GEMINI_API_KEY` is set in Vercel (Production).
 
 ## 2. Current architecture (v2, rebuilt 2026-11-16 by Claude Code)
 
@@ -43,12 +43,12 @@
 |---|---|---|---|
 | 2026-11-15 | Antigravity | v1 build (8 phases), Vercel routing, "deep diagnostic". | `9efe1b8`…`6575846` |
 | 2026-11-16 | Claude Code | Audit: v1 crashed on 6/8 pages (`window.security` undefined), toasts never shown, extraction was filename keywords, benchmark and analytics numbers fabricated, Supabase unwired, SVG samples not uploadable, "Restaurant" branding. | — |
-| 2026-11-16 | Claude Code | v2 rebuild: Supabase removed; real `/api/extract` + `/api/erp`; shared rules; approval gate on AI flags + business rules; IndexedDB photos; real analytics + silent-error metric; new samples, honest benchmark; mobile layout; dialogs instead of prompt(); new docs. Tests above pass. | **uncommitted** |
+| 2026-11-16 | Claude Code | v2 rebuild: Supabase removed; real `/api/extract` + `/api/erp`; shared rules; approval gate on AI flags + business rules; IndexedDB photos; real analytics + silent-error metric; new samples, honest benchmark; mobile layout; dialogs instead of prompt(); new docs. Tests above pass. | `9b1e833` |
+
+| 2026-11-17 | Claude Code | Pushed `9b1e833`; Vercel env var set by user; live E2E passed (clean form → approve → ERP, ambiguous form → range warning, fabric photo refused, cross-site POST blocked). | (this commit) |
 
 ## 5. Next steps
 
-1. **User:** add the same key as the Vercel env var `GEMINI_API_KEY`.
 2. Improve synthetic samples (a truly ambiguous digit, an opaque stain), or better, add real photos. Then re-run the benchmark and update SOLUTION_NOTE section 6.
-3. Commit and push (with user approval) so Vercel redeploys. Then smoke-test the live site with a real photo.
 4. Fill in the author name in `docs/SOLUTION_NOTE.md`.
 5. Strongly recommended: photograph 10–20 real handwritten forms, add them to `tests/fixtures/samples.json`, and re-run the benchmark.

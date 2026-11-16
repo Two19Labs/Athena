@@ -1,7 +1,7 @@
 # APLYD: Solution Note
 
 **Brief:** Vision-first shop-floor digitisation (textile manufacturing), APLYD by Athena Infonomics
-**Author:** _[your name]_
+**Author:** Aditya Singhani
 
 ## 1. The problem, restated
 

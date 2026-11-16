@@ -50,5 +50,4 @@
 ## 5. Next steps
 
 2. Improve synthetic samples (a truly ambiguous digit, an opaque stain), or better, add real photos. Then re-run the benchmark and update SOLUTION_NOTE section 6.
-4. Fill in the author name in `docs/SOLUTION_NOTE.md`.
 5. Strongly recommended: photograph 10–20 real handwritten forms, add them to `tests/fixtures/samples.json`, and re-run the benchmark.

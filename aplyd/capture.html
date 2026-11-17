@@ -41,6 +41,17 @@
         <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden">
       </div>
 
+      <div id="samplePicker" class="sample-picker">
+        <p class="small"><strong>No form to hand?</strong> Try a sample photo. It goes through the same AI reading as a real upload.</p>
+        <div class="sample-list">
+          <button type="button" class="sample-btn" data-sample="form-01-clean">Clean form</button>
+          <button type="button" class="sample-btn" data-sample="form-05-ambiguous-qty">Unclear digit</button>
+          <button type="button" class="sample-btn" data-sample="form-06-oil-stain">Oil stain</button>
+          <button type="button" class="sample-btn" data-sample="form-09-ledger-layout">Different layout</button>
+          <button type="button" class="sample-btn" data-sample="form-12-not-a-form">Not a form</button>
+        </div>
+      </div>
+
       <!-- Stage 2: preflight -->
       <div id="preflightPreviewCard" class="preflight-preview-card hidden">
         <div class="preflight-head">
@@ -79,7 +90,7 @@
       <div id="progressSection" class="progress-card hidden" aria-live="polite">
         <div class="ocr-spinner"></div>
         <h3>Reading the form</h3>
-        <p class="muted">The vision model is transcribing the handwriting. This usually takes 5–20 seconds.</p>
+        <p class="muted">The vision model is transcribing the handwriting. This usually takes a few seconds, longer when the free AI service is busy.</p>
         <div class="progress-stepper">
           <div class="step-item" id="step1"><span class="step-icon">1</span><span>Preparing photo</span></div>
           <div class="step-item" id="step2"><span class="step-icon">2</span><span>AI reading handwriting</span></div>

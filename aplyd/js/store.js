@@ -12,7 +12,7 @@
   const LEGACY_KEYS = ['aplyd_local_db_v1'];
   const SESSION_KEY = 'aplyd_session_v2';
 
-  const SEED_MACHINES = [
+  const DEFAULT_MACHINES = [
     ['01', 'Air-Jet', 150, 750, 'Shed A - Fine Cotton Cambric'],
     ['02', 'Air-Jet', 150, 750, 'Shed A - Poplin 40s'],
     ['03', 'Rapier', 100, 500, 'Shed B - Heavy Twill / Denim 3/1'],
@@ -30,7 +30,7 @@
     default_unit: 'metres', min_expected_quantity: min, max_expected_quantity: max, is_active: true, notes
   }));
 
-  const SEED_SHIFTS = [
+  const DEFAULT_SHIFTS = [
     { id: 'shift-m', shift_code: 'M', name: 'Morning Shift', start_time: '06:00', end_time: '14:00', is_active: true },
     { id: 'shift-e', shift_code: 'E', name: 'Evening Shift', start_time: '14:00', end_time: '22:00', is_active: true },
     { id: 'shift-n', shift_code: 'N', name: 'Night Shift', start_time: '22:00', end_time: '06:00', is_active: true }
@@ -43,64 +43,8 @@
   ];
 
   function nowIso() { return new Date().toISOString(); }
-  function daysAgo(n) {
-    const d = new Date();
-    d.setDate(d.getDate() - n);
-    return Rules.todayIso(d);
-  }
   function uid(prefix) {
     return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  }
-
-  /** A week of approved history so the dashboard and register are not empty. Clearly marked as seeded. */
-  function seedHistory() {
-    const rows = [
-      [6, '12', 'm', 612, 'Combed Poplin 40s', 'POP-40-861', 1, 'Weft slub near selvedge', 20, 'Beam knotting'],
-      [6, '03', 'e', 318, 'Denim 3/1', 'DEN-26-112', 3, 'Reed marks', 45, 'Warp break repair'],
-      [5, '07', 'm', 540, 'Sheeting 30s', 'SHT-30-077', 0, null, 0, null],
-      [5, '01', 'n', 402, 'Cotton Cambric', 'CMB-60-019', 2, 'Oil spot x2', 35, 'Lubrication'],
-      [4, '12', 'e', 655, 'Combed Poplin 40s', 'POP-40-862', 0, null, 15, 'Pirn change'],
-      [4, '08', 'm', 214, 'Selvedge Drill', 'DRL-14-203', 4, 'Float, broken pick', 60, 'Shuttle replacement'],
-      [3, '05', 'n', 377, 'Linen Blend', 'LIN-55-031', 1, 'Thick place', 30, 'Weft jam'],
-      [3, '10', 'm', 590, 'Cotton Satin 50s', 'SAT-50-090', 0, null, 10, 'Cleaning'],
-      [2, '03', 'm', 296, 'Denim 3/1', 'DEN-26-113', 2, 'Reed marks', 50, 'Warp break repair'],
-      [2, '11', 'e', 421, 'Yarn Dyed Check', 'YDC-22-014', 1, 'Colour bleed', 25, 'Beam knotting'],
-      [1, '12', 'm', 634, 'Combed Poplin 40s', 'POP-40-863', 0, null, 0, null],
-      [1, '06', 'n', 488, 'Voile 60s', 'VOI-60-008', 2, 'Weft slub', 40, 'Lubrication']
-    ];
-    return rows.map((r, i) => {
-      const [ago, loom, sh, qty, mat, batch, defects, defDetails, dt, dtReason] = r;
-      const date = daysAgo(ago);
-      const reviewedAt = `${date}T16:${String(10 + i).padStart(2, '0')}:00.000Z`;
-      return {
-        id: `seed-${String(i + 1).padStart(3, '0')}`,
-        record_number: `PR-${date.slice(0, 4)}-${String(i + 1).padStart(4, '0')}`,
-        seed: true,
-        form_id: null,
-        machine_id: `mach-${loom}`,
-        shift_id: `shift-${sh}`,
-        production_date: date,
-        production_quantity: qty,
-        production_unit: 'metres',
-        material_reference: mat,
-        batch_reference: batch,
-        defects_count: defects,
-        defect_details: defDetails,
-        downtime_minutes: dt,
-        downtime_reason: dtReason,
-        remarks: null,
-        final_payload: null,
-        status: 'approved',
-        submitted_by: 'user-operator', submitted_by_name: 'Ramesh Kumar',
-        reviewed_by: 'user-supervisor', reviewed_by_name: 'Priya Sharma',
-        reviewed_at: reviewedAt,
-        approval_note: 'Seeded history record',
-        erp_status: 'submitted',
-        erp_reference: Rules.erpReference(`APLYD-seed-${i + 1}`, reviewedAt),
-        erp_attempts: 1,
-        created_at: `${date}T15:00:00.000Z`
-      };
-    });
   }
 
   // ---------------------------------------------------------------------------
@@ -152,16 +96,22 @@
   class AplydStore {
     constructor() {
       LEGACY_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (_) { /* ignore */ } });
-      if (!this._read()) this._write(this._freshDb());
+      const db = this._read();
+      if (!db) this._write(this._freshDb());
+      else if (db.records.some(r => r.seed)) {
+        // Older builds shipped demo history records; remove them so every record on screen is real.
+        db.records = db.records.filter(r => !r.seed);
+        this._write(db);
+      }
     }
 
     _freshDb() {
       return {
         version: 2,
-        machines: SEED_MACHINES.map(m => ({ ...m })),
-        shifts: SEED_SHIFTS.map(s => ({ ...s })),
+        machines: DEFAULT_MACHINES.map(m => ({ ...m })),
+        shifts: DEFAULT_SHIFTS.map(s => ({ ...s })),
         forms: [],
-        records: seedHistory(),
+        records: [],
         corrections: []
       };
     }
@@ -573,7 +523,7 @@
       }
       return {
         approvedMetres7d: Math.round(approved7d.filter(r => (r.production_unit || 'metres') === 'metres').reduce((s, r) => s + (Number(r.production_quantity) || 0), 0) * 10) / 10,
-        formsToday: records.filter(r => String(r.created_at || '').slice(0, 10) === today && !r.seed).length,
+        formsToday: records.filter(r => String(r.created_at || '').slice(0, 10) === today).length,
         pendingReviews: pending.length,
         returned: records.filter(r => r.status === 'returned_for_correction').length,
         openExceptions: exceptions,

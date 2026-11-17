@@ -23,13 +23,13 @@
     const rows = metrics.recentRecords;
     $('recentSubmissionsBody').innerHTML = rows.length ? rows.map(r => `
       <tr>
-        <td class="mono strong">${esc(r.record_number)}${r.seed ? ' <span class="tag">seed</span>' : ''}</td>
+        <td class="mono strong">${esc(r.record_number)}</td>
         <td class="strong">${esc((r.machine && r.machine.machine_code) || r.machine_raw || '—')}</td>
         <td>${esc((r.shift && r.shift.shift_code) || r.shift_raw || '—')}</td>
         <td class="num strong">${esc(L.fmtNum(r.production_quantity, r.production_unit))}</td>
         <td><span class="${L.statusClass(r.status)}">${esc(L.statusLabel(r.status))}</span></td>
         <td class="right"><a href="review.html?id=${encodeURIComponent(r.id)}" class="btn btn-outline btn-small">Open</a></td>
-      </tr>`).join('') : '<tr><td colspan="6" class="empty-cell">No records yet.</td></tr>';
+      </tr>`).join('') : '<tr><td colspan="6" class="empty-cell">No records yet. <a href="capture.html">Capture a form</a>, or use one of the sample photos there to see the full flow.</td></tr>';
 
     renderChart();
     window.addEventListener('themeChanged', renderChart);
@@ -44,6 +44,7 @@
     }
     const labels = Object.keys(totals).sort();
     $('chartEmpty').classList.toggle('hidden', labels.length > 0);
+    document.querySelector('#loomChart').parentElement.classList.toggle('hidden', labels.length === 0);
     window.AplydCharts.bar('loomChart', labels, labels.map(l => totals[l]), { label: 'Metres' });
   }
 })();

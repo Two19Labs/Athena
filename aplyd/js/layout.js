@@ -52,7 +52,10 @@
       const active = sidebar.querySelector('.nav-item-active');
       const nav = sidebar.querySelector('.sidebar-nav');
       if (active && nav && nav.scrollWidth > nav.clientWidth) {
-        nav.scrollLeft = active.offsetLeft - nav.clientWidth / 2 + active.offsetWidth / 2;
+        // Scroll only if the current page's tab is cut off, and then just enough to show it fully.
+        const left = active.offsetLeft - nav.offsetLeft;
+        const right = left + active.offsetWidth;
+        if (right > nav.clientWidth) nav.scrollLeft = right - nav.clientWidth + 12;
       }
     }
 

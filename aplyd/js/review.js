@@ -64,7 +64,7 @@
         : (r.status === 'returned_for_correction' ? `<span class="small">${esc(r.return_reason || '')}</span>` : '');
       return `
         <tr>
-          <td class="mono strong">${esc(r.record_number)}${r.seed ? ' <span class="tag">seed</span>' : ''}</td>
+          <td class="mono strong">${esc(r.record_number)}</td>
           <td>${esc(r.production_date || '—')}</td>
           <td class="strong">${esc((r.machine && r.machine.machine_code) || r.machine_raw || '—')}</td>
           <td>${esc((r.shift && r.shift.name) || r.shift_raw || '—')}</td>
@@ -112,7 +112,7 @@
   function renderHeader() {
     $('detailRecordNumber').textContent = record.record_number;
     const parts = [
-      record.form_number ? `Form ${record.form_number}` : 'Seeded history record',
+      record.form_number ? `Form ${record.form_number}` : null,
       record.submitted_by_name ? `by ${record.submitted_by_name}` : null,
       record.created_at ? new Date(record.created_at).toLocaleString() : null
     ].filter(Boolean);
@@ -406,9 +406,7 @@
     } else {
       img.classList.add('hidden');
       note.classList.remove('hidden');
-      note.textContent = record.seed
-        ? 'Seeded history record: no photo attached.'
-        : 'The photo for this record is not stored in this browser.';
+      note.textContent = 'The photo for this record is not stored in this browser.';
     }
     const issues = (record.final_payload && record.final_payload.image_issues) || [];
     const ul = $('imageIssues');

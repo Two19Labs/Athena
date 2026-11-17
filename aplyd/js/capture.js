@@ -31,6 +31,10 @@
     $('extractBtn').addEventListener('click', runExtraction);
     $('retryBtn').addEventListener('click', () => { $('failureCard').classList.add('hidden'); $('preflightPreviewCard').classList.remove('hidden'); });
     $('retakeBtn').addEventListener('click', reset);
+    $('samplePicker').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-sample]');
+      if (btn) loadSample(btn.dataset.sample, btn);
+    });
 
     renderAiStatus();
   });
@@ -49,6 +53,21 @@
       const p = s.providers[0];
       el.className = 'ai-status ai-status-ok';
       el.textContent = `Vision AI ready: ${p.name} (${p.models[0]})`;
+    }
+  }
+
+  /** Load one of the bundled sample photos and run it through exactly the same path as an upload. */
+  async function loadSample(id, btn) {
+    btn.disabled = true;
+    try {
+      const resp = await fetch(`assets/samples/${encodeURIComponent(id)}.jpg`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const blob = await resp.blob();
+      await handleFile(new File([blob], `${id}.jpg`, { type: 'image/jpeg' }));
+    } catch (err) {
+      window.toast.show(`Could not load the sample photo (${err.message}).`, 'error');
+    } finally {
+      btn.disabled = false;
     }
   }
 
@@ -119,6 +138,7 @@
     state.previewUrl = URL.createObjectURL(blob);
 
     $('dropzone').classList.add('hidden');
+    $('samplePicker').classList.add('hidden');
     $('preflightPreviewCard').classList.remove('hidden');
     $('previewImg').src = state.previewUrl;
     $('previewFileName').textContent = state.file.name;
@@ -205,6 +225,7 @@
     $('failureCard').classList.add('hidden');
     $('duplicateWarningAlert').classList.add('hidden');
     $('dropzone').classList.remove('hidden');
+    $('samplePicker').classList.remove('hidden');
     if (keepToast !== true) $('dropzone').focus();
   }
 

@@ -33,7 +33,7 @@ Pick a demo persona on the first screen:
 - **Supervisor:** review and approve.
 - **Admin:** also edits the loom and shift master data.
 
-Sample form photos to try are in [`aplyd/assets/samples/`](aplyd/assets/samples/).
+The app starts empty: there is no mock data. The capture page has one-click sample photos (clean, unclear digit, oil stain, different layout, not a form), and the files are also in [`aplyd/assets/samples/`](aplyd/assets/samples/).
 
 ## Deploy (Vercel, free)
 
@@ -46,7 +46,7 @@ Sample form photos to try are in [`aplyd/assets/samples/`](aplyd/assets/samples/
 ```bash
 npm install            # dev only: puppeteer-core, which drives your installed Chrome/Edge
 npm test               # 30 unit tests: rules, strict parsers, ERP contract, /api/erp, /api/extract (stubbed provider, fallback, time budget, origin check)
-npm run test:e2e       # 100 browser checks across every page and workflow, desktop + mobile, older-browser fallbacks
+npm run test:e2e       # 108 browser checks across every page and workflow, desktop + mobile, older-browser fallbacks
 npm run samples        # re-render the synthetic sample photos
 npm run benchmark      # REAL AI run over the labelled samples (needs GEMINI_API_KEY)
 ```

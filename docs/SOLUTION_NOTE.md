@@ -56,7 +56,7 @@ The provider layer is pluggable: an OpenAI-compatible adapter (OpenRouter free v
 - unit aliases
 - negative-value checks
 
-This makes the behaviour testable (26 unit tests) and stops the model from "helpfully" fixing an unknown loom into a known one.
+This makes the behaviour testable (30 unit tests) and stops the model from "helpfully" fixing an unknown loom into a known one.
 
 **Five-state field contract.** "Blank on paper" (`missing`) is different from "written but unreadable" (`illegible`), from "readable but ambiguous" (`uncertain`), and from "readable but impossible" (`invalid`). A written `0` stays `0` with status `read`; it is not treated as blank. The UI, the approval gate and the metrics all key off these states.
 

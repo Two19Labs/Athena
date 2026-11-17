@@ -59,7 +59,7 @@
     }
     tbody.innerHTML = rows.map(r => `
       <tr data-id="${esc(r.id)}" tabindex="0" class="clickable">
-        <td class="mono strong">${esc(r.record_number)}${r.seed ? ' <span class="tag">seed</span>' : ''}</td>
+        <td class="mono strong">${esc(r.record_number)}</td>
         <td>${esc(r.production_date || '—')}</td>
         <td class="strong">${esc((r.machine && r.machine.machine_code) || r.machine_raw || '—')}</td>
         <td>${esc((r.shift && r.shift.shift_code) || r.shift_raw || '—')}</td>
@@ -98,7 +98,7 @@
       ['Remarks', r.remarks],
       ['Submitted by', r.submitted_by_name],
       ['Reviewed by', r.reviewed_by_name ? `${r.reviewed_by_name}${r.reviewed_at ? ` · ${new Date(r.reviewed_at).toLocaleString()}` : ''}` : null],
-      ['Source', r.form_number ? `${r.form_number} · read by ${r.extraction_model || 'AI'}` : (r.seed ? 'Seeded history (no photo)' : null)]
+      ['Source', r.form_number ? `${r.form_number} · read by ${r.extraction_model || 'AI'}` : null]
     ];
     $('modalFields').innerHTML = kv.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v === null || v === undefined || v === '' ? '—' : v)}</dd></div>`).join('');
 

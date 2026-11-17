@@ -234,6 +234,14 @@ textarea.form-control { resize: vertical; }
 }
 .preflight-dropzone:hover, .preflight-dropzone.dragover { border-color: var(--ink); background: var(--surface-2); }
 .dropzone-icon { font-size: 36px; }
+.sample-picker { padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 8px; }
+.sample-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.sample-btn {
+  font: inherit; font-size: 12.5px; font-weight: 500; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--ink);
+}
+.sample-btn:hover:not(:disabled) { border-color: var(--ink); }
+.sample-btn:disabled { opacity: 0.5; cursor: wait; }
 .preflight-preview-card, .progress-card, .failure-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
   display: flex; flex-direction: column; gap: 12px;

@@ -59,7 +59,7 @@
       window.location.href = btn.dataset.role === 'operator' ? 'capture.html' : 'dashboard.html';
     }));
     document.getElementById('resetDemoBtn').addEventListener('click', async () => {
-      const ok = await window.dialog.confirm({ title: 'Reset demo data?', message: 'Deletes every captured form, photo and record in this browser and restores the seeded history.', confirmText: 'Reset', danger: true });
+      const ok = await window.dialog.confirm({ title: 'Reset demo data?', message: 'Deletes every captured form, photo and record in this browser. Loom and shift settings go back to the defaults.', confirmText: 'Reset', danger: true });
       if (!ok) return;
       await window.aplydStore.resetDemo();
       window.toast.show('Demo data reset.', 'success');

@@ -108,6 +108,7 @@
     const since = Rules.todayIso(new Date(Date.now() - 29 * 864e5));
     const approved = records.filter(r => r.status === 'approved' && r.production_date >= since);
     $('chartsEmpty').classList.toggle('hidden', approved.length > 0);
+    document.querySelector('.chart-grid').classList.toggle('hidden', approved.length === 0);
 
     const sumBy = (keyFn, valFn, rows) => rows.reduce((acc, r) => { const k = keyFn(r); if (k) acc[k] = (acc[k] || 0) + (Number(valFn(r)) || 0); return acc; }, {});
     const metres = approved.filter(r => (r.production_unit || 'metres') === 'metres');

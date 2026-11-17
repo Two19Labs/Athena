@@ -155,7 +155,7 @@ async function overflow(page) {
   try {
     // ── 1. Every page, every viewport: no errors, no horizontal overflow ──
     console.log('\n1. Page smoke test (supervisor + admin, desktop + mobile)');
-    const pages = ['index.html', 'dashboard.html', 'capture.html', 'review.html', 'review.html?id=seed-001', 'production-register.html', 'analytics.html', 'machines.html', 'shifts.html'];
+    const pages = ['index.html', 'dashboard.html', 'capture.html', 'review.html', 'review.html?id=does-not-exist', 'production-register.html', 'analytics.html', 'machines.html', 'shifts.html'];
     for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844, isMobile: true, hasTouch: true }]) {
       const page = await newPage(browser, base, vp);
       await as(page, 'admin');
@@ -171,6 +171,23 @@ async function overflow(page) {
     }
 
     const page = await newPage(browser, base);
+
+    // ── 1b. No demo data: the app starts empty and guides the user ──
+    console.log('\n1b. Fresh start (no demo records)');
+    await as(page, 'supervisor');
+    check(await recordCount(page) === 0, 'a fresh browser starts with zero records (no mock data)');
+    await go(page, 'dashboard.html');
+    check(await page.$eval('#recentSubmissionsBody', el => /No records yet/.test(el.textContent) && !!el.querySelector('a[href="capture.html"]')), 'empty dashboard points to Capture');
+    await go(page, 'review.html?id=does-not-exist');
+    check(/Record not found/.test(await page.$eval('#detailSection', el => el.textContent)), 'unknown record id shows "not found"');
+    // Browsers that ran an older build still hold demo "seed" records: they must be removed on load.
+    await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('aplyd_db_v2'));
+      db.records.push({ id: 'seed-001', seed: true, record_number: 'PR-2026-0001', status: 'approved', created_at: new Date().toISOString() });
+      localStorage.setItem('aplyd_db_v2', JSON.stringify(db));
+    });
+    await go(page, 'dashboard.html');
+    check(await recordCount(page) === 0, 'old demo records are cleaned out automatically');
 
     // ── 2. Roles ──
     console.log('\n2. Role access');
@@ -462,6 +479,30 @@ async function overflow(page) {
     check(await recordCount(old) === n1 + 1, 'record saved on the fallback path');
     check(old.errors.length === 0, 'no errors on the fallback path', old.errors.join('|'));
     await old.close();
+
+    // ── 14. One-click sample photos ──
+    console.log('\n14. Sample photo picker');
+    await as(page, 'operator');
+    await go(page, 'capture.html');
+    check(await page.$$eval('#samplePicker .sample-btn', els => els.length) === 5, 'capture page offers 5 sample photos');
+    await page.click('#samplePicker [data-sample="form-01-clean"]');
+    await page.waitForSelector('#preflightPreviewCard:not(.hidden)', { timeout: 10000 });
+    const sampleState = await page.evaluate(() => ({
+      name: document.getElementById('previewFileName').textContent,
+      pickerHidden: document.getElementById('samplePicker').classList.contains('hidden'),
+      checks: document.querySelectorAll('#qualityChecks li').length
+    }));
+    check(sampleState.name === 'form-01-clean.jpg' && sampleState.pickerHidden && sampleState.checks === 3, 'sample loads into the normal preview with quality checks', JSON.stringify(sampleState));
+    await page.click('#removeFileBtn');
+    check(await page.$eval('#samplePicker', el => !el.classList.contains('hidden')), 'samples reappear after "Retake"');
+    const n2 = await recordCount(page);
+    stub.next = { status: 200, json: formReply({ machine: f('L-07') }, '07/10/2026') };
+    await page.click('#samplePicker [data-sample="form-01-clean"]');
+    await page.waitForSelector('#preflightPreviewCard:not(.hidden)');
+    await sleep(300);
+    await page.click('#extractBtn');
+    await page.waitForFunction(() => location.search.includes('id='), { timeout: 20000 }).catch(() => {});
+    check(page.url().includes('review.html?id=') && await recordCount(page) === n2 + 1, 'a sample photo goes through the real extraction path and creates a record');
 
     // ── Whole-run sanity ──
     check(page.errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'no unexpected browser errors across the whole flow', page.errors.join(' | '));

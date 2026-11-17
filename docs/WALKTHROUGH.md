@@ -1,6 +1,6 @@
 # APLYD: Demo Walkthrough
 
-About 6 minutes. Use the deployed URL, or `node dev-server.js` with `GEMINI_API_KEY` set. The sample photos are in `aplyd/assets/samples/`.
+About 6 minutes. Use the deployed URL, or `node dev-server.js` with `GEMINI_API_KEY` set. The app starts with no records: everything shown is created live. The capture page has one-click **sample photos**; you can also upload your own (files in `aplyd/assets/samples/`).
 
 > The AI is a real model, so its exact readings can differ from run to run. That is the point of the review step. If it reads a "hard" sample correctly and flags nothing, say so; the safeguards in Cases B and C still apply whenever it does flag something.
 
@@ -11,7 +11,7 @@ Open the start page: *"Operators write loom output on paper. Retyping it into th
 
 ## 2. Case A: clean form, end to end (1.5 min)
 1. Choose **Ramesh · Operator**. The capture page opens, and the green banner shows which AI model is live.
-2. Upload `form-01-clean.jpg`. Point out the preflight checks: resolution, lighting and sharpness all pass. The photo is downscaled before upload.
+2. Under the dropzone, click the sample **Clean form** (or upload a photo). Point out the preflight checks: resolution, lighting and sharpness all pass. The photo is downscaled before upload.
 3. Click **Read form with AI**. The steps are real, not timed animations.
 4. The review screen shows the photo on the left and the fields on the right. Each field has a status badge and the exact handwriting it was read from ("Written: …").
 5. As the operator, everything is read-only: *"operators can't approve their own forms."*
@@ -19,15 +19,15 @@ Open the start page: *"Operators write loom output on paper. Retyping it into th
 7. Open **Production Register**, then this record. Expand **ERP payload** to show the clean versioned contract with provenance (source form, image hash, model, fields corrected).
 
 ## 3. Case B: difficult form, ambiguous and stained (2 min)
-1. As the operator, upload `form-05-ambiguous-qty.jpg`: the first digit of the quantity could be a 3 or an 8.
+1. As the operator, click the sample **Unclear digit**: the first digit of the quantity could be a 3 or an 8.
 2. On review, the quantity should be highlighted **Uncertain**, with the model's reason and the raw transcription. **Approve is disabled** and the panel lists what must be resolved.
 3. Zoom into the photo (scroll or pinch) and compare. Correct the value, then give a reason. The badge changes to **Corrected**, and the **audit trail** shows before, after, who and why.
    - If the value was right, click **Value matches photo** instead. Confirmations are logged too.
-4. Optional: upload `form-06-oil-stain.jpg`. The stoppage reason should come back **Illegible**, with no invented text. Click **Return to operator** with a note. As the operator, the record is now editable; fix the field and **Resubmit**.
+4. Optional: click the sample **Oil stain**. The stoppage reason should come back **Illegible**, with no invented text. Click **Return to operator** with a note. As the operator, the record is now editable; fix the field and **Resubmit**.
 5. Optional: upload `form-08-unknown-loom.jpg`. "L-19" is flagged **Invalid** because it is not in the loom master. The system does not quietly map it to a real loom.
 
 ## 4. Case C: failed capture (1 min)
-1. Upload `form-12-not-a-form.jpg`, a close-up of fabric.
+1. Click the sample **Not a form**, a close-up of fabric.
 2. The system refuses: *"The AI could not find a readable production form…"* with the model's reason. **Nothing was saved, and no values were guessed.**
 3. Mention the other failure paths, each with its own message: provider rate limit, bad key, malformed model output, no network, and no key configured.
 

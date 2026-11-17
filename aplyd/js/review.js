@@ -16,6 +16,8 @@
   let machines = [];
   let shifts = [];
   let imageUrl = null;
+  let nextId = null;
+  const batchFilter = new URLSearchParams(location.search).get('batch');
   const view = { scale: 1, x: 0, y: 0, rot: 0 };
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -36,6 +38,13 @@
       $('pageTitle').textContent = 'My Submissions';
       $('queueStatusFilter').value = 'all';
     }
+    if (batchFilter) {
+      $('queueStatusFilter').value = 'all';
+      const rows = await store.getRecords({ batch_id: batchFilter });
+      const label = rows[0] && rows[0].batch_label;
+      $('batchBanner').innerHTML = `Showing <strong>${esc(label || 'one batch')}</strong> (${rows.length} record${rows.length === 1 ? '' : 's'}). <a href="review.html">Show all records</a>`;
+      $('batchBanner').classList.remove('hidden');
+    }
     $('queueStatusFilter').addEventListener('change', renderQueue);
     $('queueSearchInput').addEventListener('input', renderQueue);
     await renderQueue();
@@ -46,6 +55,7 @@
     const status = $('queueStatusFilter').value;
     const filters = { status, search: $('queueSearchInput').value };
     if (user.role === 'operator') filters.submitted_by = user.id;
+    if (batchFilter) filters.batch_id = batchFilter;
     const rows = await store.getRecords(filters);
     const tbody = $('queueTableBody');
     if (!rows.length) {
@@ -98,9 +108,19 @@
     await refresh();
   }
 
+  /** Next record waiting for review: same batch first (in capture order), then the oldest pending one. */
+  async function findNextPending() {
+    if (!store.can('review', { status: 'pending_review' })) return null;
+    const rows = (await store.getRecords({ status: 'pending_review' })).filter(r => r.id !== record.id);
+    rows.sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+    const sameBatch = record.batch_id ? rows.find(r => r.batch_id === record.batch_id) : null;
+    return (sameBatch || rows[0] || {}).id || null;
+  }
+
   async function refresh() {
     record = await store.getRecordById(record.id);
     validation = await store.validationFor(record);
+    nextId = await findNextPending();
     renderHeader();
     renderBanner();
     renderValidation();
@@ -325,7 +345,7 @@
     } else {
       const note = record.status === 'pending_review' && user.role === 'operator' ? 'Waiting for a supervisor to review.' :
         record.status === 'approved' ? 'Approved records are locked.' : record.status === 'rejected' ? 'Rejected records are locked.' : '';
-      parts.push(`<span class="small muted">${note}</span><a class="btn btn-outline" href="review.html">Back to queue</a>`);
+      parts.push(`<span class="small muted">${note}</span><div class="btn-row"><a class="btn btn-outline" href="review.html${record.batch_id ? `?batch=${encodeURIComponent(record.batch_id)}` : ''}">Back to queue</a>${nextId ? `<a class="btn btn-primary" id="nextRecordBtn" href="review.html?id=${encodeURIComponent(nextId)}">Next record →</a>` : ''}</div>`);
     }
     bar.innerHTML = parts.join('');
 

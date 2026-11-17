@@ -31,7 +31,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 // ---------------------------------------------------------------------------
 // Stub Gemini
 // ---------------------------------------------------------------------------
-const stub = { next: null, requests: [] };
+const stub = { next: null, queue: [], requests: [] }; // queue: one-shot answers in arrival order (batches), else `next`
 const f = (value, status = 'read', raw) => ({ value, raw_value: raw === undefined ? (value === null ? null : String(value)) : raw, status, reason: null });
 function formReply(overrides = {}, date = '01/10/2026') {
   return {
@@ -53,7 +53,7 @@ function startStub() {
       req.on('data', c => { body += c; });
       req.on('end', () => {
         stub.requests.push({ url: req.url, bytes: body.length, key: req.headers['x-goog-api-key'] });
-        const next = stub.next || { status: 500, json: { error: 'no stub response set' } };
+        const next = stub.queue.length ? stub.queue.shift() : (stub.next || { status: 500, json: { error: 'no stub response set' } });
         const payload = next.status === 200
           ? { candidates: [{ content: { parts: [{ text: JSON.stringify(next.json) }] } }] }
           : next.json;
@@ -103,7 +103,7 @@ async function answerDialog(page, text) {
 async function capture(page, file, reply) {
   stub.next = reply;
   await go(page, 'capture.html');
-  const input = await page.$('#fileInput');
+  const input = await page.$('#cameraInput');
   await input.uploadFile(file);
   await page.waitForSelector('#preflightPreviewCard:not(.hidden)', { timeout: 10000 });
   await sleep(300);
@@ -281,7 +281,7 @@ async function overflow(page) {
     console.log('\n5. Duplicate detection');
     await as(page, 'operator');
     await go(page, 'capture.html');
-    await (await page.$('#fileInput')).uploadFile(path.join(SAMPLES, 'form-05-ambiguous-qty.jpg'));
+    await (await page.$('#cameraInput')).uploadFile(path.join(SAMPLES, 'form-05-ambiguous-qty.jpg'));
     await page.waitForSelector('#preflightPreviewCard:not(.hidden)');
     await sleep(500);
     check(await page.$eval('#duplicateWarningAlert', el => !el.classList.contains('hidden')), 'same photo twice shows a duplicate-photo warning');
@@ -503,6 +503,129 @@ async function overflow(page) {
     await page.click('#extractBtn');
     await page.waitForFunction(() => location.search.includes('id='), { timeout: 20000 }).catch(() => {});
     check(page.url().includes('review.html?id=') && await recordCount(page) === n2 + 1, 'a sample photo goes through the real extraction path and creates a record');
+
+    // ── 15. Batch upload ──
+    console.log('\n15. Batch upload (many photos at once)');
+    const batchState = (pg) => pg.evaluate(() => ({
+      rows: [...document.querySelectorAll('#batchList .batch-item')].map(li => li.className.replace('batch-item ', '')),
+      summary: document.getElementById('batchSummary').textContent,
+      start: document.getElementById('batchStartBtn'),
+      startText: document.getElementById('batchStartBtn').textContent,
+      startHidden: document.getElementById('batchStartBtn').classList.contains('hidden'),
+      reviewHref: document.getElementById('batchReviewLink').getAttribute('href'),
+      reviewHidden: document.getElementById('batchReviewLink').classList.contains('hidden')
+    })).then(s => ({ ...s, start: undefined }));
+    const waitIdle = (pg) => pg.waitForFunction(() => {
+      const rows = [...document.querySelectorAll('#batchList .batch-item')];
+      return rows.length && !rows.some(li => /batch-(preparing|queued|reading|retrying)\b/.test(li.className)) && document.getElementById('batchStopBtn').classList.contains('hidden');
+    }, { timeout: 30000 });
+    const samples = (...ids) => ids.map(id => path.join(SAMPLES, `${id}.jpg`));
+
+    await as(page, 'operator');
+    await go(page, 'capture.html');
+    await page.evaluate(() => { window.APLYD_CONFIG.BATCH_RETRY_WAITS_MS = [300, 600]; });
+    const nB = await recordCount(page);
+    // 4 different photos + one exact duplicate of the first
+    await (await page.$('#galleryInput')).uploadFile(...samples('form-01-clean', 'form-07-blank-and-zero', 'form-09-ledger-layout', 'form-12-not-a-form', 'form-01-clean'));
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-item').length === 5 && !document.querySelector('#batchList .batch-preparing'), { timeout: 15000 });
+    let bs = await batchState(page);
+    check(bs.rows.filter(r => r === 'batch-queued').length === 4 && bs.rows.includes('batch-skipped'), 'batch lists 5 photos: 4 queued, the exact duplicate skipped', JSON.stringify(bs.rows));
+    check(/Read 4 photos/.test(bs.startText) && await recordCount(page) === nB, 'nothing is saved before "Read" is pressed', bs.startText);
+    check(await page.$eval('#dropzone', el => el.classList.contains('hidden')), 'start area hides while a batch is open');
+
+    stub.queue = [
+      { status: 200, json: formReply({ machine: f('L-01') }, '10/10/2026') },
+      { status: 200, json: formReply({ machine: f('L-02'), production_quantity: { value: 850, raw_value: '350/850?', status: 'uncertain', reason: '3 or 8' } }, '10/10/2026') },
+      { status: 200, json: formReply({ machine: f('L-06') }, '10/10/2026') },
+      { status: 200, json: { is_production_form: false, image_issues: ['fabric'], fields: {} } }
+    ];
+    const reqBefore = stub.requests.length;
+    await page.click('#batchStartBtn');
+    await waitIdle(page);
+    bs = await batchState(page);
+    check(stub.requests.length - reqBefore === 4, 'each queued photo is sent to the AI exactly once', String(stub.requests.length - reqBefore));
+    check(bs.rows.filter(r => r === 'batch-ready').length === 2 && bs.rows.filter(r => r === 'batch-flagged').length === 1 && bs.rows.filter(r => r === 'batch-failed').length === 1,
+      'outcomes: 2 ready, 1 needs a check (uncertain qty), 1 failed (not a form)', JSON.stringify(bs.rows));
+    check(await recordCount(page) === nB + 3, 'exactly 3 records created; the failed and skipped photos save nothing');
+    check(!bs.reviewHidden && /batch=batch-/.test(bs.reviewHref) && /3 read/.test(bs.summary), 'summary + "Review 3 records from this batch" link', bs.summary);
+    const batchId = new URLSearchParams(bs.reviewHref.split('?')[1]).get('batch');
+    const recs = await page.evaluate(() => JSON.parse(localStorage.getItem('aplyd_db_v2')).records.slice(-3));
+    check(recs.every(r => r.batch_id === batchId && r.status === 'pending_review'), 'batch records are normal pending records tagged with the batch');
+
+    // Retry a failed photo manually
+    stub.queue = [{ status: 200, json: formReply({ machine: f('L-04') }, '11/10/2026') }];
+    await page.click('#batchList [data-act="retry"]');
+    await waitIdle(page);
+    check((await batchState(page)).rows.filter(r => r === 'batch-failed').length === 0 && await recordCount(page) === nB + 4, 'Retry on a failed photo re-reads just that photo');
+
+    // Automatic retry on rate limit
+    await page.click('#batchClearBtn');
+    check(await page.$eval('#dropzone', el => !el.classList.contains('hidden')), '"New batch" returns to the start area');
+    await (await page.$('#galleryInput')).uploadFile(...samples('form-02-skewed', 'form-03-low-light'));
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-queued').length === 2, { timeout: 15000 });
+    stub.queue = [{ status: 429, json: {} }, { status: 200, json: formReply({ machine: f('L-10') }, '12/10/2026') }, { status: 200, json: formReply({ machine: f('L-12') }, '12/10/2026') }];
+    await page.click('#batchStartBtn');
+    await waitIdle(page);
+    bs = await batchState(page);
+    check(bs.rows.every(r => r === 'batch-ready'), 'a rate-limited photo waits and retries automatically, then succeeds', JSON.stringify(bs.rows));
+
+    // Stop mid-batch and resume
+    await page.click('#batchClearBtn');
+    await (await page.$('#galleryInput')).uploadFile(...samples('form-04-glare', 'form-06-oil-stain', 'form-08-unknown-loom', 'form-10-faded-torn', 'form-11-sideways'));
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-queued').length === 5, { timeout: 15000 });
+    stub.next = { status: 200, json: formReply({ machine: f('L-07') }, '13/10/2026') };
+    await page.click('#batchStartBtn');
+    await page.click('#batchStopBtn');
+    await waitIdle(page);
+    bs = await batchState(page);
+    const stopped = bs.rows.filter(r => r === 'batch-stopped').length;
+    check(stopped >= 1 && stopped <= 3 && /Resume/.test(bs.startText), 'Stop lets in-flight photos finish and holds the rest', JSON.stringify(bs.rows));
+    await page.click('#batchStartBtn');
+    await waitIdle(page);
+    check((await batchState(page)).rows.every(r => r === 'batch-ready' || r === 'batch-flagged'), 'Resume finishes the remaining photos (none stopped, queued or failed)');
+
+    // Limit: more than 25 photos
+    await page.click('#batchClearBtn');
+    await (await page.$('#galleryInput')).uploadFile(...Array.from({ length: 27 }, (_, i) => samples(['form-01-clean', 'form-02-skewed', 'form-03-low-light'][i % 3])[0]));
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-item').length > 0 && !document.querySelector('#batchList .batch-preparing'), { timeout: 30000 });
+    check(await page.$$eval('#batchList .batch-item', els => els.length) === 25, 'a batch is capped at 25 photos with a message');
+    await page.click('#batchClearBtn');
+
+    // A single photo from "Choose photos" still uses the single-photo flow
+    await (await page.$('#galleryInput')).uploadFile(...samples('form-01-clean'));
+    await page.waitForSelector('#preflightPreviewCard:not(.hidden)', { timeout: 10000 });
+    check(await page.$eval('#batchSection', el => el.classList.contains('hidden')), 'one photo from the gallery opens the normal single-photo preview');
+    await page.click('#removeFileBtn');
+
+    // Review the batch: filtered queue + "Next record"
+    await as(page, 'supervisor');
+    await go(page, `review.html?batch=${encodeURIComponent(batchId)}`);
+    const q = await page.evaluate(() => ({ banner: document.getElementById('batchBanner').textContent, rows: document.querySelectorAll('#queueTableBody tr').length }));
+    check(/Batch/.test(q.banner) && q.rows === 4, 'review queue filters to just this batch', JSON.stringify(q));
+    const firstId = await page.$eval('#queueTableBody a.btn', a => new URLSearchParams(a.getAttribute('href').split('?')[1]).get('id'));
+    await go(page, `review.html?id=${firstId}`);
+    if (await page.$('#approveBtn') && !(await page.$eval('#approveBtn', b => b.disabled))) {
+      await page.click('#approveBtn');
+      await answerDialog(page, '');
+      await sleep(600);
+    } else {
+      await page.click('#returnBtn');
+      await answerDialog(page, 'Check quantity');
+    }
+    const nextHref = await page.$eval('#nextRecordBtn', a => a.getAttribute('href')).catch(() => null);
+    check(!!nextHref && !nextHref.includes(firstId), 'after a decision, "Next record →" jumps to the next pending record', String(nextHref));
+
+    // Mobile layout of the batch list
+    const mb = await newPage(browser, base, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await as(mb, 'operator');
+    await go(mb, 'capture.html');
+    await (await mb.$('#galleryInput')).uploadFile(...samples('form-01-clean', 'form-12-not-a-form', 'form-09-ledger-layout'));
+    await mb.waitForFunction(() => document.querySelectorAll('#batchList .batch-queued').length === 3, { timeout: 15000 });
+    const ob = await overflow(mb);
+    check(ob.pageScroll <= 0 && !ob.offenders.length, 'batch list fits a 390px phone', JSON.stringify(ob));
+    await mb.screenshot({ path: path.join(OUT, 'mobile_batch.png'), fullPage: true });
+    check(mb.errors.length === 0, 'no errors in the batch flow on mobile', mb.errors.join('|'));
+    await mb.close();
 
     // ── Whole-run sanity ──
     check(page.errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'no unexpected browser errors across the whole flow', page.errors.join(' | '));

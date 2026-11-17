@@ -31,6 +31,11 @@ Open the start page: *"Operators write loom output on paper. Retyping it into th
 2. The system refuses: *"The AI could not find a readable production form…"* with the model's reason. **Nothing was saved, and no values were guessed.**
 3. Mention the other failure paths, each with its own message: provider rate limit, bad key, malformed model output, no network, and no key configured.
 
+## 4b. Optional: a stack of forms (1 min)
+1. As the operator, click **Choose photos** and select several sample photos at once (e.g. all 12 in `aplyd/assets/samples/`).
+2. Each photo gets a row: Waiting → Reading → Ready / Needs check / Failed. Exact duplicates are skipped; the fabric photo fails with its reason.
+3. Click **Review N records from this batch →**, switch to the supervisor, open the first record and, after deciding, use **Next record →** to move through the stack.
+
 ## 5. Reliability and the ERP failure path (1 min)
 1. **Analytics & Reliability** shows live numbers from the reviews just done. The key one is **silent errors**: the AI was confident and wrong. Each one is listed with what was written and what the human changed it to.
 2. The offline benchmark card shows `npm run benchmark` results on the labelled samples: field accuracy, silent-error rate, flag recall, blank detection.

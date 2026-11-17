@@ -18,6 +18,7 @@ The design principle throughout: **the AI reads, code checks, a human decides.**
 | A3 | Required fields: loom, date, shift, quantity. Everything else is optional. | A blank batch is a valid outcome. A blank quantity is not. |
 | A4 | The loom and shift master is the source of truth. | A reading like "L-19" that is not in the master is flagged `invalid`, never auto-corrected. |
 | A5 | Operators use a mid-range Android phone on a patchy network. | Images are downscaled in the browser before upload (≈0.3–1 MB). |
+| A8 | Forms are often submitted in a stack at shift end, not one at a time. | Batch upload (≤25 photos) alongside single capture. |
 | A6 | The ERP accepts a JSON record per production entry. | It is mocked with a versioned contract (`aplyd.production_record/v1`). |
 | A7 | Prototype only: demo personas, no login, data stored in the browser. | Keeps the scope to a week. The production design is in `production-schema.sql`. |
 
@@ -85,7 +86,8 @@ This makes the behaviour testable (30 unit tests) and stops the model from "help
 | Unknown loom or shift | `invalid`, plus the reason "not in loom master". It is never auto-mapped. |
 | Different form layout | The prompt finds fields by meaning, not position. Sample 9 tests this. |
 | Not a form at all | The model says `is_production_form: false`, the system returns HTTP 422, the operator is told why, and nothing is saved. |
-| Same photo twice | A SHA-256 duplicate warning at capture. |
+| Same photo twice | A SHA-256 duplicate warning at capture; inside a batch the exact duplicate is skipped automatically. |
+| A stack of sheets at shift end | Batch upload of up to 25 photos. Read two at a time so the free AI quota is not flooded; "busy" or rate-limit answers are retried automatically (after 8 s, then 20 s) before a photo is marked failed with a Retry button. Each photo becomes a normal pending record, so nothing skips review; the supervisor works through the batch with "Next record →". |
 | Same loom/date/shift twice | A business-key duplicate check at review (it blocks if the other record is already approved). |
 | ERP down | The record stays approved and is marked "ERP failed". It can be retried from the review screen or the register, and the retry is idempotent. |
 

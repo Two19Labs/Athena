@@ -62,5 +62,19 @@
     });
   }
 
-  window.visionExtractor = { extract, status, ExtractionError };
+  const TITLES = {
+    unreadable: 'The AI could not read this photo',
+    not_configured: 'AI provider not configured',
+    rate_limited: 'Free-tier limit reached',
+    timeout: 'The AI service is busy',
+    upstream: 'The AI service is busy',
+    no_server: 'App opened without its server',
+    network: 'Network problem'
+  };
+  const errorTitle = (code) => TITLES[code] || 'Extraction failed';
+
+  /** Transient problems worth an automatic retry; anything else needs a person (retake, fix config). */
+  const isRetryable = (code) => ['rate_limited', 'timeout', 'upstream', 'provider_error', 'network', 'bad_model_output', 'http_500', 'http_502', 'http_503', 'http_504'].includes(code);
+
+  window.visionExtractor = { extract, status, errorTitle, isRetryable, ExtractionError };
 })();

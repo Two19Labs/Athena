@@ -33,13 +33,37 @@
       </div>
 
       <!-- Stage 1: pick / capture -->
-      <div id="dropzone" class="preflight-dropzone" role="button" tabindex="0" aria-label="Take a photo or choose an image">
+      <div id="dropzone" class="preflight-dropzone">
         <div class="dropzone-icon" aria-hidden="true">📷</div>
-        <h3>Take a photo or drop an image</h3>
-        <p class="muted">On a phone this opens the camera. On a computer, choose or drag in a JPG, PNG or WebP.</p>
-        <span class="btn btn-primary">Take / choose photo</span>
-        <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden">
+        <h3>Photograph a form, or upload a stack</h3>
+        <p class="muted">One form: take a photo. Several forms (e.g. end of shift): choose them all at once, up to 25. On a computer you can also drag photos in.</p>
+        <div class="btn-row btn-row-center">
+          <button type="button" id="takePhotoBtn" class="btn btn-primary">📷 Take photo</button>
+          <button type="button" id="choosePhotosBtn" class="btn btn-outline">🖼️ Choose photos</button>
+        </div>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+        <input type="file" id="galleryInput" accept="image/*" multiple class="hidden">
       </div>
+
+      <!-- Batch upload -->
+      <section id="batchSection" class="batch-card hidden" aria-live="polite">
+        <div class="batch-head">
+          <div>
+            <h3 id="batchTitle">Batch</h3>
+            <p id="batchSummary" class="muted small"></p>
+          </div>
+          <div class="btn-row">
+            <button type="button" id="batchAddBtn" class="btn btn-outline btn-small">+ Add photos</button>
+            <button type="button" id="batchClearBtn" class="btn btn-outline btn-small">Cancel</button>
+          </div>
+        </div>
+        <ol id="batchList" class="batch-list"></ol>
+        <div class="batch-foot">
+          <button type="button" id="batchStopBtn" class="btn btn-outline hidden">Stop after current photos</button>
+          <a id="batchReviewLink" class="btn btn-outline hidden" href="review.html">Review →</a>
+          <button type="button" id="batchStartBtn" class="btn btn-primary btn-large">Read photos with AI →</button>
+        </div>
+      </section>
 
       <div id="samplePicker" class="sample-picker">
         <p class="small"><strong>No form to hand?</strong> Try a sample photo. It goes through the same AI reading as a real upload.</p>
@@ -119,6 +143,8 @@
   <script src="js/store.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/extraction.js"></script>
+  <script src="js/image-prep.js"></script>
+  <script src="js/batch.js"></script>
   <script src="js/capture.js"></script>
 </body>
 </html>

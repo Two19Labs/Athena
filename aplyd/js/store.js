@@ -246,15 +246,19 @@
      * Persist the photo, the form metadata and a draft record built from the AI output.
      * extraction: { provider, model, latency_ms, data: <contract> }
      */
-    async createRecordFromExtraction({ file, sha256, imageBlob, extraction }) {
+    async createRecordFromExtraction({ file, sha256, imageBlob, extraction, batch }) {
       const user = this.getCurrentUser();
+      // Store the photo first. Everything after this line runs without an await, so the
+      // read-modify-write of the database is atomic even when several batch photos finish together.
+      const formId = uid('form');
+      await imageDb.put(formId, imageBlob);
       const db = this._db();
       const fields = extraction.data.fields;
       const machine = fields.machine.value ? db.machines.find(m => m.machine_code === fields.machine.value) : null;
       const shift = fields.shift.value ? db.shifts.find(s => s.shift_code === fields.shift.value) : null;
 
       const form = {
-        id: uid('form'),
+        id: formId,
         form_number: this._nextNumber(db.forms, 'PF', 'form_number'),
         original_filename: file.name,
         mime_type: imageBlob.type,
@@ -269,7 +273,6 @@
         extraction_payload: extraction.data,
         model_output: extraction.model_output || null
       };
-      await imageDb.put(form.id, imageBlob);
 
       const val = (k) => fields[k] ? fields[k].value : null;
       const record = {
@@ -278,6 +281,8 @@
         form_id: form.id,
         form_number: form.form_number,
         file_sha256: sha256,
+        batch_id: batch ? batch.id : null,
+        batch_label: batch ? batch.label : null,
         extraction_provider: extraction.provider,
         extraction_model: extraction.model,
         final_payload: extraction.data,
@@ -323,6 +328,7 @@
       let rows = db.records.map(r => this._hydrate(r, db));
       if (filters.status && filters.status !== 'all') rows = rows.filter(r => r.status === filters.status);
       if (filters.submitted_by) rows = rows.filter(r => r.submitted_by === filters.submitted_by);
+      if (filters.batch_id) rows = rows.filter(r => r.batch_id === filters.batch_id);
       if (filters.machine_id) rows = rows.filter(r => r.machine_id === filters.machine_id);
       if (filters.shift_id) rows = rows.filter(r => r.shift_id === filters.shift_id);
       if (filters.date) rows = rows.filter(r => r.production_date === filters.date);

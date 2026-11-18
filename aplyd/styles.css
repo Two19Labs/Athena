@@ -255,6 +255,7 @@ textarea.form-control { resize: vertical; }
   border: 1px solid var(--border); background: var(--surface-2); color: var(--ink);
 }
 .sample-btn:hover:not(:disabled) { border-color: var(--ink); }
+.sample-btn-batch { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .sample-btn:disabled { opacity: 0.5; cursor: wait; }
 .preflight-preview-card, .progress-card, .failure-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;

@@ -34,6 +34,7 @@
       const btn = e.target.closest('[data-sample]');
       if (btn) loadSample(btn.dataset.sample, btn);
     });
+    $('sampleBatchBtn').addEventListener('click', loadSampleBatch);
 
     renderAiStatus();
   });
@@ -79,6 +80,29 @@
       await handleFile(new File([blob], `${id}.jpg`, { type: 'image/jpeg' }));
     } catch (err) {
       window.toast.show(`Could not load the sample photo (${err.message}).`, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  /** All bundled samples (aplyd/assets/samples) as one batch, to try batch upload without downloading files. */
+  const SAMPLE_IDS = [
+    'form-01-clean', 'form-02-skewed', 'form-03-low-light', 'form-04-glare', 'form-05-ambiguous-qty', 'form-06-oil-stain',
+    'form-07-blank-and-zero', 'form-08-unknown-loom', 'form-09-ledger-layout', 'form-10-faded-torn', 'form-11-sideways', 'form-12-not-a-form'
+  ];
+
+  async function loadSampleBatch() {
+    const btn = $('sampleBatchBtn');
+    btn.disabled = true;
+    try {
+      const files = await Promise.all(SAMPLE_IDS.map(async (id) => {
+        const resp = await fetch(`assets/samples/${id}.jpg`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${id}`);
+        return new File([await resp.blob()], `${id}.jpg`, { type: 'image/jpeg' });
+      }));
+      await window.AplydBatch.add(files);
+    } catch (err) {
+      window.toast.show(`Could not load the sample photos (${err.message}).`, 'error');
     } finally {
       btn.disabled = false;
     }

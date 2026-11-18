@@ -484,7 +484,7 @@ async function overflow(page) {
     console.log('\n14. Sample photo picker');
     await as(page, 'operator');
     await go(page, 'capture.html');
-    check(await page.$$eval('#samplePicker .sample-btn', els => els.length) === 5, 'capture page offers 5 sample photos');
+    check(await page.$$eval('#samplePicker [data-sample]', els => els.length) === 5, 'capture page offers 5 sample photos');
     await page.click('#samplePicker [data-sample="form-01-clean"]');
     await page.waitForSelector('#preflightPreviewCard:not(.hidden)', { timeout: 10000 });
     const sampleState = await page.evaluate(() => ({
@@ -614,6 +614,15 @@ async function overflow(page) {
     }
     const nextHref = await page.$eval('#nextRecordBtn', a => a.getAttribute('href')).catch(() => null);
     check(!!nextHref && !nextHref.includes(firstId), 'after a decision, "Next record →" jumps to the next pending record', String(nextHref));
+
+    // All samples as a batch in one click
+    await as(page, 'operator');
+    await go(page, 'capture.html');
+    await page.click('#sampleBatchBtn');
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-item').length === 12 && !document.querySelector('#batchList .batch-preparing'), { timeout: 30000 });
+    const sb = await batchState(page);
+    check(sb.rows.length === 12 && /Read 12 photos/.test(sb.startText), '"All 12 as a batch" loads every sample into a batch', sb.startText);
+    await page.click('#batchClearBtn');
 
     // Mobile layout of the batch list
     const mb = await newPage(browser, base, { width: 390, height: 844, isMobile: true, hasTouch: true });

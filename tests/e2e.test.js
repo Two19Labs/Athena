@@ -31,7 +31,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 // ---------------------------------------------------------------------------
 // Stub Gemini
 // ---------------------------------------------------------------------------
-const stub = { next: null, queue: [], requests: [] }; // queue: one-shot answers in arrival order (batches), else `next`
+const stub = { next: null, queue: [], requests: [], delay: 0 }; // queue: one-shot answers in arrival order (batches), else `next`
 const f = (value, status = 'read', raw) => ({ value, raw_value: raw === undefined ? (value === null ? null : String(value)) : raw, status, reason: null });
 function formReply(overrides = {}, date = '01/10/2026') {
   return {
@@ -60,7 +60,7 @@ function startStub() {
         setTimeout(() => {
           res.writeHead(next.status, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(payload));
-        }, 150);
+        }, stub.delay || 150);
       });
     });
     srv.listen(0, () => resolve(srv));
@@ -99,6 +99,16 @@ async function answerDialog(page, text) {
   await page.click('.app-dialog [data-act="ok"]');
   await page.waitForSelector('.app-dialog', { hidden: true, timeout: 5000 });
   await sleep(300);
+}
+/** Change a field on the review screen: it saves at once; optionally type a reason into the inline box. */
+async function editField(page, key, value, reason) {
+  await page.$eval(`#field_${key}`, (el, v) => { el.value = v; el.dispatchEvent(new Event('change')); }, value);
+  await page.waitForFunction((k) => !!document.querySelector(`[data-field="${k}"] .reason-input`), { timeout: 5000 }, key);
+  if (reason !== undefined) {
+    await page.$eval(`[data-field="${key}"] .reason-input`, (el, r) => { el.value = r; el.dispatchEvent(new Event('change')); }, reason);
+    await sleep(300);
+  }
+  await sleep(250);
 }
 async function capture(page, file, reply) {
   stub.next = reply;
@@ -217,7 +227,7 @@ async function overflow(page) {
     check(lastReq && lastReq.bytes < 4 * 1024 * 1024, 'image sent to provider is under the 4 MB limit', String(lastReq && lastReq.bytes));
     const recId = new URL(url).searchParams.get('id');
     const opView = await page.evaluate(() => ({
-      disabled: [...document.querySelectorAll('#verificationFieldsContainer input, #verificationFieldsContainer select')].every(e => e.disabled),
+      disabled: !document.querySelector('#verificationFieldsContainer [id^="field_"]') && document.querySelectorAll('#verificationFieldsContainer .field-value').length >= 10,
       approve: !!document.getElementById('approveBtn'),
       img: !document.getElementById('canvasImg').classList.contains('hidden') && document.getElementById('canvasImg').naturalWidth > 0
     }));
@@ -239,13 +249,11 @@ async function overflow(page) {
     check(st.written.includes('350 / 850?'), 'raw handwriting transcription is shown');
 
     await page.evaluate(() => { window.__xss = 0; });
-    await page.$eval('#field_remarks', el => { el.value = '<img src=x onerror="window.__xss=1">'; el.dispatchEvent(new Event('change')); });
-    await answerDialog(page, 'checking escaping');
+    await editField(page, 'remarks', '<img src=x onerror="window.__xss=1">', 'checking escaping');
     check(await page.evaluate(() => window.__xss) === 0, 'HTML typed into a field is not executed (audit trail escaped)');
     check(await page.evaluate(() => document.getElementById('auditTrailList').textContent.includes('<img src=x')), 'audit trail shows the literal text');
 
-    await page.$eval('#field_production_quantity', el => { el.value = '350'; el.dispatchEvent(new Event('change')); });
-    await answerDialog(page, 'Pick counter confirms 350 m');
+    await editField(page, 'production_quantity', '350', 'Pick counter confirms 350 m');
     st = await page.evaluate(() => ({
       approveDisabled: document.getElementById('approveBtn').disabled,
       corrected: document.querySelector('[data-field="production_quantity"] .badge-corrected') !== null,
@@ -260,7 +268,7 @@ async function overflow(page) {
     await page.waitForFunction(() => /ERP acknowledged/.test(document.getElementById('statusBanner').textContent), { timeout: 8000 }).catch(() => {});
     const banner = await page.$eval('#statusBanner', el => el.textContent);
     check(/ERP acknowledged/.test(banner) && /ERP-\d{4}-[0-9A-F]{8}/.test(banner), 'approval sends the record to the mock ERP and shows the reference', banner.trim());
-    const locked = await page.evaluate(() => [...document.querySelectorAll('#verificationFieldsContainer input, #verificationFieldsContainer select')].every(e => e.disabled));
+    const locked = await page.evaluate(() => !document.querySelector('#verificationFieldsContainer [id^="field_"]') && document.querySelectorAll('#verificationFieldsContainer .field-value').length >= 10);
     check(locked, 'approved record is locked');
     await page.screenshot({ path: path.join(OUT, 'flow_approved.png'), fullPage: true });
 
@@ -304,8 +312,7 @@ async function overflow(page) {
     await go(page, `review.html?id=${dupUrl}`);
     const canEdit = await page.$eval('#field_production_date', el => !el.disabled);
     check(canEdit, 'operator can edit a record returned to them');
-    await page.$eval('#field_production_date', el => { el.value = '2026-10-03'; el.dispatchEvent(new Event('change')); });
-    await answerDialog(page, 'Fixed date');
+    await editField(page, 'production_date', '2026-10-03', 'Fixed date');
     const opConfirm = await page.evaluate(async (id) => { try { await window.aplydStore.confirmField(id, 'production_quantity'); return 'allowed'; } catch (e) { return e.message; } }, dupUrl);
     check(/supervisor or admin/.test(opConfirm), 'operator cannot confirm AI-flagged values (only fix them)', opConfirm);
     check(await page.$('.confirm-btn') === null, 'operator sees no confirm buttons');
@@ -382,6 +389,7 @@ async function overflow(page) {
     // Approve without dispatch, then make the first dispatch time out (as if the ERP were down).
     await go(page, `review.html?id=${freshId}`);
     await page.evaluate(async (id) => {
+      await window.aplydStore.checkField(id, 'production_quantity'); // 612 m is over L-03's range: tick it as checked first
       await window.aplydStore.approveRecord(id, 'e2e');
       await window.aplydStore.submitToErp(id, { simulateFailure: true }).catch(() => {});
     }, freshId);
@@ -729,7 +737,7 @@ async function overflow(page) {
     check(shell.contentTop < 80, 'phone: content starts right under a compact top bar', String(shell.contentTop));
     await ph.click('#tabMoreBtn');
     const more = await ph.$$eval('#tabMoreSheet:not(.hidden) .more-item', els => els.map(e => e.textContent.trim()));
-    check(more.join(',') === 'Analytics & Reliability,Looms Master,Shift Schedules', '"More" opens the remaining pages', more.join(','));
+    check(more.join(',') === 'Analytics & Reliability,Looms Master,Shifts & Reasons', '"More" opens the remaining pages', more.join(','));
     await ph.keyboard.press('Escape');
     await ph.click('.persona-compact');
     check(await ph.$eval('#demoPersonaBar', el => el.classList.contains('open') && getComputedStyle(el.querySelector('.persona-options')).display !== 'none'), 'phone: compact persona chip opens the three personas');
@@ -760,6 +768,169 @@ async function overflow(page) {
     await go(desk, 'dashboard.html');
     check(await desk.$eval('.tabbar', el => getComputedStyle(el).display === 'none') && await desk.$eval('#appSidebar', el => getComputedStyle(el).display !== 'none'), 'desktop keeps the sidebar; no tab bar');
     await desk.close();
+
+
+    // ── 18. Review improvements (checks, inline edits, undo, bulk approve, photo locations, outbox, dashboard) ──
+    console.log('\n18. Review, capture and dashboard improvements');
+    await as(page, 'operator');
+    let u18 = await capture(page, path.join(SAMPLES, 'form-05-ambiguous-qty.jpg'), { status: 200, json: formReply({ machine: f('L-12'), production_quantity: f(950) }, '25/10/2026') });
+    const chkId = new URL(u18).searchParams.get('id');
+    check(await page.$$eval('#verificationFieldsContainer .field-value', els => els.length) >= 10 && await page.$('#verificationFieldsContainer [id^="field_"]') === null,
+      'people who cannot edit see plain values, not greyed-out inputs');
+    await as(page, 'supervisor');
+    await go(page, `review.html?id=${chkId}`);
+    let s18 = await page.evaluate(() => ({ dis: document.getElementById('approveBtn').disabled, btn: !!document.querySelector('[data-field="production_quantity"] .check-btn') }));
+    check(s18.dis && s18.btn, 'an out-of-range quantity (likely misread digit) blocks approval until someone checks it', JSON.stringify(s18));
+    check(/Return to Ramesh/.test(await page.$eval('#returnBtn', b => b.textContent)), 'Return button names who the record goes back to');
+    await page.click('[data-field="production_quantity"] .check-btn');
+    await sleep(500);
+    s18 = await page.evaluate(() => ({ dis: document.getElementById('approveBtn').disabled, audit: document.getElementById('auditTrailList').textContent, badge: !!document.querySelector('[data-field="production_quantity"] .badge-confirmed') }));
+    check(!s18.dis && /Checked/.test(s18.audit) && s18.badge, '"I checked this against the photo" unblocks approval and is written to the audit trail', JSON.stringify(s18));
+
+    await editField(page, 'production_quantity', '590');
+    check(await page.$eval('[data-field="production_quantity"] .reason-input', el => el.value) === 'Checked against the photo' && await page.$('.app-dialog') === null,
+      'a correction saves at once (no dialog) with a default reason that can be edited in place');
+    await page.click('.toast-action');
+    await sleep(700);
+    s18 = await page.evaluate(() => ({ v: document.getElementById('field_production_quantity').value, audit: document.getElementById('auditTrailList').textContent }));
+    check(s18.v === '950' && /Undone/.test(s18.audit), 'Undo puts the old value back and is itself recorded', JSON.stringify(s18));
+
+    await page.evaluate(() => document.activeElement && document.activeElement.blur());
+    await page.keyboard.press('a');
+    check(await page.waitForSelector('.app-dialog', { timeout: 2000 }).then(() => true).catch(() => false), 'keyboard: A opens the approve dialog');
+    await page.keyboard.press('Escape');
+    await sleep(200);
+
+    const vpBox = await (await page.$('#canvasViewport')).boundingBox();
+    await page.mouse.move(vpBox.x + vpBox.width / 2, vpBox.y + vpBox.height / 2);
+    const z0 = await page.$eval('#zoomLabel', el => el.textContent);
+    await page.mouse.wheel({ deltaY: -240 });
+    await sleep(200);
+    const z1 = await page.$eval('#zoomLabel', el => el.textContent);
+    await page.keyboard.down('Control');
+    await page.mouse.wheel({ deltaY: -240 });
+    await page.keyboard.up('Control');
+    await sleep(200);
+    const z2 = await page.$eval('#zoomLabel', el => el.textContent);
+    check(z0 === z1 && z2 !== z1, 'plain scroll over the photo scrolls the page; Ctrl + scroll zooms', [z0, z1, z2].join(' / '));
+
+    // A rule catches a confident misread; the supervisor corrects it: Analytics credits the rule.
+    await as(page, 'operator');
+    u18 = await capture(page, path.join(SAMPLES, 'form-05-ambiguous-qty.jpg'), { status: 200, json: formReply({ machine: f('L-12'), production_quantity: f(990) }, '24/10/2026') });
+    const ruleId = new URL(u18).searchParams.get('id');
+    await as(page, 'supervisor');
+    await go(page, `review.html?id=${ruleId}`);
+    await editField(page, 'production_quantity', '390', 'Photo shows 390');
+    await page.click('#approveBtn');
+    await answerDialog(page, '');
+    await go(page, 'analytics.html');
+    check(/Business rule/.test(await page.$eval('#silentTable', el => el.textContent)), 'Analytics shows which safety net caught each confident AI mistake (here: the loom range rule)');
+
+    // Show on photo: the AI's location for a value
+    await as(page, 'operator');
+    u18 = await capture(page, path.join(SAMPLES, 'form-01-clean.jpg'), { status: 200, json: formReply({ machine: f('L-03'), production_quantity: { ...f(420), box: [340, 420, 390, 490] } }, '26/10/2026') });
+    const boxId = new URL(u18).searchParams.get('id');
+    await as(page, 'supervisor');
+    await go(page, `review.html?id=${boxId}`);
+    await page.click('[data-locate="production_quantity"]');
+    await sleep(600);
+    const loc = await page.evaluate(() => ({ zoom: parseInt(document.getElementById('zoomLabel').textContent, 10), mark: !document.getElementById('boxHighlight').classList.contains('hidden') }));
+    check(loc.zoom > 100 && loc.mark, '"Show on photo" zooms to where the value is written and outlines it', JSON.stringify(loc));
+    check(/BEAM/.test(await page.$eval('[data-field="downtime_reason"] .field-hint', el => el.textContent)), 'a handwritten downtime reason is mapped to a reason code');
+
+    // Register sheet: bulk approve only the rows with nothing to check; rows open zoomed to their line
+    await as(page, 'operator');
+    const sheet18 = ledger(3, ['L-07', 'L-08', 'L-10'], '27/10/2026');
+    sheet18.entries = sheet18.entries.map((e, i) => ({ ...e, row_box: [300 + i * 40, 100, 340 + i * 40, 900] }));
+    await capture(page, path.join(SAMPLES, 'form-13-register-6-looms.jpg'), { status: 200, json: sheet18 });
+    await page.waitForFunction(() => location.search.includes('batch=sheet-'), { timeout: 10000 }).catch(() => {});
+    const sheetQuery = new URL(page.url()).search;
+    const sheetBatch = new URLSearchParams(sheetQuery).get('batch');
+    await as(page, 'supervisor');
+    await go(page, `review.html${sheetQuery}`);
+    const bulkTxt = await page.$eval('#bulkApproveBtn', b => b.textContent).catch(() => '');
+    check(/\(2\)/.test(bulkTxt), 'sheet offers "Approve all ready" for the 2 rows with nothing to check (L-08 is over its range)', bulkTxt);
+    const l08 = await page.evaluate((b) => JSON.parse(localStorage.getItem('aplyd_db_v2')).records.find(r => r.batch_id === b && r.machine_id === 'mach-08').id, sheetBatch);
+    await page.click('#bulkApproveBtn');
+    await page.waitForSelector('.app-dialog');
+    await page.click('.app-dialog [data-act="ok"]');
+    await page.waitForFunction((b) => JSON.parse(localStorage.getItem('aplyd_db_v2')).records.filter(r => r.batch_id === b && r.erp_status === 'submitted').length === 2, { timeout: 15000 }, sheetBatch).catch(() => {});
+    const st18 = await page.evaluate((b) => JSON.parse(localStorage.getItem('aplyd_db_v2')).records.filter(r => r.batch_id === b).map(r => `${r.status}:${r.erp_status || ''}`), sheetBatch);
+    check(st18.filter(x => x === 'approved:submitted').length === 2 && st18.filter(x => x.startsWith('pending_review')).length === 1, 'bulk approve approves only the ready rows and sends each to the ERP', st18.join(','));
+    await go(page, `review.html?id=${l08}`);
+    await sleep(500);
+    check(await page.$eval('#boxHighlight', el => !el.classList.contains('hidden')) && parseInt(await page.$eval('#zoomLabel', el => el.textContent), 10) > 100, 'a register row opens zoomed to its own line on the photo');
+
+    // Queue: empty states say why
+    await go(page, 'review.html');
+    await page.type('#queueSearchInput', 'zzzz');
+    await sleep(500);
+    const empty = await page.$eval('#queueTableBody', el => el.textContent);
+    check(/No records match/.test(empty) && !/Capture a form/.test(empty), 'empty queue explains a search with no match (instead of "capture a form")', empty.trim());
+
+    // Capture: elapsed time and Cancel
+    await as(page, 'operator');
+    await go(page, 'capture.html');
+    const nC = await recordCount(page);
+    await (await page.$('#cameraInput')).uploadFile(path.join(SAMPLES, 'form-02-skewed.jpg'));
+    await page.waitForSelector('#preflightPreviewCard:not(.hidden)');
+    await sleep(300);
+    stub.delay = 5000;
+    stub.next = { status: 200, json: formReply({ machine: f('L-09') }, '28/10/2026') };
+    await page.click('#extractBtn');
+    await sleep(1600);
+    const el1 = await page.$eval('#progressElapsed', el => el.textContent);
+    await page.click('#cancelExtractBtn');
+    await sleep(400);
+    check(/^[1-9]\d* s$/.test(el1) && await page.$eval('#preflightPreviewCard', el => !el.classList.contains('hidden')), 'reading shows elapsed seconds; Cancel returns to the photo', el1);
+    await sleep(5000);
+    check(await recordCount(page) === nC, 'a cancelled read saves nothing, even when the AI answers later');
+    stub.delay = 0;
+
+    // No signal: the photo waits in the outbox and is read when back online
+    await page.setOfflineMode(true);
+    await page.click('#extractBtn');
+    await page.waitForSelector('#outboxBanner:not(.hidden)', { timeout: 10000 }).catch(() => {});
+    check(/1 photo waiting/.test(await page.$eval('#outboxBanner', el => el.textContent)) && await recordCount(page) === nC, 'no signal: the photo is kept on the phone (outbox); nothing is lost and nothing is invented');
+    stub.next = { status: 200, json: formReply({ machine: f('L-11') }, '28/10/2026') };
+    await page.setOfflineMode(false);
+    await page.waitForFunction(() => document.getElementById('outboxBanner').classList.contains('hidden'), { timeout: 15000 }).catch(() => {});
+    check(await recordCount(page) === nC + 1, 'back online: the saved photo is read automatically and becomes a pending record');
+
+    // Dashboard numbers
+    await go(page, 'dashboard.html');
+    check(await page.$eval('#operatorFeedback', el => !el.classList.contains('hidden') && /corrected by a supervisor/.test(el.textContent)), 'operator dashboard says when a supervisor corrected their records');
+    await as(page, 'supervisor');
+    await go(page, 'dashboard.html');
+    const dash = await page.evaluate(() => ({ m: document.getElementById('kpiMetres').textContent, note: document.getElementById('kpiMetresNote').textContent, photos: Number(document.getElementById('kpiFormsToday').textContent), rnote: document.getElementById('kpiFormsTodayNote').textContent }));
+    check(dash.m !== '0 m' && /approval date/.test(dash.note), 'approved output counts by approval date (older forms approved today show up)', JSON.stringify(dash));
+    check(dash.photos > 0 && parseInt(dash.rnote, 10) > dash.photos, 'photos captured today counts photos, with records alongside (register pages = several records)', JSON.stringify(dash));
+
+    // Admin: downtime reason list
+    await as(page, 'admin');
+    await go(page, 'shifts.html');
+    check(/CLEAN/.test(await page.$eval('#reasonsTableBody', el => el.textContent)), 'Shifts & Reasons lists the downtime reason codes');
+    await page.click('#openReasonModalBtn');
+    await page.type('#reasonCode', 'TEA');
+    await page.type('#reasonName', 'Tea break');
+    await page.type('#reasonSynonyms', 'chai');
+    await page.click('#saveReasonBtn');
+    await sleep(400);
+    check(/Tea break/.test(await page.$eval('#reasonsTableBody', el => el.textContent)), 'admin can add a downtime reason');
+
+    const csp = await page.evaluate(async () => (await fetch('index.html')).headers.get('content-security-policy') || '');
+    const scriptSrc = (csp.match(/script-src [^;]*/) || [''])[0];
+    check(/default-src 'self'/.test(csp) && /frame-ancestors 'none'/.test(csp) && scriptSrc && !scriptSrc.includes('unsafe-inline'), 'a strict Content-Security-Policy is sent (no inline scripts allowed)', csp.slice(0, 120));
+
+    // Phone: Return, Reject and Approve on one row
+    const ph2 = await newPage(browser, base, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await as(ph2, 'supervisor');
+    await go(ph2, `review.html?id=${l08}`);
+    const tops = await ph2.evaluate(() => ['returnBtn', 'rejectBtn', 'approveBtn'].map(id => Math.round(document.getElementById(id).getBoundingClientRect().top)));
+    const barH = await ph2.$eval('#actionBar', el => el.offsetHeight);
+    check(Math.max(...tops) - Math.min(...tops) <= 4 && barH <= 72, 'phone: Return, Reject and Approve share one row', `tops ${tops} bar ${barH}px`);
+    check(ph2.errors.length === 0, 'no errors on the phone review', ph2.errors.join('|'));
+    await ph2.close();
 
     // ── Whole-run sanity ──
     check(page.errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'no unexpected browser errors across the whole flow', page.errors.join(' | '));

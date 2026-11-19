@@ -34,6 +34,9 @@ const MIME = {
   '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.md': 'text/markdown; charset=utf-8'
 };
 
+// Same security headers as vercel.json, so local runs and the e2e test behave like production.
+const SECURITY_HEADERS = Object.fromEntries(require('./vercel.json').headers[0].headers.map(h => [h.key, h.value]));
+
 const API_ROUTES = {
   '/api/extract': () => require('./api/extract.js'),
   '/api/erp': () => require('./api/erp.js')
@@ -52,6 +55,7 @@ function serveStatic(req, res, urlPath) {
 
 function createServer() {
   return http.createServer(async (req, res) => {
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
     const urlPath = req.url.split('?')[0];
     try {
       if (API_ROUTES[urlPath]) return await API_ROUTES[urlPath]()(req, res);

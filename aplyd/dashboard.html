@@ -40,16 +40,19 @@
         <a href="capture.html" class="btn btn-primary btn-large" id="primaryCta">+ Capture a form</a>
       </section>
 
+      <div id="outboxBanner" class="inline-alert inline-alert-warn outbox-banner hidden" role="status"></div>
+      <p id="operatorFeedback" class="inline-alert inline-alert-info hidden" role="status"></p>
+
       <section class="kpi-grid">
         <div class="kpi-card">
-          <p class="kpi-label">Approved output · 7 days</p>
+          <p class="kpi-label">Approved in the last 7 days</p>
           <p class="kpi-value" id="kpiMetres">0 m</p>
-          <p class="kpi-note">Supervisor-approved records only</p>
+          <p class="kpi-note" id="kpiMetresNote">By approval date</p>
         </div>
         <div class="kpi-card">
-          <p class="kpi-label">Forms captured today</p>
+          <p class="kpi-label">Photos captured today</p>
           <p class="kpi-value" id="kpiFormsToday">0</p>
-          <p class="kpi-note">Photos read by the AI</p>
+          <p class="kpi-note" id="kpiFormsTodayNote">Read by the AI</p>
         </div>
         <div class="kpi-card">
           <p class="kpi-label">Pending review</p>
@@ -94,6 +97,8 @@
   <script src="js/store.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/charts.js"></script>
+  <script src="js/extraction.js"></script>
+  <script src="js/outbox.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
 </html>

@@ -42,6 +42,21 @@
     highDowntimeMinutes: 120 // downtime per shift that warrants a warning
   };
 
+  /**
+   * Downtime reason list (admin-editable copy lives in the store). Handwritten reasons are
+   * matched to a code so reports and the ERP group "Loom cleaning" and "safai" together.
+   */
+  const DEFAULT_DOWNTIME_REASONS = [
+    { code: 'CLEAN', name: 'Cleaning', synonyms: ['clean', 'cleaning', 'loom cleaning', 'safai', 'saaf', 'saf safai', 'dusting'] },
+    { code: 'BEAM', name: 'Beam change / knotting', synonyms: ['beam', 'beam change', 'beam knotting', 'knotting', 'gaiting', 'beam gaiting', 'tying'] },
+    { code: 'BREAK', name: 'Warp / weft break', synonyms: ['warp break', 'weft break', 'thread break', 'yarn break', 'end break', 'breakage', 'dhaga', 'dhaga tuta', 'taar'] },
+    { code: 'PIRN', name: 'Pirn / bobbin change', synonyms: ['pirn', 'pirn change', 'bobbin', 'bobbin change', 'cop change'] },
+    { code: 'POWER', name: 'Power cut', synonyms: ['power', 'power cut', 'power failure', 'no power', 'light', 'light gayi', 'light cut', 'bijli', 'electricity', 'load shedding'] },
+    { code: 'MAINT', name: 'Maintenance / repair', synonyms: ['maintenance', 'repair', 'breakdown', 'mechanical', 'lubrication', 'oiling', 'greasing', 'motor', 'belt', 'mistri', 'fitter'] },
+    { code: 'WAIT', name: 'Waiting for yarn / material', synonyms: ['no yarn', 'yarn shortage', 'waiting', 'waiting for yarn', 'no material', 'material shortage', 'maal nahi'] }
+  ];
+  const OTHER_REASON = { code: 'OTHER', name: 'Other' };
+
   const UNIT_ALIASES = {
     metres: ['m', 'mt', 'mtr', 'mtrs', 'meter', 'meters', 'metre', 'metres', 'mts'],
     yards: ['y', 'yd', 'yds', 'yard', 'yards'],
@@ -162,9 +177,65 @@
     return null;
   }
 
+  /** Local calendar date (not UTC) as YYYY-MM-DD; also converts ISO timestamps to the local day. */
   function todayIso(now) {
     const d = now ? new Date(now) : new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  const normText = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+  /**
+   * Map a handwritten downtime reason to the reason list. Exact name/synonym first, then the
+   * longest synonym that appears as whole words. Returns the reason, or null if nothing matches.
+   */
+  function matchReason(text, reasons) {
+    const s = normText(text);
+    if (!s) return null;
+    const list = (reasons || DEFAULT_DOWNTIME_REASONS).filter(r => r.is_active !== false);
+    let best = null;
+    let bestLen = 0;
+    for (const r of list) {
+      if (s === normText(r.code)) return r; // a code only counts when written on its own ("tea break" is not BREAK)
+      const words = [r.name, ...(r.synonyms || [])].map(normText).filter(Boolean);
+      for (const w of words) {
+        if (s === w) return r;
+        if (w.length > bestLen && (` ${s} `).includes(` ${w} `)) { best = r; bestLen = w.length; }
+      }
+    }
+    return best;
+  }
+
+  /** Levenshtein similarity in [0, 1] on normalised text (for "did you mean" hints). */
+  function similarity(a, b) {
+    const x = normText(a).replace(/ /g, '');
+    const y = normText(b).replace(/ /g, '');
+    if (!x || !y) return 0;
+    if (x === y) return 1;
+    const prev = Array.from({ length: y.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= x.length; i++) {
+      let diag = prev[0];
+      prev[0] = i;
+      for (let j = 1; j <= y.length; j++) {
+        const tmp = prev[j];
+        prev[j] = Math.min(prev[j] + 1, prev[j - 1] + 1, diag + (x[i - 1] === y[j - 1] ? 0 : 1));
+        diag = tmp;
+      }
+    }
+    return 1 - prev[y.length] / Math.max(x.length, y.length);
+  }
+
+  /**
+   * A location on the photo as Gemini returns it: [ymin, xmin, ymax, xmax] on a 0-1000 scale.
+   * Anything else (wrong length, out of range, zero area) is dropped rather than trusted.
+   */
+  function cleanBox(b) {
+    if (!Array.isArray(b) || b.length !== 4) return null;
+    const n = b.map(Number);
+    if (n.some(v => !Number.isFinite(v) || v < 0 || v > 1000)) return null;
+    const [y0, x0, y1, x1] = n;
+    if (y1 - y0 < 3 || x1 - x0 < 3) return null;
+    return n.map(v => Math.round(v));
   }
 
   // ---------------------------------------------------------------------------
@@ -201,8 +272,9 @@
       let value = isBlank(f.value) ? null : f.value;
       const source = value !== null ? value : rawValue;
 
+      const box = cleanBox(f.box);
       if (status === 'missing' || (source === null && status !== 'illegible')) {
-        out[def.key] = { value: null, raw_value: rawValue, status: status === 'illegible' ? 'illegible' : 'missing', reason };
+        out[def.key] = { value: null, raw_value: rawValue, status: status === 'illegible' ? 'illegible' : 'missing', reason, ...(box ? { box } : {}) };
         continue;
       }
       if (!status) status = 'read';
@@ -281,7 +353,19 @@
           if (value === null && status === 'read') status = 'missing';
       }
 
-      out[def.key] = { value, raw_value: rawValue, status, reason: reason || null };
+      // The model's own transcription and its value must agree. If it wrote down "850" but returned
+      // 350 (or the other way round), it is unsure whichever it says: flag it, never trust either silently.
+      if (status === 'read' && value !== null && rawValue !== null) {
+        const fromRaw = def.type === 'duration' ? parseDurationMinutes(rawValue)
+          : (def.type === 'number' || def.type === 'integer') ? parseNumber(rawValue)
+            : def.type === 'date' ? (parseDate(rawValue) || {}).iso || null : undefined;
+        if (fromRaw !== undefined && fromRaw !== null && !sameValue(fromRaw, value)) {
+          status = 'uncertain';
+          reason = `The AI transcribed "${rawValue}" but read the value as ${value}; check the photo.`;
+        }
+      }
+
+      out[def.key] = { value, raw_value: rawValue, status, reason: reason || null, ...(box ? { box } : {}) };
     }
 
     const needsReview = FIELD_DEFS.some(def => {
@@ -290,10 +374,12 @@
       return def.required && f.status !== 'read';
     });
 
+    const rowBox = cleanBox(raw && raw.row_box);
     return {
       schema_version: '2.0',
       overall_status: needsReview ? 'needs_review' : 'ready_for_approval',
       image_issues: Array.isArray(raw && raw.image_issues) ? raw.image_issues.map(String).slice(0, 10) : [],
+      ...(rowBox ? { row_box: rowBox } : {}),
       fields: out
     };
   }
@@ -332,7 +418,20 @@
     const kept = merged.slice(0, MAX_ENTRIES);
     const detected = Number.isInteger(raw && raw.rows_detected) && raw.rows_detected > 0 ? raw.rows_detected : merged.length;
     const issues = Array.isArray(raw && raw.image_issues) ? raw.image_issues.map(String).slice(0, 10) : [];
-    const entries = kept.map(fields => normalizeExtraction({ fields, image_issues: issues }, master));
+    const entries = kept.map(fields => normalizeExtraction({ fields, image_issues: issues, row_box: fields.row_box }, master));
+
+    // Fields the paper has no place for (e.g. a register with no "defect type" column) are
+    // "not on form", not "left blank": no warnings about them. Known from the model's
+    // fields_on_form list, or, on a sheet of 3+ rows, from the field being empty on every row.
+    const listed = Array.isArray(raw && raw.fields_on_form) ? raw.fields_on_form.map(String) : null;
+    const known = listed && listed.some(k => FIELD_DEFS.some(d => d.key === k)) ? listed : null;
+    for (const def of FIELD_DEFS) {
+      const blankEverywhere = entries.every(e => e.fields[def.key].status === 'missing');
+      const absent = known ? !known.includes(def.key) : (entries.length >= 3 && blankEverywhere);
+      if (absent && blankEverywhere && !def.required) {
+        entries.forEach(e => { e.fields[def.key].not_on_form = true; e.fields[def.key].reason = 'No space for this on the form.'; });
+      }
+    }
     return {
       schema_version: '2.1',
       image_issues: issues,
@@ -350,8 +449,32 @@
     return f ? f.status : null;
   }
 
+  const sameValue = (a, b) => String(a === null || a === undefined ? '' : a) === String(b === null || b === undefined ? '' : b);
+
+  /**
+   * A person has looked at this field's CURRENT value: they typed it (correction), or
+   * confirmed / checked it against the photo. An "undo" back to the AI value does not count.
+   */
   function isFieldResolved(record, def) {
-    return (record.corrections || []).some(c => c.field_key === def.recordKey);
+    const key = def.recordKey || def;
+    return (record.corrections || []).some(c => c.field_key === key && c.kind !== 'undo' && sameValue(c.corrected_value, record[key]));
+  }
+
+  /**
+   * Did a person end up changing this field's value? Compares the value before the first edit with
+   * the value after the last one, so a change that was undone does not count.
+   */
+  function humanChanged(record, key) {
+    const edits = (record.corrections || []).filter(c => c.field_key === key && (c.kind === 'correction' || c.kind === 'undo'));
+    if (!edits.length) return false;
+    return !sameValue(edits[0].original_value, edits[edits.length - 1].corrected_value);
+  }
+
+  /** Field has a place on the paper (false for e.g. defect details on a register with no such column). */
+  function onForm(record, key) {
+    const def = FIELD_DEFS.find(d => d.recordKey === key);
+    const f = def && record.final_payload && record.final_payload.fields && record.final_payload.fields[def.key];
+    return !(f && f.not_on_form);
   }
 
   /** Fields the model flagged and a human has not yet corrected or confirmed. */
@@ -413,13 +536,20 @@
       }
     }
 
+    // "Check required": the value is plausible but suspicious. Approval waits until a person has
+    // either corrected the value or ticked "I checked this against the photo" for its current value.
+    const needsCheck = (field, message) => {
+      if (isFieldResolved(record, field)) return;
+      blockers.push({ field, message, check: true });
+    };
+
     const qty = isBlank(record.production_quantity) ? null : Number(record.production_quantity);
     const unit = record.production_unit || 'metres';
     if (machine && qty !== null && unit === (machine.default_unit || 'metres')) {
       if (machine.max_expected_quantity && qty > machine.max_expected_quantity) {
-        warnings.push({ field: 'production_quantity', message: `${qty} ${unit} is above the expected maximum for ${machine.machine_code} (${machine.max_expected_quantity}). Check for a misread digit.` });
+        needsCheck('production_quantity', `${qty} ${unit} is above the expected maximum for ${machine.machine_code} (${machine.max_expected_quantity}). Check the photo for a misread digit.`);
       } else if (machine.min_expected_quantity && qty < machine.min_expected_quantity && qty > 0) {
-        warnings.push({ field: 'production_quantity', message: `${qty} ${unit} is below the expected minimum for ${machine.machine_code} (${machine.min_expected_quantity}).` });
+        needsCheck('production_quantity', `${qty} ${unit} is below the expected minimum for ${machine.machine_code} (${machine.min_expected_quantity}). Check the photo for a misread digit.`);
       }
     }
 
@@ -430,15 +560,18 @@
     } else if (downtime !== null && downtime >= THRESHOLDS.highDowntimeMinutes) {
       warnings.push({ field: 'downtime_minutes', message: `High downtime: ${downtime} min in one shift.` });
     }
-    if (downtime > 0 && isBlank(record.downtime_reason)) {
+    if (downtime > 0 && isBlank(record.downtime_reason) && onForm(record, 'downtime_reason')) {
       warnings.push({ field: 'downtime_reason', message: 'Downtime is recorded but no reason is given.' });
+    }
+    if (!isBlank(record.downtime_reason) && ctx && ctx.reasons && !matchReason(record.downtime_reason, ctx.reasons)) {
+      warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" is not in the downtime reason list; reports will group it under Other.` });
     }
 
     const defects = isBlank(record.defects_count) ? null : Number(record.defects_count);
     if (defects !== null && defects >= THRESHOLDS.highDefects) {
       warnings.push({ field: 'defects_count', message: `High defect count: ${defects} in one shift.` });
     }
-    if (defects > 0 && isBlank(record.defect_details)) {
+    if (defects > 0 && isBlank(record.defect_details) && onForm(record, 'defect_details')) {
       warnings.push({ field: 'defect_details', message: 'Defects are counted but not described.' });
     }
 
@@ -452,7 +585,7 @@
       if (dup) {
         const msg = `Another record (${dup.record_number}, ${String(dup.status).replace(/_/g, ' ')}) already exists for this loom, date and shift.`;
         if (dup.status === 'approved') blockers.push({ field: 'machine_id', message: msg + ' Approving would double-count production in the ERP.' });
-        else warnings.push({ field: 'machine_id', message: msg });
+        else needsCheck('machine_id', `${msg} Check the loom number on the photo; if both are right, reject one of them.`);
       }
     }
 
@@ -484,6 +617,7 @@
       defect_details: cleanText(record.defect_details),
       downtime_minutes: num(record.downtime_minutes),
       downtime_reason: cleanText(record.downtime_reason),
+      downtime_reason_code: isBlank(record.downtime_reason) ? null : (matchReason(record.downtime_reason, ctx && ctx.reasons) || OTHER_REASON).code,
       remarks: cleanText(record.remarks),
       approved_by: record.reviewed_by_name || record.reviewed_by || null,
       approved_at: record.reviewed_at || null,
@@ -492,8 +626,8 @@
         source_row: record.sheet_rows > 1 ? record.sheet_row : null,
         image_sha256: record.file_sha256 || null,
         extraction_model: record.extraction_model || null,
-        fields_corrected: corrections.filter(c => c.kind !== 'confirmation').length,
-        fields_confirmed: corrections.filter(c => c.kind === 'confirmation').length
+        fields_corrected: new Set(corrections.filter(c => c.kind === 'correction' || c.kind === 'undo').filter(c => humanChanged(record, c.field_key)).map(c => c.field_key)).size,
+        fields_confirmed: new Set(corrections.filter(c => c.kind === 'confirmation' || c.kind === 'check').map(c => c.field_key)).size
       }
     };
   }
@@ -527,9 +661,10 @@
   }
 
   return {
-    STATUSES, FIELD_DEFS, THRESHOLDS, ERP_SCHEMA,
+    STATUSES, FIELD_DEFS, THRESHOLDS, ERP_SCHEMA, DEFAULT_DOWNTIME_REASONS, OTHER_REASON,
     normalizeMachineCode, matchShift, parseNumber, parseDurationMinutes, normalizeUnit, parseDate, todayIso,
-    normalizeExtraction, normalizeSheet, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved,
+    matchReason, similarity, cleanBox,
+    normalizeExtraction, normalizeSheet, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved, onForm, sameValue, humanChanged,
     buildErpPayload, validateErpPayload, erpReference, minutesBetween
   };
 });

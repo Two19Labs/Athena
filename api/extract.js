@@ -11,7 +11,7 @@
  */
 
 const { send, readJson } = require('./_lib/http');
-const { runVision, configuredProviders } = require('./_lib/providers');
+const { runVision, configuredProviders, totalBudgetMs } = require('./_lib/providers');
 const { buildSystemPrompt, USER_INSTRUCTION, parseModelJson } = require('./_lib/prompt');
 const { normalizeSheet } = require('../aplyd/js/rules.js');
 
@@ -56,23 +56,35 @@ module.exports = async function handler(req, res) {
   };
 
   const started = Date.now();
-  let result;
-  try {
-    result = await runVision({
-      system: buildSystemPrompt(safeMaster),
-      user: USER_INSTRUCTION,
-      imageBase64,
-      mimeType
-    });
-  } catch (err) {
-    return send(res, err.status || 502, { success: false, code: err.code || 'provider_error', error: err.message, attempts: err.attempts });
-  }
+  const deadline = started + totalBudgetMs();
+  const request = { system: buildSystemPrompt(safeMaster), user: USER_INSTRUCTION, imageBase64, mimeType, deadline };
 
+  // A long reply occasionally comes back as broken JSON. Ask once more (the next model in the chain,
+  // within the same time budget) before telling the operator; never guess at a broken reply.
+  let result;
   let parsed;
-  try {
-    parsed = parseModelJson(result.text);
-  } catch (err) {
-    return send(res, 502, { success: false, code: 'bad_model_output', error: `The AI answered but not in the expected format (${err.message}). Retry once; if it repeats, retake the photo.`, provider: result.provider, model: result.model });
+  let parseError = null;
+  const attempts = [];
+  const unusable = [];
+  for (let round = 0; round < 2 && !parsed; round++) {
+    if (round > 0 && deadline - Date.now() < 6000) break;
+    try {
+      result = await runVision({ ...request, exclude: unusable });
+    } catch (err) {
+      if (round > 0 && parseError) break; // keep the original "bad reply" error, it is the real story
+      return send(res, err.status || 502, { success: false, code: err.code || 'provider_error', error: err.message, attempts: [...attempts, ...(err.attempts || [])] });
+    }
+    attempts.push(...result.attempts);
+    try {
+      parsed = parseModelJson(result.text);
+    } catch (err) {
+      parseError = err;
+      unusable.push(result.model);
+      attempts[attempts.length - 1] = { ...attempts[attempts.length - 1], ok: false, error: `unusable reply: ${err.message}`, code: 'bad_model_output' };
+    }
+  }
+  if (!parsed) {
+    return send(res, 502, { success: false, code: 'bad_model_output', error: `The AI answered but not in the expected format (${parseError.message}). Retry once; if it repeats, retake the photo.`, provider: result.provider, model: result.model, attempts });
   }
 
   if (parsed.is_production_form === false) {
@@ -101,7 +113,7 @@ module.exports = async function handler(req, res) {
     provider: result.provider,
     model: result.model,
     latency_ms: Date.now() - started,
-    attempts: result.attempts,
+    attempts,
     data,
     model_output: parsed
   });

@@ -50,40 +50,64 @@
   // ---------------------------------------------------------------------------
   // IndexedDB for photos
   // ---------------------------------------------------------------------------
+  // Two object stores: 'images' (one photo per form) and 'outbox' (photos taken with no
+  // signal, waiting to be read when the phone is back online).
   const imageDb = {
     _db: null,
     open() {
       if (this._db) return Promise.resolve(this._db);
       return new Promise((resolve, reject) => {
         if (!window.indexedDB) return reject(new Error('This browser does not support IndexedDB, so photos cannot be stored.'));
-        const req = indexedDB.open('aplyd_images', 1);
-        req.onupgradeneeded = () => req.result.createObjectStore('images');
+        const req = indexedDB.open('aplyd_images', 2);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains('images')) db.createObjectStore('images');
+          if (!db.objectStoreNames.contains('outbox')) db.createObjectStore('outbox');
+        };
         req.onsuccess = () => { this._db = req.result; resolve(this._db); };
         req.onerror = () => reject(req.error || new Error('Could not open image storage.'));
       });
     },
-    async put(key, blob) {
+    async put(key, value, store = 'images') {
       const db = await this.open();
       return new Promise((resolve, reject) => {
-        const tx = db.transaction('images', 'readwrite');
-        tx.objectStore('images').put(blob, key);
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).put(value, key);
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error || new Error('Could not save photo (storage may be full).'));
       });
     },
-    async get(key) {
+    async get(key, store = 'images') {
       const db = await this.open();
       return new Promise((resolve, reject) => {
-        const req = db.transaction('images', 'readonly').objectStore('images').get(key);
+        const req = db.transaction(store, 'readonly').objectStore(store).get(key);
         req.onsuccess = () => resolve(req.result || null);
         req.onerror = () => reject(req.error);
+      });
+    },
+    async all(store) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction(store, 'readonly').objectStore(store).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async remove(key, store) {
+      const db = await this.open();
+      return new Promise((resolve) => {
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
       });
     },
     async clear() {
       const db = await this.open();
       return new Promise((resolve) => {
-        const tx = db.transaction('images', 'readwrite');
+        const tx = db.transaction(['images', 'outbox'], 'readwrite');
         tx.objectStore('images').clear();
+        tx.objectStore('outbox').clear();
         tx.oncomplete = () => resolve();
         tx.onerror = () => resolve();
       });
@@ -96,13 +120,23 @@
   class AplydStore {
     constructor() {
       LEGACY_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (_) { /* ignore */ } });
+      this._cache = { raw: null, db: null };
       const db = this._read();
       if (!db) this._write(this._freshDb());
-      else if (db.records.some(r => r.seed)) {
-        // Older builds shipped demo history records; remove them so every record on screen is real.
-        db.records = db.records.filter(r => !r.seed);
-        this._write(db);
+      else {
+        let changed = false;
+        if (db.records.some(r => r.seed)) {
+          // Older builds shipped demo history records; remove them so every record on screen is real.
+          db.records = db.records.filter(r => !r.seed);
+          changed = true;
+        }
+        if (!Array.isArray(db.downtime_reasons)) { db.downtime_reasons = this._defaultReasons(); changed = true; }
+        if (changed) this._write(db);
       }
+    }
+
+    _defaultReasons() {
+      return Rules.DEFAULT_DOWNTIME_REASONS.map(r => ({ id: `reason-${r.code.toLowerCase()}`, ...r, synonyms: [...r.synonyms], is_active: true }));
     }
 
     _freshDb() {
@@ -110,6 +144,7 @@
         version: 2,
         machines: DEFAULT_MACHINES.map(m => ({ ...m })),
         shifts: DEFAULT_SHIFTS.map(s => ({ ...s })),
+        downtime_reasons: this._defaultReasons(),
         forms: [],
         records: [],
         corrections: []
@@ -125,14 +160,31 @@
       }
     }
 
+    /** Fresh, private copy of the database: use this before changing anything. */
     _db() { return this._read() || this._freshDb(); }
 
+    /**
+     * Read-only view, parsed once and reused until the stored text changes (another tab, or a write).
+     * Pages that check many records (queue, dashboard) no longer re-parse the database per record.
+     * Callers must not modify what this returns.
+     */
+    _view() {
+      let raw = null;
+      try { raw = localStorage.getItem(DB_KEY); } catch (_) { /* ignore */ }
+      if (raw && raw === this._cache.raw && this._cache.db) return this._cache.db;
+      const db = this._db();
+      this._cache = { raw, db };
+      return db;
+    }
+
     _write(db) {
+      const raw = JSON.stringify(db);
       try {
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        localStorage.setItem(DB_KEY, raw);
       } catch (err) {
         throw new Error('Browser storage is full. Export the register and use "Reset demo data" on the sign-in page.');
       }
+      this._cache = { raw: null, db: null }; // next read re-parses, so no caller shares objects with a writer
     }
 
     async resetDemo() {
@@ -172,8 +224,32 @@
     }
 
     // --- Master data ---
-    async getMachines() { return this._db().machines; }
-    async getShifts() { return this._db().shifts; }
+    async getMachines() { return this._view().machines; }
+    async getShifts() { return this._view().shifts; }
+    async getReasons() { return this._view().downtime_reasons || []; }
+
+    async saveReason(reason) {
+      if (!this.can('manage_master')) throw new Error('Only an admin can change the downtime reason list.');
+      const db = this._db();
+      const code = String(reason.code || '').trim().toUpperCase();
+      if (!/^[A-Z0-9_]{2,10}$/.test(code)) throw new Error('Code must be 2-10 letters, digits or _ (e.g. CLEAN).');
+      if (code === Rules.OTHER_REASON.code) throw new Error('OTHER is reserved for reasons that match nothing.');
+      if (!reason.name || !String(reason.name).trim()) throw new Error('Name is required.');
+      if (db.downtime_reasons.some(r => r.code === code && r.id !== reason.id)) throw new Error(`Reason ${code} already exists.`);
+      const synonyms = (Array.isArray(reason.synonyms) ? reason.synonyms : String(reason.synonyms || '').split(','))
+        .map(s => s.trim()).filter(Boolean).slice(0, 40);
+      const clean = { ...reason, code, name: String(reason.name).trim(), synonyms, is_active: reason.is_active !== false };
+      if (!clean.id) {
+        clean.id = uid('reason');
+        db.downtime_reasons.push(clean);
+      } else {
+        const i = db.downtime_reasons.findIndex(r => r.id === clean.id);
+        if (i === -1) throw new Error('Reason not found.');
+        db.downtime_reasons[i] = clean;
+      }
+      this._write(db);
+      return clean;
+    }
 
     async saveMachine(machine) {
       if (!this.can('manage_master')) throw new Error('Only an admin can change loom master data.');
@@ -223,8 +299,20 @@
     // --- Forms & photos ---
     async findFormBySha256(sha256) {
       if (!sha256) return null;
-      return this._db().forms.find(f => f.file_sha256 === sha256) || null;
+      return this._view().forms.find(f => f.file_sha256 === sha256) || null;
     }
+
+    // --- Outbox: photos captured with no signal, read automatically once back online ---
+    async addToOutbox({ file, sha256, imageBlob }) {
+      const user = this.getCurrentUser();
+      const item = { id: uid('outbox'), file_name: file.name, file_size: file.size, sha256, blob: imageBlob, user, queued_at: nowIso() };
+      await imageDb.put(item.id, item, 'outbox');
+      return item;
+    }
+    async getOutbox() {
+      try { return (await imageDb.all('outbox')).sort((a, b) => String(a.queued_at).localeCompare(String(b.queued_at))); } catch (_) { return []; }
+    }
+    async removeFromOutbox(id) { return imageDb.remove(id, 'outbox'); }
 
     async getFormImageUrl(formId) {
       if (!formId) return null;
@@ -250,8 +338,8 @@
      * so the review queue can show "this sheet" and Next record walks through its rows.
      * @returns array of created records, in row order
      */
-    async createRecordsFromExtraction({ file, sha256, imageBlob, extraction, batch }) {
-      const user = this.getCurrentUser();
+    async createRecordsFromExtraction({ file, sha256, imageBlob, extraction, batch, user: asUser }) {
+      const user = asUser && PROFILES.some(p => p.id === asUser.id) ? asUser : this.getCurrentUser(); // outbox: the person who took the photo
       // Store the photo first. Everything after this line runs without an await, so the
       // read-modify-write of the database is atomic even when several batch photos finish together.
       const formId = uid('form');
@@ -274,6 +362,7 @@
         extraction_provider: extraction.provider,
         extraction_model: extraction.model,
         extraction_latency_ms: extraction.latency_ms,
+        extraction_attempts: Array.isArray(extraction.attempts) ? extraction.attempts.slice(0, 8) : [],
         rows_detected: sheet.rows_detected,
         incomplete: Boolean(sheet.incomplete),
         extraction_payload: sheet,
@@ -302,6 +391,7 @@
           extraction_provider: extraction.provider,
           extraction_model: extraction.model,
           extraction_latency_ms: extraction.latency_ms,
+          extraction_attempts: form.extraction_attempts,
           final_payload: contract,
           machine_id: machine ? machine.id : null,
           machine_raw: fields.machine.raw_value,
@@ -342,7 +432,7 @@
     }
 
     async getRecords(filters = {}) {
-      const db = this._db();
+      const db = this._view();
       let rows = db.records.map(r => this._hydrate(r, db));
       if (filters.status && filters.status !== 'all') rows = rows.filter(r => r.status === filters.status);
       if (filters.submitted_by) rows = rows.filter(r => r.submitted_by === filters.submitted_by);
@@ -360,7 +450,7 @@
     }
 
     async getRecordById(id) {
-      const db = this._db();
+      const db = this._view();
       const r = db.records.find(x => x.id === id);
       if (!r) return null;
       const full = this._hydrate(r, db);
@@ -368,10 +458,16 @@
       return full;
     }
 
-    async validationFor(record) {
-      const db = this._db();
-      const full = record.corrections ? record : this._hydrate(record, db);
-      return Rules.validateRecord(full, { machines: db.machines, shifts: db.shifts, records: db.records, today: Rules.todayIso() });
+    /** Everything the business rules need, read once (pass it on when checking many records). */
+    validationContext() {
+      const db = this._view();
+      return { machines: db.machines, shifts: db.shifts, reasons: db.downtime_reasons, records: db.records, today: Rules.todayIso(), _db: db };
+    }
+
+    async validationFor(record, ctx) {
+      const c = ctx || this.validationContext();
+      const full = record.corrections ? record : this._hydrate(record, c._db);
+      return Rules.validateRecord(full, c);
     }
 
     _mutate(recordId, fn) {
@@ -398,19 +494,28 @@
       return typeof value === 'string' ? value.trim() || null : value;
     }
 
-    async correctField(recordId, recordKey, newValue, reason) {
+    /**
+     * Change a field. The audit entry also notes what had raised the alarm on it, if anything
+     * ("caught_by": the AI's own flag, a business rule, or neither = only the reviewer noticed),
+     * so the reliability page can show which safety net caught each AI mistake.
+     */
+    async correctField(recordId, recordKey, newValue, reason, { kind = 'correction' } = {}) {
       const record = await this.getRecordById(recordId);
       if (!record) throw new Error('Record not found.');
       if (!this.can('edit', record)) throw new Error('You cannot edit this record in its current status.');
       const value = this._coerce(recordKey, newValue);
       const user = this.getCurrentUser();
+      const v = await this.validationFor(record);
+      const aiFlag = Rules.unresolvedFlags(record).some(d => d.recordKey === recordKey);
+      const ruleFlag = [...v.blockers, ...v.warnings].some(m => m.field === recordKey);
       return this._mutate(recordId, (r, db) => {
         const original = r[recordKey] === undefined ? null : r[recordKey];
-        if (original === value) return null;
+        if (Rules.sameValue(original, value) && kind !== 'undo') return null;
         const entry = {
-          id: uid('corr'), record_id: recordId, field_key: recordKey, kind: 'correction',
+          id: uid('corr'), record_id: recordId, field_key: recordKey, kind,
           original_value: original, corrected_value: value,
-          reason: (reason || '').trim() || null,
+          reason: (reason || '').trim() || (kind === 'undo' ? 'Undone' : 'Checked against the photo'),
+          caught_by: aiFlag ? 'ai_flag' : ruleFlag ? 'rule' : 'reviewer',
           changed_by: user.id, changed_by_name: user.full_name, changed_by_role: user.role, changed_at: nowIso()
         };
         db.corrections.push(entry);
@@ -419,14 +524,42 @@
       });
     }
 
-    async confirmField(recordId, recordKey, note) {
+    /** Put a field back to the value it had before a correction (recorded as its own audit entry). */
+    async undoCorrection(recordId, entryId) {
+      const db = this._view();
+      const entry = db.corrections.find(c => c.id === entryId && c.record_id === recordId);
+      if (!entry || entry.kind !== 'correction') throw new Error('Nothing to undo.');
+      const later = db.corrections.filter(c => c.record_id === recordId && c.field_key === entry.field_key);
+      if (later[later.length - 1].id !== entryId) throw new Error('This field was changed again since; edit it directly instead.');
+      return this.correctField(recordId, entry.field_key, entry.original_value === null ? '' : entry.original_value, 'Undone', { kind: 'undo' });
+    }
+
+    /**
+     * Change the reason on your own latest change to a field, while the record is still open for edits.
+     * (Explaining an edit right after making it; the change itself is never rewritten.)
+     */
+    async setCorrectionReason(recordId, entryId, reason) {
+      const record = await this.getRecordById(recordId);
+      if (!record || !this.can('edit', record)) throw new Error('This record can no longer be edited.');
+      const user = this.getCurrentUser();
+      const db = this._db();
+      const entry = db.corrections.find(c => c.id === entryId && c.record_id === recordId);
+      if (!entry || entry.changed_by !== user.id) throw new Error('You can only explain your own change.');
+      const sameField = db.corrections.filter(c => c.record_id === recordId && c.field_key === entry.field_key);
+      if (sameField[sameField.length - 1].id !== entryId) throw new Error('This field was changed again since.');
+      entry.reason = String(reason || '').trim().slice(0, 300) || 'Checked against the photo';
+      this._write(db);
+      return entry;
+    }
+
+    async confirmField(recordId, recordKey, note, kind = 'confirmation') {
       const record = await this.getRecordById(recordId);
       if (!record) throw new Error('Record not found.');
       if (!this.can('review', record)) throw new Error('Only a supervisor or admin can confirm an AI-flagged value.');
       const user = this.getCurrentUser();
       return this._mutate(recordId, (r, db) => {
         const entry = {
-          id: uid('corr'), record_id: recordId, field_key: recordKey, kind: 'confirmation',
+          id: uid('corr'), record_id: recordId, field_key: recordKey, kind,
           original_value: r[recordKey] === undefined ? null : r[recordKey], corrected_value: r[recordKey] === undefined ? null : r[recordKey],
           reason: (note || '').trim() || 'Confirmed against the photo',
           changed_by: user.id, changed_by_name: user.full_name, changed_by_role: user.role, changed_at: nowIso()
@@ -434,6 +567,11 @@
         db.corrections.push(entry);
         return entry;
       });
+    }
+
+    /** "I checked this against the photo" for a value a business rule found suspicious. */
+    async checkField(recordId, recordKey) {
+      return this.confirmField(recordId, recordKey, 'Checked against the photo after a rule warning', 'check');
     }
 
     async approveRecord(recordId, note) {
@@ -489,8 +627,8 @@
 
     async buildErpPayload(recordId) {
       const record = await this.getRecordById(recordId);
-      const db = this._db();
-      return Rules.buildErpPayload(record, { machines: db.machines, shifts: db.shifts });
+      const db = this._view();
+      return Rules.buildErpPayload(record, { machines: db.machines, shifts: db.shifts, reasons: db.downtime_reasons });
     }
 
     /** POST the approved record to the mock ERP. Safe to call repeatedly (idempotent by key). */
@@ -534,25 +672,40 @@
     }
 
     // --- Metrics ---
+    /**
+     * Dashboard numbers. All "today / last 7 days" comparisons use the LOCAL calendar day.
+     * Approved output counts by approval date (when the work was signed off), so approving
+     * an older form shows up immediately; the production-date view lives in the register.
+     */
     async getDashboardMetrics() {
       const records = await this.getRecords();
+      const ctx = this.validationContext();
+      const localDay = (iso) => (iso ? Rules.todayIso(new Date(iso)) : '');
       const today = Rules.todayIso();
       const weekAgo = Rules.todayIso(new Date(Date.now() - 6 * 864e5));
-      const approved7d = records.filter(r => r.status === 'approved' && r.production_date >= weekAgo && r.production_date <= today);
+      const approved7d = records.filter(r => r.status === 'approved' && localDay(r.reviewed_at) >= weekAgo && localDay(r.reviewed_at) <= today);
       const pending = records.filter(r => r.status === 'pending_review');
       let exceptions = 0;
       for (const r of pending) {
-        const v = await this.validationFor(r);
+        const v = await this.validationFor(r, ctx);
         exceptions += v.blockers.length + v.warnings.length;
       }
+      const createdToday = records.filter(r => localDay(r.created_at) === today);
+      const user = this.getCurrentUser();
+      const weekAgoIso = new Date(Date.now() - 7 * 864e5).toISOString();
+      const mineCorrected = records.filter(r => r.submitted_by === user.id &&
+        (r.corrections || []).some(c => c.changed_by !== user.id && c.changed_at >= weekAgoIso && Rules.humanChanged(r, c.field_key)));
       return {
         approvedMetres7d: Math.round(approved7d.filter(r => (r.production_unit || 'metres') === 'metres').reduce((s, r) => s + (Number(r.production_quantity) || 0), 0) * 10) / 10,
-        formsToday: records.filter(r => String(r.created_at || '').slice(0, 10) === today).length,
+        approvedCount7d: approved7d.length,
+        photosToday: new Set(createdToday.map(r => r.form_id)).size,
+        recordsToday: createdToday.length,
         pendingReviews: pending.length,
         returned: records.filter(r => r.status === 'returned_for_correction').length,
         openExceptions: exceptions,
         erpFailed: records.filter(r => r.status === 'approved' && r.erp_status !== 'submitted').length,
         recentRecords: records.slice(0, 6),
+        mineCorrected,
         approved7d
       };
     }

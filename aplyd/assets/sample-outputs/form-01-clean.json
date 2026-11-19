@@ -2,18 +2,18 @@
   "sample": "form-01-clean",
   "condition": "Clean, well-lit, flat",
   "http_status": 200,
-  "latency_ms": 2952,
+  "latency_ms": 9678,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 2943,
+    "latency_ms": 9674,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 2941
+        "ms": 9663
       }
     ],
     "data": {
@@ -26,78 +26,156 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            180,
+            155,
+            700,
+            838
+          ],
           "fields": {
             "machine": {
               "value": "L-12",
               "raw_value": "L-12",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                215,
+                427,
+                238,
+                490
+              ]
             },
             "production_date": {
               "value": "2026-11-14",
               "raw_value": "14/11/2026",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                261,
+                431,
+                290,
+                570
+              ]
             },
             "shift": {
               "value": "M",
               "raw_value": "M",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                305,
+                429,
+                332,
+                457
+              ]
             },
             "production_quantity": {
               "value": 612,
               "raw_value": "612",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                356,
+                430,
+                380,
+                482
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "m",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                357,
+                500,
+                376,
+                516
+              ]
             },
             "material_reference": {
               "value": "Combed Poplin 40s",
               "raw_value": "Combed Poplin 40s",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                399,
+                429,
+                431,
+                641
+              ]
             },
             "batch_reference": {
               "value": "POP-40-881",
               "raw_value": "POP-40-881",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                443,
+                429,
+                476,
+                579
+              ]
             },
             "defects_count": {
               "value": 0,
               "raw_value": "0",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                491,
+                430,
+                512,
+                442
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                523,
+                431,
+                552,
+                832
+              ]
             },
             "downtime_minutes": {
               "value": 20,
-              "raw_value": "20 min",
+              "raw_value": "20",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                568,
+                434,
+                594,
+                467
+              ]
             },
             "downtime_reason": {
               "value": "Beam knotting",
               "raw_value": "Beam knotting",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                607,
+                434,
+                639,
+                598
+              ]
             },
             "remarks": {
               "value": "Smooth run",
               "raw_value": "Smooth run",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                653,
+                434,
+                682,
+                573
+              ]
             }
           }
         }
@@ -107,80 +185,172 @@
       "is_production_form": true,
       "image_issues": [],
       "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            180,
+            155,
+            700,
+            838
+          ],
           "machine": {
             "value": "L-12",
             "raw_value": "L-12",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              215,
+              427,
+              238,
+              490
+            ]
           },
           "production_date": {
             "value": "2026-11-14",
             "raw_value": "14/11/2026",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              261,
+              431,
+              290,
+              570
+            ]
           },
           "shift": {
             "value": "M",
             "raw_value": "M",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              305,
+              429,
+              332,
+              457
+            ]
           },
           "production_quantity": {
             "value": 612,
             "raw_value": "612",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              356,
+              430,
+              380,
+              482
+            ]
           },
           "production_unit": {
             "value": "m",
             "raw_value": "m",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              357,
+              500,
+              376,
+              516
+            ]
           },
           "material_reference": {
             "value": "Combed Poplin 40s",
             "raw_value": "Combed Poplin 40s",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              399,
+              429,
+              431,
+              641
+            ]
           },
           "batch_reference": {
             "value": "POP-40-881",
             "raw_value": "POP-40-881",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              443,
+              429,
+              476,
+              579
+            ]
           },
           "defects_count": {
             "value": 0,
             "raw_value": "0",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              491,
+              430,
+              512,
+              442
+            ]
           },
           "defect_details": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              523,
+              431,
+              552,
+              832
+            ]
           },
           "downtime_minutes": {
             "value": 20,
-            "raw_value": "20 min",
+            "raw_value": "20",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              568,
+              434,
+              594,
+              467
+            ]
           },
           "downtime_reason": {
             "value": "Beam knotting",
             "raw_value": "Beam knotting",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              607,
+              434,
+              639,
+              598
+            ]
           },
           "remarks": {
             "value": "Smooth run",
             "raw_value": "Smooth run",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              653,
+              434,
+              682,
+              573
+            ]
           }
         }
       ]

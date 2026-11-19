@@ -2,7 +2,9 @@
 -- APLYD: production database design (NOT used by the prototype)
 -- The prototype stores data in the browser. This schema documents how the same
 -- records, roles and append-only audit trail would live in Postgres (e.g.
--- Supabase) for a multi-user deployment. See docs/SOLUTION_NOTE.md section 8.
+-- Supabase) for a multi-user deployment. See docs/SOLUTION_NOTE.md.
+-- Column names match the prototype's records (aplyd/js/store.js) so the
+-- browser data maps across one-to-one. Last aligned: 19 Nov 2026.
 -- ==============================================================================
 
 -- Enable UUID extension
@@ -51,6 +53,17 @@ CREATE TABLE IF NOT EXISTS public.shifts (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Downtime reason list: handwritten reasons ("loom cleaning", "safai") are matched to a code
+-- (rules.js matchReason). Anything that matches nothing is reported as OTHER.
+CREATE TABLE IF NOT EXISTS public.downtime_reasons (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code TEXT UNIQUE NOT NULL CHECK (code ~ '^[A-Z0-9_]{2,10}$' AND code <> 'OTHER'), -- 'CLEAN', 'BEAM', 'POWER'
+    name TEXT NOT NULL,                -- 'Cleaning'
+    synonyms TEXT[] NOT NULL DEFAULT '{}', -- {'loom cleaning','safai'}
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ------------------------------------------------------------------------------
 -- 4. PRODUCTION FORMS (Physical Document & Extraction Tracking)
 -- ------------------------------------------------------------------------------
@@ -68,12 +81,15 @@ CREATE TABLE IF NOT EXISTS public.production_forms (
     processing_status TEXT NOT NULL CHECK (
         processing_status IN ('uploaded', 'queued', 'processing', 'extracted', 'extraction_failed')
     ) DEFAULT 'uploaded',
-    model_provider TEXT NULL DEFAULT 'HuggingFace',
-    model_name TEXT NULL,             -- e.g. 'Qwen/Qwen2.5-VL-72B-Instruct'
-    prompt_version TEXT NULL DEFAULT '1.0',
-    schema_version TEXT NULL DEFAULT '1.0',
-    raw_model_response JSONB NULL,    -- Raw JSON/completion from LLM
-    extraction_payload JSONB NULL,    -- Normalized 5-state structured fields
+    extraction_provider TEXT NULL,    -- 'gemini' (or 'openrouter' fallback)
+    extraction_model TEXT NULL,       -- e.g. 'gemini-3.1-flash-lite'
+    extraction_latency_ms INTEGER NULL,
+    extraction_attempts JSONB NULL,   -- models tried before the one that answered: [{model, ok, ms, error}]
+    rows_detected INTEGER NULL,       -- filled rows/slips the model saw on the photo
+    incomplete BOOLEAN NOT NULL DEFAULT FALSE, -- the model saw more rows than it returned
+    schema_version TEXT NULL DEFAULT '2.1',
+    model_output JSONB NULL,          -- raw JSON reply from the model
+    extraction_payload JSONB NULL,    -- normalised: { rows_detected, incomplete, image_issues, entries: [5-state contract] }
     processing_error TEXT NULL,       -- Explicit error message when extraction fails
     processed_at TIMESTAMPTZ NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -88,7 +104,7 @@ CREATE TABLE IF NOT EXISTS public.production_records (
     record_number TEXT UNIQUE NOT NULL, -- Human-readable identifier e.g. 'PR-2026-0001'
     production_form_id UUID NOT NULL REFERENCES public.production_forms(id) ON DELETE CASCADE,
     machine_id UUID NULL REFERENCES public.machines(id),
-    machine_id_raw TEXT NULL,           -- Literal transcribed machine text
+    machine_raw TEXT NULL,              -- Literal transcribed machine text
     shift_id UUID NULL REFERENCES public.shifts(id),
     shift_raw TEXT NULL,                -- Literal transcribed shift text
     production_date DATE NULL,
@@ -102,7 +118,10 @@ CREATE TABLE IF NOT EXISTS public.production_records (
     downtime_minutes NUMERIC NULL CHECK (downtime_minutes >= 0),
     downtime_reason TEXT NULL,          -- e.g. 'Machine stoppage twice'
     remarks TEXT NULL,                  -- Operator notes
-    final_payload JSONB NULL,           -- Full structured record snapshot
+    final_payload JSONB NULL,           -- This entry's 5-state contract, incl. per-field photo boxes
+    batch_id TEXT NULL,                 -- groups a batch upload, or the rows of one register page ('sheet-<form id>')
+    sheet_row INTEGER NOT NULL DEFAULT 1,  -- row on the photo (register pages hold several records)
+    sheet_rows INTEGER NOT NULL DEFAULT 1,
     status TEXT NOT NULL CHECK (
         status IN ('pending_review', 'returned_for_correction', 'approved', 'rejected')
     ) DEFAULT 'pending_review',
@@ -114,6 +133,8 @@ CREATE TABLE IF NOT EXISTS public.production_records (
     reviewed_at TIMESTAMPTZ NULL,
     approval_note TEXT NULL,
     rejection_reason TEXT NULL,
+    return_reason TEXT NULL,
+    returned_at TIMESTAMPTZ NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -125,8 +146,12 @@ CREATE TABLE IF NOT EXISTS public.production_corrections (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     production_record_id UUID NOT NULL REFERENCES public.production_records(id) ON DELETE CASCADE,
     field_key TEXT NOT NULL,          -- e.g. 'production_quantity', 'machine_id'
-    original_value JSONB NULL,        -- Raw AI extracted value
-    corrected_value JSONB NULL,       -- Human corrected value
+    kind TEXT NOT NULL CHECK (kind IN ('correction', 'undo', 'confirmation', 'check')),
+                                      -- correction/undo change the value; confirmation = AI-flagged value matches
+                                      -- the photo; check = value a business rule found suspicious was checked
+    original_value JSONB NULL,        -- value before this entry
+    corrected_value JSONB NULL,       -- value after this entry (same as before for confirmation/check)
+    caught_by TEXT NULL CHECK (caught_by IN ('ai_flag', 'rule', 'reviewer')), -- what raised the alarm (reliability metrics)
     reason TEXT NULL,                 -- Supervisor rationale note
     changed_by UUID NOT NULL REFERENCES public.profiles(id),
     changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -188,6 +213,7 @@ CREATE INDEX IF NOT EXISTS idx_erp_submissions_key ON public.erp_submissions(ide
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.machines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shifts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.downtime_reasons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.production_forms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.production_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.production_corrections ENABLE ROW LEVEL SECURITY;
@@ -221,6 +247,13 @@ ON public.shifts FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "Allow admin manage shifts"
 ON public.shifts FOR ALL TO authenticated
+USING (public.get_current_role() = 'admin');
+
+CREATE POLICY "Allow authenticated read downtime reasons"
+ON public.downtime_reasons FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Allow admin manage downtime reasons"
+ON public.downtime_reasons FOR ALL TO authenticated
 USING (public.get_current_role() = 'admin');
 
 -- Production Forms: Operators can insert and view their own; supervisors & admins can view all

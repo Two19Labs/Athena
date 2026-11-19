@@ -2,18 +2,18 @@
   "sample": "form-07-blank-and-zero",
   "condition": "Batch left blank; defects written as an explicit 0",
   "http_status": 200,
-  "latency_ms": 4227,
+  "latency_ms": 4163,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 4226,
+    "latency_ms": 4161,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 4225
+        "ms": 4160
       }
     ],
     "data": {
@@ -26,78 +26,156 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            191,
+            155,
+            695,
+            838
+          ],
           "fields": {
             "machine": {
               "value": "L-10",
               "raw_value": "L-10",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                218,
+                429,
+                239,
+                484
+              ]
             },
             "production_date": {
               "value": "2026-11-11",
               "raw_value": "11/11/2026",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                261,
+                429,
+                283,
+                570
+              ]
             },
             "shift": {
               "value": "M",
               "raw_value": "M",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                307,
+                429,
+                329,
+                457
+              ]
             },
             "production_quantity": {
               "value": 590,
-              "raw_value": "590 m",
+              "raw_value": "590",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                352,
+                428,
+                376,
+                467
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "m",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                352,
+                480,
+                374,
+                500
+              ]
             },
             "material_reference": {
               "value": "Cotton Satin 50s",
               "raw_value": "Cotton Satin 50s",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                390,
+                431,
+                416,
+                635
+              ]
             },
             "batch_reference": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                432,
+                428,
+                460,
+                835
+              ]
             },
             "defects_count": {
               "value": 0,
               "raw_value": "0",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                477,
+                433,
+                498,
+                450
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                514,
+                429,
+                540,
+                834
+              ]
             },
             "downtime_minutes": {
               "value": 0,
               "raw_value": "0",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                564,
+                437,
+                584,
+                450
+              ]
             },
             "downtime_reason": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                601,
+                429,
+                626,
+                834
+              ]
             },
             "remarks": {
               "value": "Batch tag missing",
               "raw_value": "Batch tag missing",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                648,
+                436,
+                673,
+                644
+              ]
             }
           }
         }
@@ -107,80 +185,172 @@
       "is_production_form": true,
       "image_issues": [],
       "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            191,
+            155,
+            695,
+            838
+          ],
           "machine": {
             "value": "L-10",
             "raw_value": "L-10",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              218,
+              429,
+              239,
+              484
+            ]
           },
           "production_date": {
             "value": "2026-11-11",
             "raw_value": "11/11/2026",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              261,
+              429,
+              283,
+              570
+            ]
           },
           "shift": {
             "value": "M",
             "raw_value": "M",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              307,
+              429,
+              329,
+              457
+            ]
           },
           "production_quantity": {
             "value": 590,
-            "raw_value": "590 m",
+            "raw_value": "590",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              352,
+              428,
+              376,
+              467
+            ]
           },
           "production_unit": {
-            "value": "metres",
+            "value": "m",
             "raw_value": "m",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              352,
+              480,
+              374,
+              500
+            ]
           },
           "material_reference": {
             "value": "Cotton Satin 50s",
             "raw_value": "Cotton Satin 50s",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              390,
+              431,
+              416,
+              635
+            ]
           },
           "batch_reference": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              432,
+              428,
+              460,
+              835
+            ]
           },
           "defects_count": {
             "value": 0,
             "raw_value": "0",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              477,
+              433,
+              498,
+              450
+            ]
           },
           "defect_details": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              514,
+              429,
+              540,
+              834
+            ]
           },
           "downtime_minutes": {
             "value": 0,
             "raw_value": "0",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              564,
+              437,
+              584,
+              450
+            ]
           },
           "downtime_reason": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              601,
+              429,
+              626,
+              834
+            ]
           },
           "remarks": {
             "value": "Batch tag missing",
             "raw_value": "Batch tag missing",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              648,
+              436,
+              673,
+              644
+            ]
           }
         }
       ]

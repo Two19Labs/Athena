@@ -2,18 +2,18 @@
   "sample": "form-03-low-light",
   "condition": "Night shift, dim light with noise",
   "http_status": 200,
-  "latency_ms": 5125,
+  "latency_ms": 3534,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 5124,
+    "latency_ms": 3532,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 5123
+        "ms": 3531
       }
     ],
     "data": {
@@ -26,78 +26,156 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            201,
+            159,
+            686,
+            836
+          ],
           "fields": {
             "machine": {
               "value": "L-07",
               "raw_value": "L-07",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                217,
+                426,
+                239,
+                484
+              ]
             },
             "production_date": {
               "value": "2026-11-13",
               "raw_value": "13/11/2026",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                263,
+                428,
+                283,
+                571
+              ]
             },
             "shift": {
               "value": "N",
               "raw_value": "N",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                303,
+                427,
+                326,
+                452
+              ]
             },
             "production_quantity": {
               "value": 540,
               "raw_value": "540",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                353,
+                428,
+                368,
+                477
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "m",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                356,
+                483,
+                367,
+                500
+              ]
             },
             "material_reference": {
               "value": "Sheeting 30s",
               "raw_value": "Sheeting 30s",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                390,
+                432,
+                415,
+                583
+              ]
             },
             "batch_reference": {
               "value": "SHT-30-081",
               "raw_value": "SHT-30-081",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                433,
+                434,
+                456,
+                580
+              ]
             },
             "defects_count": {
               "value": 1,
               "raw_value": "1",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                483,
+                435,
+                497,
+                449
+              ]
             },
             "defect_details": {
               "value": "Thick place",
               "raw_value": "Thick place",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                521,
+                436,
+                540,
+                563
+              ]
             },
             "downtime_minutes": {
               "value": 30,
-              "raw_value": "30 min",
+              "raw_value": "30",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                566,
+                438,
+                584,
+                467
+              ]
             },
             "downtime_reason": {
               "value": "Lubrication",
               "raw_value": "Lubrication",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                606,
+                438,
+                629,
+                566
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                650,
+                436,
+                672,
+                442
+              ]
             }
           }
         }
@@ -107,80 +185,172 @@
       "is_production_form": true,
       "image_issues": [],
       "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            201,
+            159,
+            686,
+            836
+          ],
           "machine": {
             "value": "L-07",
             "raw_value": "L-07",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              217,
+              426,
+              239,
+              484
+            ]
           },
           "production_date": {
             "value": "2026-11-13",
             "raw_value": "13/11/2026",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              263,
+              428,
+              283,
+              571
+            ]
           },
           "shift": {
             "value": "N",
             "raw_value": "N",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              303,
+              427,
+              326,
+              452
+            ]
           },
           "production_quantity": {
             "value": 540,
             "raw_value": "540",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              353,
+              428,
+              368,
+              477
+            ]
           },
           "production_unit": {
             "value": "m",
             "raw_value": "m",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              356,
+              483,
+              367,
+              500
+            ]
           },
           "material_reference": {
             "value": "Sheeting 30s",
             "raw_value": "Sheeting 30s",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              390,
+              432,
+              415,
+              583
+            ]
           },
           "batch_reference": {
             "value": "SHT-30-081",
             "raw_value": "SHT-30-081",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              433,
+              434,
+              456,
+              580
+            ]
           },
           "defects_count": {
             "value": 1,
             "raw_value": "1",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              483,
+              435,
+              497,
+              449
+            ]
           },
           "defect_details": {
             "value": "Thick place",
             "raw_value": "Thick place",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              521,
+              436,
+              540,
+              563
+            ]
           },
           "downtime_minutes": {
             "value": 30,
-            "raw_value": "30 min",
+            "raw_value": "30",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              566,
+              438,
+              584,
+              467
+            ]
           },
           "downtime_reason": {
             "value": "Lubrication",
             "raw_value": "Lubrication",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              606,
+              438,
+              629,
+              566
+            ]
           },
           "remarks": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              650,
+              436,
+              672,
+              442
+            ]
           }
         }
       ]

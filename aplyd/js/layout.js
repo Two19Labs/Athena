@@ -26,7 +26,7 @@
     { page: 'register', href: 'production-register.html', label: 'Production Register', short: 'Register', roles: ['supervisor', 'admin'] },
     { page: 'analytics', href: 'analytics.html', label: 'Analytics & Reliability', short: 'Reliability', roles: ['supervisor', 'admin'] },
     { page: 'machines', href: 'machines.html', label: 'Looms Master', short: 'Looms', roles: ['admin'] },
-    { page: 'shifts', href: 'shifts.html', label: 'Shift Schedules', short: 'Shifts', roles: ['admin'] }
+    { page: 'shifts', href: 'shifts.html', label: 'Shifts & Reasons', short: 'Shifts', roles: ['admin'] }
   ];
   const ROLES = [['operator', 'Operator', 'Ramesh'], ['supervisor', 'Supervisor', 'Priya'], ['admin', 'Admin', 'Vikram']];
 

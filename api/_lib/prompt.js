@@ -37,8 +37,9 @@ Registered shifts: ${shifts}
 Fields to extract:
 ${fieldLines}
 
-For EVERY field return an object: {"value": ..., "raw_value": "...", "status": "...", "reason": "..."}
+For EVERY field return an object: {"value": ..., "raw_value": "...", "status": "...", "reason": "...", "box": [ymin, xmin, ymax, xmax]}
 - raw_value: the exact characters written on the paper, or null if the space is blank.
+- box: where that value is written on the photo (or the empty space for it), as [ymin, xmin, ymax, xmax] scaled 0-1000 relative to the image. Omit box if the form has no place for the field.
 - status, one of:
   "read"      - clearly legible, you are confident.
   "uncertain" - legible but could be read more than one way (e.g. 3 vs 8, 1 vs 7, M vs N). Put your best reading in value and list the alternatives in reason.
@@ -59,9 +60,11 @@ Also return:
 - "image_issues": a list of short strings describing photo problems you noticed (e.g. "strong glare on lower half", "page rotated 90 degrees", "oil stain over downtime row"). Empty list if none.
 
 - "rows_detected": how many filled entries (rows or slips) you can see in the photo.
+- "fields_on_form": the field names above that the printed form has a place for (a labelled box, line or column), whether or not they are filled in.
+- In each entry, "row_box": [ymin, xmin, ymax, xmax] (0-1000) around that whole row or slip.
 
 Respond with JSON only, in exactly this shape:
-{"is_production_form": true, "image_issues": [], "rows_detected": 1, "header": {"production_date": {...}, "shift": {...}}, "entries": [{"machine": {...}, "production_date": {...}, "shift": {...}, "production_quantity": {...}, "production_unit": {...}, "material_reference": {...}, "batch_reference": {...}, "defects_count": {...}, "defect_details": {...}, "downtime_minutes": {...}, "downtime_reason": {...}, "remarks": {...}}]}
+{"is_production_form": true, "image_issues": [], "rows_detected": 1, "fields_on_form": ["machine", "..."], "header": {"production_date": {...}, "shift": {...}}, "entries": [{"row_box": [0, 0, 1000, 1000], "machine": {...}, "production_date": {...}, "shift": {...}, "production_quantity": {...}, "production_unit": {...}, "material_reference": {...}, "batch_reference": {...}, "defects_count": {...}, "defect_details": {...}, "downtime_minutes": {...}, "downtime_reason": {...}, "remarks": {...}}]}
 "header" may be {} when nothing is shared. A single slip is an "entries" array with one object.`;
 }
 

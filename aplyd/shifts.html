@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2318181b%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2717%27 font-family=%27Arial%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EA%3C/text%3E%3C/svg%3E">
-  <title>Shift Schedules · APLYD</title>
+  <title>Shifts &amp; Reasons · APLYD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
     <header class="topbar">
       <div>
         <p class="page-eyebrow">Master data</p>
-        <h2 class="page-title">Shift Schedules</h2>
+        <h2 class="page-title">Shifts &amp; Reasons</h2>
       </div>
       <div class="topbar-actions"></div>
     </header>
@@ -45,6 +45,42 @@
           <thead><tr><th>Code</th><th>Name</th><th>Hours</th><th class="num">Length</th><th>Status</th><th></th></tr></thead>
           <tbody id="shiftsTableBody"></tbody>
         </table>
+      </div>
+
+      <section class="hero-panel">
+        <div>
+          <h3>Downtime reasons</h3>
+          <p class="muted">Handwritten stoppage reasons ("loom cleaning", "safai", "light gayi") are matched to these codes for reports and the ERP. Anything that matches nothing is sent as <span class="mono">OTHER</span>, and the reviewer sees a warning.</p>
+        </div>
+        <button id="openReasonModalBtn" class="btn btn-primary" type="button">+ Add reason</button>
+      </section>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead><tr><th>Code</th><th>Name</th><th>Also matches</th><th>Status</th><th></th></tr></thead>
+          <tbody id="reasonsTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="reasonModal" class="modal-overlay hidden">
+        <form class="modal-box modal-box-sm" id="reasonForm" role="dialog" aria-modal="true" aria-labelledby="reasonModalTitle" novalidate>
+          <div class="modal-head">
+            <h3 id="reasonModalTitle">Add reason</h3>
+            <button type="button" class="btn btn-outline btn-small" data-close aria-label="Close">✕</button>
+          </div>
+          <input type="hidden" id="reasonId">
+          <div class="form-grid">
+            <label>Code <span class="req">*</span><input type="text" id="reasonCode" class="form-control" placeholder="CLEAN" maxlength="10" required></label>
+            <label>Name <span class="req">*</span><input type="text" id="reasonName" class="form-control" placeholder="Cleaning" required></label>
+            <label class="span-2">Also matches (comma-separated)<input type="text" id="reasonSynonyms" class="form-control" placeholder="loom cleaning, safai"></label>
+            <label class="check span-2"><input type="checkbox" id="reasonIsActive" checked> Active</label>
+          </div>
+          <p id="reasonFormError" class="field-msg bad hidden" role="alert"></p>
+          <div class="modal-foot">
+            <button type="button" class="btn btn-outline" data-close>Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveReasonBtn">Save reason</button>
+          </div>
+        </form>
       </div>
 
       <div id="shiftModal" class="modal-overlay hidden">

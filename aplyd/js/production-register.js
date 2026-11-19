@@ -9,10 +9,12 @@
   const $ = (id) => document.getElementById(id);
   let rows = [];
   let selected = null;
+  let reasons = [];
 
   document.addEventListener('DOMContentLoaded', async () => {
     const machines = await store.getMachines();
     const shifts = await store.getShifts();
+    reasons = await store.getReasons();
     $('filterMachineSelect').innerHTML = '<option value="">All looms</option>' + machines.map(m => `<option value="${esc(m.id)}">${esc(m.machine_code)}</option>`).join('');
     $('filterShiftSelect').innerHTML = '<option value="">All shifts</option>' + shifts.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
     ['searchRecords', 'filterMachineSelect', 'filterShiftSelect', 'filterDate'].forEach(id => $(id).addEventListener(id === 'searchRecords' ? 'input' : 'change', render));
@@ -181,11 +183,11 @@
 
   function exportCsv() {
     if (!rows.length) return window.toast.show('No records to export.', 'warning');
-    const header = ['record_number', 'production_date', 'machine_code', 'shift_code', 'production_quantity', 'production_unit', 'material_reference', 'batch_reference', 'defects_count', 'defect_details', 'downtime_minutes', 'downtime_reason', 'remarks', 'status', 'erp_reference', 'reviewed_by', 'reviewed_at'];
+    const header = ['record_number', 'production_date', 'machine_code', 'shift_code', 'production_quantity', 'production_unit', 'material_reference', 'batch_reference', 'defects_count', 'defect_details', 'downtime_minutes', 'downtime_reason', 'downtime_reason_code', 'remarks', 'status', 'erp_reference', 'reviewed_by', 'reviewed_at'];
     const lines = rows.map(r => [
       r.record_number, r.production_date, r.machine && r.machine.machine_code, r.shift && r.shift.shift_code,
       r.production_quantity, r.production_unit, r.material_reference, r.batch_reference, r.defects_count, r.defect_details,
-      r.downtime_minutes, r.downtime_reason, r.remarks, r.status, r.erp_reference, r.reviewed_by_name, r.reviewed_at
+      r.downtime_minutes, r.downtime_reason, r.downtime_reason ? (window.AplydRules.matchReason(r.downtime_reason, reasons) || window.AplydRules.OTHER_REASON).code : null, r.remarks, r.status, r.erp_reference, r.reviewed_by_name, r.reviewed_at
     ].map(csvCell).join(','));
     download(`aplyd-register-${window.AplydRules.todayIso()}.csv`, '﻿' + [header.join(','), ...lines].join('\r\n'), 'text/csv;charset=utf-8');
     window.toast.show(`Exported ${rows.length} records to CSV.`, 'success');

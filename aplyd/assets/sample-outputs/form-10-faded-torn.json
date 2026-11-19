@@ -2,18 +2,18 @@
   "sample": "form-10-faded-torn",
   "condition": "Faded pencil-like writing and a torn bottom corner (remarks lost)",
   "http_status": 200,
-  "latency_ms": 2881,
+  "latency_ms": 3785,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 2879,
+    "latency_ms": 3783,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 2879
+        "ms": 3782
       }
     ],
     "data": {
@@ -26,78 +26,156 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            192,
+            149,
+            700,
+            849
+          ],
           "fields": {
             "machine": {
               "value": "L-08",
               "raw_value": "L-08",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                218,
+                429,
+                241,
+                513
+              ]
             },
             "production_date": {
               "value": "2026-11-10",
               "raw_value": "10/11/2026",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                261,
+                432,
+                289,
+                570
+              ]
             },
             "shift": {
               "value": "E",
               "raw_value": "E",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                305,
+                430,
+                332,
+                448
+              ]
             },
             "production_quantity": {
               "value": 214,
               "raw_value": "214",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                356,
+                433,
+                380,
+                472
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "m",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                355,
+                484,
+                376,
+                502
+              ]
             },
             "material_reference": {
               "value": "Selvedge Drill",
               "raw_value": "Selvedge Drill",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                407,
+                431,
+                434,
+                583
+              ]
             },
             "batch_reference": {
               "value": "DRL-14-207",
               "raw_value": "DRL-14-207",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                457,
+                432,
+                480,
+                580
+              ]
             },
             "defects_count": {
               "value": 4,
               "raw_value": "4",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                505,
+                433,
+                529,
+                443
+              ]
             },
             "defect_details": {
               "value": "Broken pick",
               "raw_value": "Broken pick",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                551,
+                433,
+                578,
+                564
+              ]
             },
             "downtime_minutes": {
               "value": 60,
               "raw_value": "60 min",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                599,
+                435,
+                621,
+                513
+              ]
             },
             "downtime_reason": {
               "value": "Shuttle replacement",
               "raw_value": "Shuttle replacement",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                648,
+                436,
+                671,
+                666
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                690,
+                430,
+                699,
+                436
+              ]
             }
           }
         }
@@ -107,80 +185,172 @@
       "is_production_form": true,
       "image_issues": [],
       "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            192,
+            149,
+            700,
+            849
+          ],
           "machine": {
             "value": "L-08",
             "raw_value": "L-08",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              218,
+              429,
+              241,
+              513
+            ]
           },
           "production_date": {
             "value": "2026-11-10",
             "raw_value": "10/11/2026",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              261,
+              432,
+              289,
+              570
+            ]
           },
           "shift": {
             "value": "E",
             "raw_value": "E",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              305,
+              430,
+              332,
+              448
+            ]
           },
           "production_quantity": {
             "value": 214,
             "raw_value": "214",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              356,
+              433,
+              380,
+              472
+            ]
           },
           "production_unit": {
-            "value": "metres",
+            "value": "m",
             "raw_value": "m",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              355,
+              484,
+              376,
+              502
+            ]
           },
           "material_reference": {
             "value": "Selvedge Drill",
             "raw_value": "Selvedge Drill",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              407,
+              431,
+              434,
+              583
+            ]
           },
           "batch_reference": {
             "value": "DRL-14-207",
             "raw_value": "DRL-14-207",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              457,
+              432,
+              480,
+              580
+            ]
           },
           "defects_count": {
             "value": 4,
             "raw_value": "4",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              505,
+              433,
+              529,
+              443
+            ]
           },
           "defect_details": {
             "value": "Broken pick",
             "raw_value": "Broken pick",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              551,
+              433,
+              578,
+              564
+            ]
           },
           "downtime_minutes": {
             "value": 60,
             "raw_value": "60 min",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              599,
+              435,
+              621,
+              513
+            ]
           },
           "downtime_reason": {
             "value": "Shuttle replacement",
             "raw_value": "Shuttle replacement",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              648,
+              436,
+              671,
+              666
+            ]
           },
           "remarks": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              690,
+              430,
+              699,
+              436
+            ]
           }
         }
       ]

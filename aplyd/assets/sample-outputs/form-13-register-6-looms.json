@@ -2,18 +2,18 @@
   "sample": "form-13-register-6-looms",
   "condition": "Shift register page: header (date, shift) written once, 6 looms as rows, empty lines below",
   "http_status": 200,
-  "latency_ms": 5963,
+  "latency_ms": 9199,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 5961,
+    "latency_ms": 9199,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 5958
+        "ms": 9197
       }
     ],
     "data": {
@@ -26,12 +26,24 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            376,
+            126,
+            415,
+            866
+          ],
           "fields": {
             "machine": {
               "value": "L-01",
               "raw_value": "L-01",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                386,
+                142,
+                401,
+                181
+              ]
             },
             "production_date": {
               "value": "2026-10-31",
@@ -49,55 +61,99 @@
               "value": 512,
               "raw_value": "512",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                386,
+                206,
+                400,
+                241
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "Metres",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                357,
+                201,
+                367,
+                243
+              ]
             },
             "material_reference": {
               "value": "Cambric",
               "raw_value": "Cambric",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                384,
+                289,
+                399,
+                356
+              ]
             },
             "batch_reference": {
               "value": "CMB-60-301",
               "raw_value": "CMB-60-301",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                382,
+                419,
+                397,
+                526
+              ]
             },
             "defects_count": {
               "value": 1,
               "raw_value": "1",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                383,
+                581,
+                405,
+                597
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             },
             "downtime_minutes": {
               "value": 15,
               "raw_value": "15",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                383,
+                647,
+                393,
+                668
+              ]
             },
             "downtime_reason": {
               "value": "Cleaning",
               "raw_value": "Cleaning",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                377,
+                750,
+                401,
+                815
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             }
           }
         },
@@ -105,12 +161,24 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            415,
+            126,
+            461,
+            866
+          ],
           "fields": {
             "machine": {
               "value": "L-02",
               "raw_value": "L-02",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                431,
+                142,
+                447,
+                183
+              ]
             },
             "production_date": {
               "value": "2026-10-31",
@@ -128,43 +196,80 @@
               "value": 498,
               "raw_value": "498",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                432,
+                209,
+                447,
+                241
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "Metres",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                357,
+                201,
+                367,
+                243
+              ]
             },
             "material_reference": {
               "value": "Poplin 40s",
               "raw_value": "Poplin 40s",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                429,
+                281,
+                449,
+                366
+              ]
             },
             "batch_reference": {
               "value": "POP-40-302",
               "raw_value": "POP-40-302",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                428,
+                423,
+                444,
+                525
+              ]
             },
             "defects_count": {
               "value": 0,
               "raw_value": "0",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                428,
+                581,
+                442,
+                593
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             },
             "downtime_minutes": {
               "value": 0,
               "raw_value": "0",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                428,
+                652,
+                442,
+                664
+              ]
             },
             "downtime_reason": {
               "value": null,
@@ -176,7 +281,8 @@
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             }
           }
         },
@@ -184,12 +290,24 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            461,
+            126,
+            505,
+            866
+          ],
           "fields": {
             "machine": {
               "value": "L-03",
               "raw_value": "L-03",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                474,
+                142,
+                490,
+                183
+              ]
             },
             "production_date": {
               "value": "2026-10-31",
@@ -207,55 +325,99 @@
               "value": 301,
               "raw_value": "301",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                477,
+                211,
+                491,
+                240
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "Metres",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                357,
+                201,
+                367,
+                243
+              ]
             },
             "material_reference": {
               "value": "Denim 3/1",
               "raw_value": "Denim 3/1",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                473,
+                281,
+                492,
+                368
+              ]
             },
             "batch_reference": {
               "value": "DEN-26-303",
               "raw_value": "DEN-26-303",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                472,
+                420,
+                485,
+                528
+              ]
             },
             "defects_count": {
               "value": 2,
               "raw_value": "2",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                473,
+                582,
+                482,
+                594
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             },
             "downtime_minutes": {
               "value": 40,
               "raw_value": "40",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                471,
+                650,
+                482,
+                672
+              ]
             },
             "downtime_reason": {
               "value": "Warp break",
               "raw_value": "Warp break",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                466,
+                737,
+                481,
+                835
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             }
           }
         },
@@ -263,12 +425,24 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            505,
+            126,
+            550,
+            866
+          ],
           "fields": {
             "machine": {
               "value": "L-04",
               "raw_value": "L-04",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                519,
+                142,
+                534,
+                183
+              ]
             },
             "production_date": {
               "value": "2026-10-31",
@@ -286,55 +460,99 @@
               "value": 455,
               "raw_value": "455",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                521,
+                211,
+                535,
+                241
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "Metres",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                357,
+                201,
+                367,
+                243
+              ]
             },
             "material_reference": {
               "value": "Oxford",
               "raw_value": "Oxford",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                516,
+                297,
+                532,
+                350
+              ]
             },
             "batch_reference": {
               "value": "OXF-18-304",
               "raw_value": "OXF-18-304",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                516,
+                426,
+                530,
+                529
+              ]
             },
             "defects_count": {
               "value": 1,
               "raw_value": "1",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                516,
+                585,
+                526,
+                593
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             },
             "downtime_minutes": {
               "value": 20,
               "raw_value": "20",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                515,
+                650,
+                525,
+                672
+              ]
             },
             "downtime_reason": {
               "value": "Pirn change",
               "raw_value": "Pirn change",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                511,
+                737,
+                529,
+                836
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             }
           }
         },
@@ -342,12 +560,24 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            550,
+            126,
+            595,
+            866
+          ],
           "fields": {
             "machine": {
               "value": "L-05",
               "raw_value": "L-05",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                564,
+                142,
+                579,
+                183
+              ]
             },
             "production_date": {
               "value": "2026-10-31",
@@ -365,55 +595,99 @@
               "value": 377,
               "raw_value": "377",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                565,
+                211,
+                579,
+                241
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "Metres",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                357,
+                201,
+                367,
+                243
+              ]
             },
             "material_reference": {
               "value": "Linen Blend",
               "raw_value": "Linen Blend",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                560,
+                278,
+                577,
+                375
+              ]
             },
             "batch_reference": {
               "value": "LIN-55-305",
               "raw_value": "LIN-55-305",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                559,
+                427,
+                574,
+                527
+              ]
             },
             "defects_count": {
               "value": 0,
               "raw_value": "0",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                559,
+                584,
+                572,
+                594
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             },
             "downtime_minutes": {
               "value": 10,
               "raw_value": "10",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                560,
+                654,
+                571,
+                672
+              ]
             },
             "downtime_reason": {
               "value": "Lubrication",
               "raw_value": "Lubrication",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                554,
+                740,
+                571,
+                833
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             }
           }
         },
@@ -421,12 +695,24 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            595,
+            126,
+            638,
+            866
+          ],
           "fields": {
             "machine": {
               "value": "L-06",
               "raw_value": "L-06",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                610,
+                142,
+                624,
+                185
+              ]
             },
             "production_date": {
               "value": "2026-10-31",
@@ -444,55 +730,99 @@
               "value": 590,
               "raw_value": "590",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                609,
+                209,
+                623,
+                243
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "Metres",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                357,
+                201,
+                367,
+                243
+              ]
             },
             "material_reference": {
               "value": "Voile 60s",
               "raw_value": "Voile 60s",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                605,
+                290,
+                620,
+                363
+              ]
             },
             "batch_reference": {
               "value": "VOI-60-306",
               "raw_value": "VOI-60-306",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                604,
+                428,
+                617,
+                528
+              ]
             },
             "defects_count": {
               "value": 3,
               "raw_value": "3",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                604,
+                585,
+                615,
+                597
+              ]
             },
             "defect_details": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             },
             "downtime_minutes": {
               "value": 35,
               "raw_value": "35",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                604,
+                652,
+                614,
+                672
+              ]
             },
             "downtime_reason": {
               "value": "Beam knotting",
               "raw_value": "Beam knotting",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                599,
+                731,
+                615,
+                846
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": "No space for this on the form.",
+              "not_on_form": true
             }
           }
         }
@@ -502,139 +832,243 @@
       "is_production_form": true,
       "image_issues": [],
       "rows_detected": 6,
+      "fields_on_form": [
+        "machine",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "downtime_minutes",
+        "downtime_reason"
+      ],
       "header": {
         "production_date": {
           "value": "2026-10-31",
           "raw_value": "31/10/2026",
           "status": "read",
-          "reason": null
+          "reason": null,
+          "box": [
+            [
+              325,
+              161,
+              344,
+              274
+            ]
+          ]
         },
         "shift": {
           "value": "M",
           "raw_value": "M",
           "status": "read",
-          "reason": null
+          "reason": null,
+          "box": [
+            [
+              325,
+              329,
+              342,
+              355
+            ]
+          ]
         }
       },
       "entries": [
         {
+          "row_box": [
+            376,
+            126,
+            415,
+            866
+          ],
           "machine": {
             "value": "L-01",
             "raw_value": "L-01",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              386,
+              142,
+              401,
+              181
+            ]
           },
           "production_quantity": {
             "value": 512,
             "raw_value": "512",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              386,
+              206,
+              400,
+              241
+            ]
           },
           "production_unit": {
             "value": "Metres",
             "raw_value": "Metres",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              357,
+              201,
+              367,
+              243
+            ]
           },
           "material_reference": {
             "value": "Cambric",
             "raw_value": "Cambric",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              384,
+              289,
+              399,
+              356
+            ]
           },
           "batch_reference": {
             "value": "CMB-60-301",
             "raw_value": "CMB-60-301",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              382,
+              419,
+              397,
+              526
+            ]
           },
           "defects_count": {
             "value": 1,
             "raw_value": "1",
             "status": "read",
-            "reason": null
-          },
-          "defect_details": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              383,
+              581,
+              405,
+              597
+            ]
           },
           "downtime_minutes": {
             "value": 15,
             "raw_value": "15",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              383,
+              647,
+              393,
+              668
+            ]
           },
           "downtime_reason": {
             "value": "Cleaning",
             "raw_value": "Cleaning",
             "status": "read",
-            "reason": null
-          },
-          "remarks": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              377,
+              750,
+              401,
+              815
+            ]
           }
         },
         {
+          "row_box": [
+            415,
+            126,
+            461,
+            866
+          ],
           "machine": {
             "value": "L-02",
             "raw_value": "L-02",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              431,
+              142,
+              447,
+              183
+            ]
           },
           "production_quantity": {
             "value": 498,
             "raw_value": "498",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              432,
+              209,
+              447,
+              241
+            ]
           },
           "production_unit": {
             "value": "Metres",
             "raw_value": "Metres",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              357,
+              201,
+              367,
+              243
+            ]
           },
           "material_reference": {
             "value": "Poplin 40s",
             "raw_value": "Poplin 40s",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              429,
+              281,
+              449,
+              366
+            ]
           },
           "batch_reference": {
             "value": "POP-40-302",
             "raw_value": "POP-40-302",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              428,
+              423,
+              444,
+              525
+            ]
           },
           "defects_count": {
             "value": 0,
             "raw_value": "0",
             "status": "read",
-            "reason": null
-          },
-          "defect_details": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              428,
+              581,
+              442,
+              593
+            ]
           },
           "downtime_minutes": {
             "value": 0,
             "raw_value": "0",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              428,
+              652,
+              442,
+              664
+            ]
           },
           "downtime_reason": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
-          },
-          "remarks": {
             "value": null,
             "raw_value": null,
             "status": "missing",
@@ -642,251 +1076,419 @@
           }
         },
         {
+          "row_box": [
+            461,
+            126,
+            505,
+            866
+          ],
           "machine": {
             "value": "L-03",
             "raw_value": "L-03",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              474,
+              142,
+              490,
+              183
+            ]
           },
           "production_quantity": {
             "value": 301,
             "raw_value": "301",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              477,
+              211,
+              491,
+              240
+            ]
           },
           "production_unit": {
             "value": "Metres",
             "raw_value": "Metres",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              357,
+              201,
+              367,
+              243
+            ]
           },
           "material_reference": {
             "value": "Denim 3/1",
             "raw_value": "Denim 3/1",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              473,
+              281,
+              492,
+              368
+            ]
           },
           "batch_reference": {
             "value": "DEN-26-303",
             "raw_value": "DEN-26-303",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              472,
+              420,
+              485,
+              528
+            ]
           },
           "defects_count": {
             "value": 2,
             "raw_value": "2",
             "status": "read",
-            "reason": null
-          },
-          "defect_details": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              473,
+              582,
+              482,
+              594
+            ]
           },
           "downtime_minutes": {
             "value": 40,
             "raw_value": "40",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              471,
+              650,
+              482,
+              672
+            ]
           },
           "downtime_reason": {
             "value": "Warp break",
             "raw_value": "Warp break",
             "status": "read",
-            "reason": null
-          },
-          "remarks": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              466,
+              737,
+              481,
+              835
+            ]
           }
         },
         {
+          "row_box": [
+            505,
+            126,
+            550,
+            866
+          ],
           "machine": {
             "value": "L-04",
             "raw_value": "L-04",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              519,
+              142,
+              534,
+              183
+            ]
           },
           "production_quantity": {
             "value": 455,
             "raw_value": "455",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              521,
+              211,
+              535,
+              241
+            ]
           },
           "production_unit": {
             "value": "Metres",
             "raw_value": "Metres",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              357,
+              201,
+              367,
+              243
+            ]
           },
           "material_reference": {
             "value": "Oxford",
             "raw_value": "Oxford",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              516,
+              297,
+              532,
+              350
+            ]
           },
           "batch_reference": {
             "value": "OXF-18-304",
             "raw_value": "OXF-18-304",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              516,
+              426,
+              530,
+              529
+            ]
           },
           "defects_count": {
             "value": 1,
             "raw_value": "1",
             "status": "read",
-            "reason": null
-          },
-          "defect_details": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              516,
+              585,
+              526,
+              593
+            ]
           },
           "downtime_minutes": {
             "value": 20,
             "raw_value": "20",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              515,
+              650,
+              525,
+              672
+            ]
           },
           "downtime_reason": {
             "value": "Pirn change",
             "raw_value": "Pirn change",
             "status": "read",
-            "reason": null
-          },
-          "remarks": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              511,
+              737,
+              529,
+              836
+            ]
           }
         },
         {
+          "row_box": [
+            550,
+            126,
+            595,
+            866
+          ],
           "machine": {
             "value": "L-05",
             "raw_value": "L-05",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              564,
+              142,
+              579,
+              183
+            ]
           },
           "production_quantity": {
             "value": 377,
             "raw_value": "377",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              565,
+              211,
+              579,
+              241
+            ]
           },
           "production_unit": {
             "value": "Metres",
             "raw_value": "Metres",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              357,
+              201,
+              367,
+              243
+            ]
           },
           "material_reference": {
             "value": "Linen Blend",
             "raw_value": "Linen Blend",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              560,
+              278,
+              577,
+              375
+            ]
           },
           "batch_reference": {
             "value": "LIN-55-305",
             "raw_value": "LIN-55-305",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              559,
+              427,
+              574,
+              527
+            ]
           },
           "defects_count": {
             "value": 0,
             "raw_value": "0",
             "status": "read",
-            "reason": null
-          },
-          "defect_details": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              559,
+              584,
+              572,
+              594
+            ]
           },
           "downtime_minutes": {
             "value": 10,
             "raw_value": "10",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              560,
+              654,
+              571,
+              672
+            ]
           },
           "downtime_reason": {
             "value": "Lubrication",
             "raw_value": "Lubrication",
             "status": "read",
-            "reason": null
-          },
-          "remarks": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              554,
+              740,
+              571,
+              833
+            ]
           }
         },
         {
+          "row_box": [
+            595,
+            126,
+            638,
+            866
+          ],
           "machine": {
             "value": "L-06",
             "raw_value": "L-06",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              610,
+              142,
+              624,
+              185
+            ]
           },
           "production_quantity": {
             "value": 590,
             "raw_value": "590",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              609,
+              209,
+              623,
+              243
+            ]
           },
           "production_unit": {
             "value": "Metres",
             "raw_value": "Metres",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              357,
+              201,
+              367,
+              243
+            ]
           },
           "material_reference": {
             "value": "Voile 60s",
             "raw_value": "Voile 60s",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              605,
+              290,
+              620,
+              363
+            ]
           },
           "batch_reference": {
             "value": "VOI-60-306",
             "raw_value": "VOI-60-306",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              604,
+              428,
+              617,
+              528
+            ]
           },
           "defects_count": {
             "value": 3,
             "raw_value": "3",
             "status": "read",
-            "reason": null
-          },
-          "defect_details": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              604,
+              585,
+              615,
+              597
+            ]
           },
           "downtime_minutes": {
             "value": 35,
             "raw_value": "35",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              604,
+              652,
+              614,
+              672
+            ]
           },
           "downtime_reason": {
             "value": "Beam knotting",
             "raw_value": "Beam knotting",
             "status": "read",
-            "reason": null
-          },
-          "remarks": {
-            "value": null,
-            "raw_value": null,
-            "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              599,
+              731,
+              615,
+              846
+            ]
           }
         }
       ]

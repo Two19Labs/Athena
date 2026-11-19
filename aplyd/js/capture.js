@@ -30,6 +30,7 @@
     $('extractBtn').addEventListener('click', runExtraction);
     $('retryBtn').addEventListener('click', () => { $('failureCard').classList.add('hidden'); $('preflightPreviewCard').classList.remove('hidden'); });
     $('retakeBtn').addEventListener('click', () => reset());
+    $('cancelExtractBtn').addEventListener('click', () => controller && controller.abort());
     $('samplePicker').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-sample]');
       if (btn) loadSample(btn.dataset.sample, btn);
@@ -66,7 +67,10 @@
     } else {
       const p = s.providers[0];
       el.className = 'ai-status ai-status-ok';
-      el.textContent = `Vision AI ready: ${p.name} (${p.models[0]})`;
+      // Operators only need to know it works; reviewers and admins also see which model.
+      el.textContent = window.aplydStore.getCurrentUser().role === 'operator'
+        ? '✓ AI reader ready'
+        : `✓ AI reader ready · ${p.name} ${p.models[0]} (+${p.models.length - 1} backup model${p.models.length === 2 ? '' : 's'})`;
     }
   }
 
@@ -139,18 +143,24 @@
     await processAndRender();
   }
 
+  const kb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
+
   async function processAndRender() {
     const out = await Img.prepare(state.bitmap, state.rotation);
-    state.processed = out.blob;
+    // A small JPEG that needs no resizing or rotation is sent as it is (re-encoding would only make it bigger).
+    const keepOriginal = out.scale === 1 && state.rotation === 0 && state.file.type === 'image/jpeg' && out.blob.size >= state.file.size;
+    state.processed = keepOriginal ? state.file : out.blob;
     if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
-    state.previewUrl = URL.createObjectURL(out.blob);
+    state.previewUrl = URL.createObjectURL(state.processed);
 
     showStart(false);
     $('preflightPreviewCard').classList.remove('hidden');
     $('previewImg').src = state.previewUrl;
     $('previewFileName').textContent = state.file.name;
     $('previewDimensions').textContent = `${out.srcW} × ${out.srcH} px` + (out.scale < 1 ? ` (sent as ${out.w} × ${out.h})` : '');
-    $('previewFileSize').textContent = `${(state.file.size / 1024).toFixed(0)} KB → ${(out.blob.size / 1024).toFixed(0)} KB`;
+    $('previewFileSize').textContent = keepOriginal || state.processed.size >= state.file.size
+      ? `${kb(state.processed.size)}, ready to send`
+      : `${kb(state.file.size)} → ${kb(state.processed.size)} (made smaller for upload)`;
     renderChecks(Img.quality(out.canvas, out.srcW, out.srcH));
     $('extractBtn').disabled = false;
   }
@@ -187,17 +197,42 @@
     }
   }
 
+  /** Elapsed-seconds counter while the AI reads; after 15 s explain the wait. */
+  let ticker = null;
+  let controller = null;
+  function startTicker(started) {
+    const el = $('progressElapsed');
+    const note = $('progressNote');
+    note.classList.add('hidden');
+    const tick = () => {
+      const s = Math.floor((Date.now() - started) / 1000);
+      el.textContent = `${s} s`;
+      if (s >= 15) {
+        note.textContent = s >= 35
+          ? 'Still working: the free AI is slow right now. Cancel and retry later if you prefer; nothing is lost.'
+          : 'Taking longer than usual: the free AI may be busy, so it can switch to a backup model.';
+        note.classList.remove('hidden');
+      }
+    };
+    tick();
+    ticker = setInterval(tick, 500);
+  }
+  const stopTicker = () => { clearInterval(ticker); ticker = null; };
+
   async function runExtraction() {
     if (!state.processed) return;
     $('extractBtn').disabled = true;
     $('preflightPreviewCard').classList.add('hidden');
     $('progressSection').classList.remove('hidden');
     let step = 2;
+    controller = new AbortController();
+    const started = Date.now();
+    startTicker(started);
     try {
       setStep(1);
-      const started = Date.now();
       setStep(2);
-      const result = await window.visionExtractor.extract(state.processed);
+      const result = await window.visionExtractor.extract(state.processed, { signal: controller.signal });
+      stopTicker();
       step = 3;
       setStep(3);
       const records = await window.aplydStore.createRecordsFromExtraction({
@@ -205,7 +240,7 @@
       });
       const secs = ((Date.now() - started) / 1000).toFixed(1);
       if (records.length === 1) {
-        window.toast.show(`Read by ${result.model} in ${secs}s. Opening review…`, 'success');
+        window.toast.show(`Read in ${secs}s. Opening review…`, 'success');
         setTimeout(() => { window.location.href = `review.html?id=${encodeURIComponent(records[0].id)}`; }, 600);
       } else {
         // A register page / several slips: one record per entry, reviewed together.
@@ -214,6 +249,23 @@
         setTimeout(() => { window.location.href = `review.html?batch=${encodeURIComponent(records[0].batch_id)}`; }, 1200);
       }
     } catch (err) {
+      stopTicker();
+      if (err.code === 'cancelled') {
+        $('progressSection').classList.add('hidden');
+        $('preflightPreviewCard').classList.remove('hidden');
+        $('extractBtn').disabled = false;
+        window.toast.show('Cancelled. Nothing was saved; the photo is still here.', 'info');
+        return;
+      }
+      if (window.visionExtractor.isOffline(err.code)) {
+        // No signal on the shop floor: keep the photo on this phone and read it when back online.
+        await window.aplydStore.addToOutbox({ file: state.file, sha256: state.sha256, imageBlob: state.processed });
+        $('progressSection').classList.add('hidden');
+        reset(true);
+        window.toast.show('No signal. The photo is saved on this phone and will be read automatically when you are back online.', 'warning');
+        window.AplydOutbox && window.AplydOutbox.render();
+        return;
+      }
       setStep(step, true);
       showFailure(err);
     }

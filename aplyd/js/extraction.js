@@ -23,8 +23,11 @@
     }
   }
 
-  /** @param blob processed JPEG blob */
-  async function extract(blob) {
+  /**
+   * @param blob processed JPEG blob
+   * @param opts { signal } optional AbortSignal: Cancel stops waiting (nothing is saved)
+   */
+  async function extract(blob, opts = {}) {
     if (location.protocol === 'file:') {
       throw new ExtractionError('Open the app through the server (node dev-server.js or the deployed URL), not as a local file.', 'no_server');
     }
@@ -39,13 +42,19 @@
       resp = await fetch(`${window.APLYD_CONFIG.API_BASE}/api/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64, mimeType: blob.type, master: { machines, shifts }, today: window.AplydRules.todayIso() })
+        body: JSON.stringify({ imageBase64: base64, mimeType: blob.type, master: { machines, shifts }, today: window.AplydRules.todayIso() }),
+        signal: opts.signal
       });
     } catch (err) {
-      throw new ExtractionError('Could not reach the extraction service. Check the network connection and retry.', 'network');
+      if (err && err.name === 'AbortError') throw new ExtractionError('Cancelled. Nothing was saved.', 'cancelled');
+      throw new ExtractionError(navigator.onLine === false
+        ? 'No internet connection.'
+        : 'Could not reach the extraction service. Check the network connection and retry.', navigator.onLine === false ? 'offline' : 'network');
     }
     let body = null;
-    try { body = await resp.json(); } catch (_) { /* non-JSON */ }
+    try { body = await resp.json(); } catch (err) {
+      if (err && err.name === 'AbortError') throw new ExtractionError('Cancelled. Nothing was saved.', 'cancelled');
+    }
     if (!resp.ok || !body || !body.success) {
       const msg = (body && body.error) || `Extraction service returned HTTP ${resp.status}.`;
       throw new ExtractionError(msg, (body && body.code) || `http_${resp.status}`, body);
@@ -69,12 +78,16 @@
     timeout: 'The AI service is busy',
     upstream: 'The AI service is busy',
     no_server: 'App opened without its server',
-    network: 'Network problem'
+    network: 'Network problem',
+    offline: 'No signal'
   };
   const errorTitle = (code) => TITLES[code] || 'Extraction failed';
 
   /** Transient problems worth an automatic retry; anything else needs a person (retake, fix config). */
   const isRetryable = (code) => ['rate_limited', 'timeout', 'upstream', 'provider_error', 'network', 'bad_model_output', 'http_500', 'http_502', 'http_503', 'http_504'].includes(code);
 
-  window.visionExtractor = { extract, status, errorTitle, isRetryable, ExtractionError };
+  /** No connection at all: keep the photo on the phone and read it later (outbox). */
+  const isOffline = (code) => code === 'offline' || (code === 'network' && navigator.onLine === false);
+
+  window.visionExtractor = { extract, status, errorTitle, isRetryable, isOffline, ExtractionError };
 })();

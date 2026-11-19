@@ -1,0 +1,9 @@
+# Only the app (aplyd/) and the two functions (api/) are deployed.
+tests/
+docs/
+incoming-samples/
+dev-server.js
+context.md
+.env
+.env.*
+!.env.example

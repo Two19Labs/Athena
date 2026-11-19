@@ -34,6 +34,8 @@
 
       <p id="aiStatus" class="ai-status">Checking extraction service…</p>
 
+      <div id="outboxBanner" class="inline-alert inline-alert-warn outbox-banner hidden" role="status"></div>
+
       <div class="tips-banner">
         <strong>For a readable photo:</strong> all four corners in frame · phone parallel to the sheet · no lamp reflection · tap to focus.
       </div>
@@ -121,13 +123,15 @@
       <!-- Stage 3: progress -->
       <div id="progressSection" class="progress-card hidden" aria-live="polite">
         <div class="ocr-spinner"></div>
-        <h3>Reading the form</h3>
-        <p class="muted">The vision model is transcribing the handwriting. This usually takes a few seconds, longer when the free AI service is busy.</p>
+        <h3>Reading the form <span id="progressElapsed" class="progress-elapsed">0 s</span></h3>
+        <p class="muted">The AI is transcribing the handwriting. A single slip usually takes 5–15 s; a register page with many rows can take up to a minute.</p>
+        <p id="progressNote" class="progress-note hidden"></p>
         <div class="progress-stepper">
           <div class="step-item" id="step1"><span class="step-icon">1</span><span>Preparing photo</span></div>
           <div class="step-item" id="step2"><span class="step-icon">2</span><span>AI reading handwriting</span></div>
           <div class="step-item" id="step3"><span class="step-icon">3</span><span>Checking against loom &amp; shift master, saving draft</span></div>
         </div>
+        <button type="button" class="btn btn-outline" id="cancelExtractBtn">Cancel</button>
       </div>
 
       <!-- Stage 4: failure -->
@@ -153,6 +157,7 @@
   <script src="js/extraction.js"></script>
   <script src="js/image-prep.js"></script>
   <script src="js/batch.js"></script>
+  <script src="js/outbox.js"></script>
   <script src="js/capture.js"></script>
 </body>
 </html>

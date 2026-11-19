@@ -2,18 +2,18 @@
   "sample": "form-02-skewed",
   "condition": "Photographed at an angle (perspective + 11° rotation)",
   "http_status": 200,
-  "latency_ms": 3042,
+  "latency_ms": 4151,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 3041,
+    "latency_ms": 4147,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 3040
+        "ms": 4146
       }
     ],
     "data": {
@@ -26,78 +26,156 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            202,
+            140,
+            715,
+            857
+          ],
           "fields": {
             "machine": {
               "value": "L-03",
               "raw_value": "L-03",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                261,
+                378,
+                283,
+                431
+              ]
             },
             "production_date": {
               "value": "2026-11-14",
               "raw_value": "14/11/2026",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                313,
+                391,
+                341,
+                516
+              ]
             },
             "shift": {
               "value": "E",
               "raw_value": "E",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                361,
+                399,
+                379,
+                418
+              ]
             },
             "production_quantity": {
               "value": 318.5,
               "raw_value": "318.5",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                395,
+                407,
+                416,
+                472
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "m",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                396,
+                476,
+                410,
+                489
+              ]
             },
             "material_reference": {
               "value": "Denim 3/1",
               "raw_value": "Denim 3/1",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                431,
+                418,
+                453,
+                531
+              ]
             },
             "batch_reference": {
               "value": "DEN-26-120",
               "raw_value": "DEN-26-120",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                461,
+                428,
+                484,
+                569
+              ]
             },
             "defects_count": {
               "value": 3,
               "raw_value": "3",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                514,
+                438,
+                528,
+                450
+              ]
             },
             "defect_details": {
               "value": "Reed marks",
               "raw_value": "Reed marks",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                547,
+                448,
+                570,
+                570
+              ]
             },
             "downtime_minutes": {
               "value": 45,
               "raw_value": "45 min",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                593,
+                459,
+                607,
+                527
+              ]
             },
             "downtime_reason": {
               "value": "Warp break repair",
               "raw_value": "Warp break repair",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                616,
+                467,
+                639,
+                666
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                673,
+                466,
+                707,
+                851
+              ]
             }
           }
         }
@@ -107,80 +185,172 @@
       "is_production_form": true,
       "image_issues": [],
       "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            202,
+            140,
+            715,
+            857
+          ],
           "machine": {
             "value": "L-03",
             "raw_value": "L-03",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              261,
+              378,
+              283,
+              431
+            ]
           },
           "production_date": {
             "value": "2026-11-14",
             "raw_value": "14/11/2026",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              313,
+              391,
+              341,
+              516
+            ]
           },
           "shift": {
             "value": "E",
             "raw_value": "E",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              361,
+              399,
+              379,
+              418
+            ]
           },
           "production_quantity": {
             "value": 318.5,
             "raw_value": "318.5",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              395,
+              407,
+              416,
+              472
+            ]
           },
           "production_unit": {
             "value": "m",
             "raw_value": "m",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              396,
+              476,
+              410,
+              489
+            ]
           },
           "material_reference": {
             "value": "Denim 3/1",
             "raw_value": "Denim 3/1",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              431,
+              418,
+              453,
+              531
+            ]
           },
           "batch_reference": {
             "value": "DEN-26-120",
             "raw_value": "DEN-26-120",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              461,
+              428,
+              484,
+              569
+            ]
           },
           "defects_count": {
             "value": 3,
             "raw_value": "3",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              514,
+              438,
+              528,
+              450
+            ]
           },
           "defect_details": {
             "value": "Reed marks",
             "raw_value": "Reed marks",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              547,
+              448,
+              570,
+              570
+            ]
           },
           "downtime_minutes": {
             "value": 45,
             "raw_value": "45 min",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              593,
+              459,
+              607,
+              527
+            ]
           },
           "downtime_reason": {
             "value": "Warp break repair",
             "raw_value": "Warp break repair",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              616,
+              467,
+              639,
+              666
+            ]
           },
           "remarks": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              673,
+              466,
+              707,
+              851
+            ]
           }
         }
       ]

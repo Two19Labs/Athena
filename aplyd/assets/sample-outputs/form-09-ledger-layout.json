@@ -2,18 +2,18 @@
   "sample": "form-09-ledger-layout",
   "condition": "Different form layout (horizontal ledger), written shift name, short date, downtime in hours",
   "http_status": 200,
-  "latency_ms": 4243,
+  "latency_ms": 4300,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 4242,
+    "latency_ms": 4298,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 4240
+        "ms": 4297
       }
     ],
     "data": {
@@ -26,78 +26,156 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [],
+          "row_box": [
+            387,
+            127,
+            453,
+            867
+          ],
           "fields": {
             "machine": {
               "value": "L-11",
               "raw_value": "L-11",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                393,
+                257,
+                448,
+                285
+              ]
             },
             "production_date": {
               "value": "2026-11-10",
               "raw_value": "10-11-26",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                393,
+                132,
+                450,
+                191
+              ]
             },
             "shift": {
               "value": "N",
               "raw_value": "Night",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                399,
+                201,
+                450,
+                249
+              ]
             },
             "production_quantity": {
               "value": 421,
               "raw_value": "421",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                401,
+                490,
+                443,
+                521
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "Mtrs",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                367,
+                488,
+                381,
+                512
+              ]
             },
             "material_reference": {
               "value": "Yarn Dyed Check",
-              "raw_value": "Yarn Dyed\nCheck",
+              "raw_value": "Yarn Dyed Check",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                393,
+                301,
+                442,
+                387
+              ]
             },
             "batch_reference": {
               "value": "YDC-22-019",
-              "raw_value": "YDC-22-\n019",
+              "raw_value": "YDC-22-019",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                395,
+                401,
+                448,
+                480
+              ]
             },
             "defects_count": {
               "value": 1,
               "raw_value": "1",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                401,
+                542,
+                435,
+                552
+              ]
             },
             "defect_details": {
               "value": "Colour bleed",
-              "raw_value": "Colour\nbleed",
+              "raw_value": "Colour bleed",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                393,
+                584,
+                446,
+                637
+              ]
             },
             "downtime_minutes": {
               "value": 75,
-              "raw_value": "1 hr 15\nmin",
+              "raw_value": "1 hr 15 min",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                389,
+                658,
+                446,
+                721
+              ]
             },
             "downtime_reason": {
               "value": "Beam change",
-              "raw_value": "Beam\nchange",
+              "raw_value": "Beam change",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                391,
+                746,
+                442,
+                803
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                391,
+                822,
+                448,
+                863
+              ]
             }
           }
         }
@@ -107,80 +185,172 @@
       "is_production_form": true,
       "image_issues": [],
       "rows_detected": 1,
+      "fields_on_form": [
+        "production_date",
+        "shift",
+        "machine",
+        "material_reference",
+        "batch_reference",
+        "production_quantity",
+        "production_unit",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            387,
+            127,
+            453,
+            867
+          ],
           "machine": {
             "value": "L-11",
             "raw_value": "L-11",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              393,
+              257,
+              448,
+              285
+            ]
           },
           "production_date": {
             "value": "2026-11-10",
             "raw_value": "10-11-26",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              393,
+              132,
+              450,
+              191
+            ]
           },
           "shift": {
             "value": "Night",
             "raw_value": "Night",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              399,
+              201,
+              450,
+              249
+            ]
           },
           "production_quantity": {
             "value": 421,
             "raw_value": "421",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              401,
+              490,
+              443,
+              521
+            ]
           },
           "production_unit": {
             "value": "Mtrs",
             "raw_value": "Mtrs",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              367,
+              488,
+              381,
+              512
+            ]
           },
           "material_reference": {
             "value": "Yarn Dyed Check",
-            "raw_value": "Yarn Dyed\nCheck",
+            "raw_value": "Yarn Dyed Check",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              393,
+              301,
+              442,
+              387
+            ]
           },
           "batch_reference": {
             "value": "YDC-22-019",
-            "raw_value": "YDC-22-\n019",
+            "raw_value": "YDC-22-019",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              395,
+              401,
+              448,
+              480
+            ]
           },
           "defects_count": {
             "value": 1,
             "raw_value": "1",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              401,
+              542,
+              435,
+              552
+            ]
           },
           "defect_details": {
             "value": "Colour bleed",
-            "raw_value": "Colour\nbleed",
+            "raw_value": "Colour bleed",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              393,
+              584,
+              446,
+              637
+            ]
           },
           "downtime_minutes": {
             "value": 75,
-            "raw_value": "1 hr 15\nmin",
+            "raw_value": "1 hr 15 min",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              389,
+              658,
+              446,
+              721
+            ]
           },
           "downtime_reason": {
             "value": "Beam change",
-            "raw_value": "Beam\nchange",
+            "raw_value": "Beam change",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              391,
+              746,
+              442,
+              803
+            ]
           },
           "remarks": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              391,
+              822,
+              448,
+              863
+            ]
           }
         }
       ]

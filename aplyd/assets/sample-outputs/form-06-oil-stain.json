@@ -2,106 +2,184 @@
   "sample": "form-06-oil-stain",
   "condition": "Oil stain over the downtime reason",
   "http_status": 200,
-  "latency_ms": 8238,
+  "latency_ms": 3969,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 8237,
+    "latency_ms": 3966,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 8235
+        "ms": 3966
       }
     ],
     "data": {
       "schema_version": "2.1",
       "image_issues": [
-        "oil stain over stoppage reason row"
+        "dark smudge over stoppage reason"
       ],
       "rows_detected": 1,
       "incomplete": false,
       "entries": [
         {
           "schema_version": "2.0",
-          "overall_status": "ready_for_approval",
+          "overall_status": "needs_review",
           "image_issues": [
-            "oil stain over stoppage reason row"
+            "dark smudge over stoppage reason"
+          ],
+          "row_box": [
+            185,
+            155,
+            711,
+            838
           ],
           "fields": {
             "machine": {
               "value": "L-05",
               "raw_value": "L-05",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                221,
+                428,
+                241,
+                485
+              ]
             },
             "production_date": {
               "value": "2026-11-12",
               "raw_value": "12/11/2026",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                261,
+                430,
+                285,
+                570
+              ]
             },
             "shift": {
               "value": "E",
               "raw_value": "E",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                305,
+                429,
+                325,
+                451
+              ]
             },
             "production_quantity": {
               "value": 377,
               "raw_value": "377",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                348,
+                432,
+                368,
+                472
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "m",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                348,
+                485,
+                363,
+                500
+              ]
             },
             "material_reference": {
               "value": "Linen Blend",
               "raw_value": "Linen Blend",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                391,
+                432,
+                412,
+                569
+              ]
             },
             "batch_reference": {
               "value": "LIN-55-034",
               "raw_value": "LIN-55-034",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                432,
+                431,
+                454,
+                579
+              ]
             },
             "defects_count": {
               "value": 1,
               "raw_value": "1",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                476,
+                433,
+                496,
+                442
+              ]
             },
             "defect_details": {
               "value": "Float",
               "raw_value": "Float",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                517,
+                432,
+                539,
+                494
+              ]
             },
             "downtime_minutes": {
               "value": 90,
               "raw_value": "90 min",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                561,
+                432,
+                583,
+                517
+              ]
             },
             "downtime_reason": {
               "value": "Motor overheating",
               "raw_value": "Motor overheating",
-              "status": "read",
-              "reason": null
+              "status": "uncertain",
+              "reason": "text partially obscured by dark smudge",
+              "box": [
+                600,
+                433,
+                631,
+                648
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                653,
+                428,
+                689,
+                443
+              ]
             }
           }
         }
@@ -110,83 +188,175 @@
     "model_output": {
       "is_production_form": true,
       "image_issues": [
-        "oil stain over stoppage reason row"
+        "dark smudge over stoppage reason"
       ],
       "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            185,
+            155,
+            711,
+            838
+          ],
           "machine": {
             "value": "L-05",
             "raw_value": "L-05",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              221,
+              428,
+              241,
+              485
+            ]
           },
           "production_date": {
             "value": "2026-11-12",
             "raw_value": "12/11/2026",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              261,
+              430,
+              285,
+              570
+            ]
           },
           "shift": {
             "value": "E",
             "raw_value": "E",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              305,
+              429,
+              325,
+              451
+            ]
           },
           "production_quantity": {
             "value": 377,
             "raw_value": "377",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              348,
+              432,
+              368,
+              472
+            ]
           },
           "production_unit": {
-            "value": "m",
+            "value": "metres",
             "raw_value": "m",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              348,
+              485,
+              363,
+              500
+            ]
           },
           "material_reference": {
             "value": "Linen Blend",
             "raw_value": "Linen Blend",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              391,
+              432,
+              412,
+              569
+            ]
           },
           "batch_reference": {
             "value": "LIN-55-034",
             "raw_value": "LIN-55-034",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              432,
+              431,
+              454,
+              579
+            ]
           },
           "defects_count": {
             "value": 1,
             "raw_value": "1",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              476,
+              433,
+              496,
+              442
+            ]
           },
           "defect_details": {
             "value": "Float",
             "raw_value": "Float",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              517,
+              432,
+              539,
+              494
+            ]
           },
           "downtime_minutes": {
             "value": 90,
             "raw_value": "90 min",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              561,
+              432,
+              583,
+              517
+            ]
           },
           "downtime_reason": {
             "value": "Motor overheating",
             "raw_value": "Motor overheating",
-            "status": "read",
-            "reason": null
+            "status": "uncertain",
+            "reason": "text partially obscured by dark smudge",
+            "box": [
+              600,
+              433,
+              631,
+              648
+            ]
           },
           "remarks": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              653,
+              428,
+              689,
+              443
+            ]
           }
         }
       ]

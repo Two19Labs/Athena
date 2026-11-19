@@ -1,6 +1,6 @@
 {
   "status": "complete",
-  "generated_at": "2026-11-19T05:36:43.940Z",
+  "generated_at": "2026-11-19T11:20:57.603Z",
   "provider": "gemini",
   "model": "gemini-3.5-flash-lite",
   "sample_set": "synthetic (tests/generate-samples.js)",
@@ -10,10 +10,10 @@
     "fields_correct": 191,
     "field_accuracy": 0.9948,
     "silent_error_rate": 0.0052,
-    "flag_recall": 0.3333,
+    "flag_recall": 0.6667,
     "blank_detection": 1,
     "unreadable_caught": 1,
-    "median_latency_ms": 4243
+    "median_latency_ms": 4151
   },
   "per_field_accuracy": {
     "machine": 1,
@@ -34,7 +34,7 @@
       "id": "form-01-clean",
       "condition": "Clean, well-lit, flat",
       "status": 200,
-      "latency_ms": 2952,
+      "latency_ms": 9678,
       "fields": {
         "machine": {
           "truth": "L-12",
@@ -102,7 +102,7 @@
         "downtime_minutes": {
           "truth": 20,
           "value": 20,
-          "raw": "20 min",
+          "raw": "20",
           "status": "read",
           "correct": true
         },
@@ -127,7 +127,7 @@
       "id": "form-02-skewed",
       "condition": "Photographed at an angle (perspective + 11° rotation)",
       "status": 200,
-      "latency_ms": 3042,
+      "latency_ms": 4151,
       "fields": {
         "machine": {
           "truth": "L-03",
@@ -220,7 +220,7 @@
       "id": "form-03-low-light",
       "condition": "Night shift, dim light with noise",
       "status": 200,
-      "latency_ms": 5125,
+      "latency_ms": 3534,
       "fields": {
         "machine": {
           "truth": "L-07",
@@ -288,7 +288,7 @@
         "downtime_minutes": {
           "truth": 30,
           "value": 30,
-          "raw": "30 min",
+          "raw": "30",
           "status": "read",
           "correct": true
         },
@@ -313,7 +313,7 @@
       "id": "form-04-glare",
       "condition": "Overhead lamp glare across the top half",
       "status": 200,
-      "latency_ms": 5618,
+      "latency_ms": 3696,
       "fields": {
         "machine": {
           "truth": "L-01",
@@ -406,7 +406,7 @@
       "id": "form-05-ambiguous-qty",
       "condition": "Quantity first digit is written so it could be 3 or 8",
       "status": 200,
-      "latency_ms": 5006,
+      "latency_ms": 5679,
       "fields": {
         "machine": {
           "truth": "L-12",
@@ -432,7 +432,7 @@
         "production_quantity": {
           "truth": 350,
           "value": 850,
-          "raw": "850 m",
+          "raw": "850",
           "status": "read",
           "correct": false
         },
@@ -499,7 +499,7 @@
       "id": "form-06-oil-stain",
       "condition": "Oil stain over the downtime reason",
       "status": 200,
-      "latency_ms": 8238,
+      "latency_ms": 3969,
       "fields": {
         "machine": {
           "truth": "L-05",
@@ -575,7 +575,7 @@
           "truth": "Motor overheating",
           "value": "Motor overheating",
           "raw": "Motor overheating",
-          "status": "read",
+          "status": "uncertain",
           "correct": true
         },
         "remarks": {
@@ -592,7 +592,7 @@
       "id": "form-07-blank-and-zero",
       "condition": "Batch left blank; defects written as an explicit 0",
       "status": 200,
-      "latency_ms": 4227,
+      "latency_ms": 4163,
       "fields": {
         "machine": {
           "truth": "L-10",
@@ -618,7 +618,7 @@
         "production_quantity": {
           "truth": 590,
           "value": 590,
-          "raw": "590 m",
+          "raw": "590",
           "status": "read",
           "correct": true
         },
@@ -685,7 +685,7 @@
       "id": "form-08-unknown-loom",
       "condition": "Loom number not in the loom master (L-19)",
       "status": 200,
-      "latency_ms": 2636,
+      "latency_ms": 4075,
       "fields": {
         "machine": {
           "truth": "L-19",
@@ -711,7 +711,7 @@
         "production_quantity": {
           "truth": 455,
           "value": 455,
-          "raw": "455 m",
+          "raw": "455",
           "status": "read",
           "correct": true
         },
@@ -778,7 +778,7 @@
       "id": "form-09-ledger-layout",
       "condition": "Different form layout (horizontal ledger), written shift name, short date, downtime in hours",
       "status": 200,
-      "latency_ms": 4243,
+      "latency_ms": 4300,
       "fields": {
         "machine": {
           "truth": "L-11",
@@ -818,14 +818,14 @@
         "material_reference": {
           "truth": "Yarn Dyed Check",
           "value": "Yarn Dyed Check",
-          "raw": "Yarn Dyed\nCheck",
+          "raw": "Yarn Dyed Check",
           "status": "read",
           "correct": true
         },
         "batch_reference": {
           "truth": "YDC-22-019",
           "value": "YDC-22-019",
-          "raw": "YDC-22-\n019",
+          "raw": "YDC-22-019",
           "status": "read",
           "correct": true
         },
@@ -839,21 +839,21 @@
         "defect_details": {
           "truth": "Colour bleed",
           "value": "Colour bleed",
-          "raw": "Colour\nbleed",
+          "raw": "Colour bleed",
           "status": "read",
           "correct": true
         },
         "downtime_minutes": {
           "truth": 75,
           "value": 75,
-          "raw": "1 hr 15\nmin",
+          "raw": "1 hr 15 min",
           "status": "read",
           "correct": true
         },
         "downtime_reason": {
           "truth": "Beam change",
           "value": "Beam change",
-          "raw": "Beam\nchange",
+          "raw": "Beam change",
           "status": "read",
           "correct": true
         },
@@ -871,7 +871,7 @@
       "id": "form-10-faded-torn",
       "condition": "Faded pencil-like writing and a torn bottom corner (remarks lost)",
       "status": 200,
-      "latency_ms": 2881,
+      "latency_ms": 3785,
       "fields": {
         "machine": {
           "truth": "L-08",
@@ -964,7 +964,7 @@
       "id": "form-11-sideways",
       "condition": "Photo taken sideways (rotated 90°), rough handwriting",
       "status": 200,
-      "latency_ms": 2697,
+      "latency_ms": 3596,
       "fields": {
         "machine": {
           "truth": "L-06",
@@ -1057,7 +1057,7 @@
       "id": "form-13-register-6-looms",
       "condition": "Shift register page: header (date, shift) written once, 6 looms as rows, empty lines below",
       "status": 200,
-      "latency_ms": 5963,
+      "latency_ms": 9199,
       "fields": {},
       "result": "60/60 fields correct across 6/6 rows"
     },
@@ -1065,7 +1065,7 @@
       "id": "form-12-not-a-form",
       "condition": "Close-up of woven fabric, no form in frame (operator mistake)",
       "status": 422,
-      "latency_ms": 4063,
+      "latency_ms": 2456,
       "fields": {},
       "result": "refused (correct)"
     }

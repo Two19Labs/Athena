@@ -24,7 +24,52 @@
         if (b) openShift((await store.getShifts()).find(s => s.id === b.dataset.edit));
       });
     }
+    if ($('reasonsTableBody')) {
+      await renderReasons();
+      wireModal('reasonModal', 'reasonForm', saveReason);
+      $('openReasonModalBtn').addEventListener('click', () => openReason(null));
+      $('reasonsTableBody').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-edit]');
+        if (b) openReason((await store.getReasons()).find(r => r.id === b.dataset.edit));
+      });
+    }
   });
+
+  async function renderReasons() {
+    const reasons = await store.getReasons();
+    $('reasonsTableBody').innerHTML = reasons.map(r => `
+      <tr>
+        <td class="mono strong">${esc(r.code)}</td>
+        <td>${esc(r.name)}</td>
+        <td class="muted">${esc((r.synonyms || []).join(', ') || '—')}</td>
+        <td>${statusPill(r.is_active)}</td>
+        <td class="right"><button type="button" class="btn btn-outline btn-small" data-edit="${esc(r.id)}">Edit</button></td>
+      </tr>`).join('');
+  }
+
+  function openReason(r) {
+    $('reasonModalTitle').textContent = r ? `Edit ${r.code}` : 'Add reason';
+    $('reasonId').value = r ? r.id : '';
+    $('reasonCode').value = r ? r.code : '';
+    $('reasonName').value = r ? r.name : '';
+    $('reasonSynonyms').value = r ? (r.synonyms || []).join(', ') : '';
+    $('reasonIsActive').checked = r ? r.is_active !== false : true;
+    $('reasonFormError').classList.add('hidden');
+    $('reasonModal').classList.remove('hidden');
+    $('reasonCode').focus();
+  }
+
+  async function saveReason() {
+    const saved = await store.saveReason({
+      id: $('reasonId').value || null,
+      code: $('reasonCode').value,
+      name: $('reasonName').value,
+      synonyms: $('reasonSynonyms').value,
+      is_active: $('reasonIsActive').checked
+    });
+    window.toast.show(`Reason ${saved.code} saved.`, 'success');
+    await renderReasons();
+  }
 
   function wireModal(modalId, formId, onSave) {
     const modal = $(modalId);

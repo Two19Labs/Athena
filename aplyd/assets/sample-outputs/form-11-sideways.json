@@ -2,24 +2,24 @@
   "sample": "form-11-sideways",
   "condition": "Photo taken sideways (rotated 90°), rough handwriting",
   "http_status": 200,
-  "latency_ms": 2697,
+  "latency_ms": 3596,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 2696,
+    "latency_ms": 3596,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 2696
+        "ms": 3595
       }
     ],
     "data": {
       "schema_version": "2.1",
       "image_issues": [
-        "page rotated 90 degrees counter-clockwise"
+        "page rotated 90 degrees clockwise"
       ],
       "rows_detected": 1,
       "incomplete": false,
@@ -28,80 +28,158 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [
-            "page rotated 90 degrees counter-clockwise"
+            "page rotated 90 degrees clockwise"
+          ],
+          "row_box": [
+            308,
+            321,
+            694,
+            792
           ],
           "fields": {
             "machine": {
               "value": "L-06",
               "raw_value": "L-06",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                458,
+                751,
+                483,
+                765
+              ]
             },
             "production_date": {
               "value": "2026-11-09",
               "raw_value": "09/11/2026",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                459,
+                712,
+                526,
+                723
+              ]
             },
             "shift": {
               "value": "M",
               "raw_value": "M",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                461,
+                668,
+                471,
+                686
+              ]
             },
             "production_quantity": {
               "value": 488,
               "raw_value": "488",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                459,
+                627,
+                479,
+                640
+              ]
             },
             "production_unit": {
               "value": "metres",
               "raw_value": "m",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                488,
+                627,
+                497,
+                638
+              ]
             },
             "material_reference": {
               "value": "Voile 60s",
               "raw_value": "Voile 60s",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                463,
+                588,
+                511,
+                603
+              ]
             },
             "batch_reference": {
               "value": "VOI-60-009",
               "raw_value": "VOI-60-009",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                459,
+                546,
+                526,
+                560
+              ]
             },
             "defects_count": {
               "value": 2,
               "raw_value": "2",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                463,
+                505,
+                470,
+                516
+              ]
             },
             "defect_details": {
               "value": "Weft slub",
               "raw_value": "Weft slub",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                463,
+                464,
+                523,
+                482
+              ]
             },
             "downtime_minutes": {
               "value": 40,
               "raw_value": "40 min",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                465,
+                423,
+                505,
+                437
+              ]
             },
             "downtime_reason": {
               "value": "Lubrication",
               "raw_value": "Lubrication",
               "status": "read",
-              "reason": null
+              "reason": null,
+              "box": [
+                465,
+                380,
+                528,
+                396
+              ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null
+              "reason": null,
+              "box": [
+                463,
+                339,
+                471,
+                351
+              ]
             }
           }
         }
@@ -110,83 +188,175 @@
     "model_output": {
       "is_production_form": true,
       "image_issues": [
-        "page rotated 90 degrees counter-clockwise"
+        "page rotated 90 degrees clockwise"
       ],
       "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
       "header": {},
       "entries": [
         {
+          "row_box": [
+            308,
+            321,
+            694,
+            792
+          ],
           "machine": {
             "value": "L-06",
             "raw_value": "L-06",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              458,
+              751,
+              483,
+              765
+            ]
           },
           "production_date": {
             "value": "2026-11-09",
             "raw_value": "09/11/2026",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              459,
+              712,
+              526,
+              723
+            ]
           },
           "shift": {
             "value": "M",
             "raw_value": "M",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              461,
+              668,
+              471,
+              686
+            ]
           },
           "production_quantity": {
             "value": 488,
             "raw_value": "488",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              459,
+              627,
+              479,
+              640
+            ]
           },
           "production_unit": {
             "value": "m",
             "raw_value": "m",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              488,
+              627,
+              497,
+              638
+            ]
           },
           "material_reference": {
             "value": "Voile 60s",
             "raw_value": "Voile 60s",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              463,
+              588,
+              511,
+              603
+            ]
           },
           "batch_reference": {
             "value": "VOI-60-009",
             "raw_value": "VOI-60-009",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              459,
+              546,
+              526,
+              560
+            ]
           },
           "defects_count": {
             "value": 2,
             "raw_value": "2",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              463,
+              505,
+              470,
+              516
+            ]
           },
           "defect_details": {
             "value": "Weft slub",
             "raw_value": "Weft slub",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              463,
+              464,
+              523,
+              482
+            ]
           },
           "downtime_minutes": {
             "value": 40,
             "raw_value": "40 min",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              465,
+              423,
+              505,
+              437
+            ]
           },
           "downtime_reason": {
             "value": "Lubrication",
             "raw_value": "Lubrication",
             "status": "read",
-            "reason": null
+            "reason": null,
+            "box": [
+              465,
+              380,
+              528,
+              396
+            ]
           },
           "remarks": {
             "value": null,
             "raw_value": null,
             "status": "missing",
-            "reason": null
+            "reason": null,
+            "box": [
+              463,
+              339,
+              471,
+              351
+            ]
           }
         }
       ]

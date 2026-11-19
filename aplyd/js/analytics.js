@@ -14,9 +14,11 @@
   const esc = window.security.escapeHtml;
   const $ = (id) => document.getElementById(id);
   let records = [];
+  let reasons = [];
 
   document.addEventListener('DOMContentLoaded', async () => {
     records = await store.getRecords();
+    reasons = await store.getReasons();
     renderReliability();
     await renderBenchmark();
     renderCharts();
@@ -38,23 +40,25 @@
         if (!f) continue;
         fields++;
         const isFlag = ['uncertain', 'illegible', 'invalid'].includes(f.status) || (def.required && f.status === 'missing');
-        const changed = (r.corrections || []).some(c => c.field_key === def.recordKey && c.kind !== 'confirmation');
+        const changed = Rules.humanChanged(r, def.recordKey); // an edit that was undone does not count
         if (isFlag) flagged++;
         if (changed) corrected++;
         if (isFlag && changed) flaggedCorrected++;
         if (changed && f.status === 'read') {
           silent++;
-          const c = r.corrections.filter(x => x.field_key === def.recordKey && x.kind !== 'confirmation').pop();
-          silentRows.push({ r, def, f, c });
+          const edits = r.corrections.filter(x => x.field_key === def.recordKey && (x.kind === 'correction' || x.kind === 'undo'));
+          silentRows.push({ r, def, f, first: edits[0], last: edits[edits.length - 1] });
         }
       }
     }
-    const firstPass = approved.filter(r => !(r.corrections || []).some(c => c.kind !== 'confirmation')).length;
+    const firstPass = approved.filter(r => !Rules.FIELD_DEFS.some(d => Rules.humanChanged(r, d.recordKey))).length;
+    const caughtByRule = silentRows.filter(x => x.first.caught_by === 'rule').length;
     // One photo can produce several records (register pages): count each photo's read time once.
     const seenForms = new Set();
     const latencies = ai.filter(r => r.extraction_latency_ms && !seenForms.has(r.form_id) && seenForms.add(r.form_id))
       .map(r => r.extraction_latency_ms).sort((a, b) => a - b);
-    const median = latencies.length ? latencies[Math.floor(latencies.length / 2)] : null;
+    const mid = Math.floor(latencies.length / 2);
+    const median = !latencies.length ? null : latencies.length % 2 ? latencies[mid] : (latencies[mid - 1] + latencies[mid]) / 2;
     const erpOk = approved.filter(r => r.erp_status === 'submitted').length;
 
     $('relForms').textContent = ai.length;
@@ -62,7 +66,7 @@
     $('relCorrection').textContent = pct(corrected, fields);
     $('relCorrectionNote').textContent = `${corrected} of ${fields} fields changed by a human`;
     $('relSilent').textContent = pct(silent, fields);
-    $('relSilentNote').textContent = `${silent} confident AI reading${silent === 1 ? ' was' : 's were'} wrong`;
+    $('relSilentNote').textContent = `${silent} confident AI reading${silent === 1 ? ' was' : 's were'} wrong${silent ? ` · ${caughtByRule} caught by a business rule` : ''}`;
     $('relFlagPrecision').textContent = pct(flaggedCorrected, flagged);
     $('relFlagPrecisionNote').textContent = `${flagged} fields flagged, ${flaggedCorrected} needed a change`;
     $('relFirstPass').textContent = pct(firstPass, approved.length);
@@ -71,14 +75,16 @@
     $('relErp').textContent = pct(erpOk, approved.length);
 
     $('relEmpty').classList.toggle('hidden', reviewed.length > 0);
-    $('silentTable').innerHTML = silentRows.length ? silentRows.slice(-15).reverse().map(({ r, def, f, c }) => `
+    const CAUGHT = { rule: 'Business rule (e.g. loom range)', ai_flag: 'AI flag', reviewer: 'Reviewer only' };
+    $('silentTable').innerHTML = silentRows.length ? silentRows.slice(-15).reverse().map(({ r, def, f, first, last }) => `
       <tr>
         <td><a href="review.html?id=${encodeURIComponent(r.id)}" class="mono">${esc(r.record_number)}</a></td>
         <td>${esc(def.label)}</td>
         <td class="mono">${esc(f.raw_value ?? '—')}</td>
-        <td class="mono"><del>${esc(String(c.original_value ?? '—'))}</del> → <strong>${esc(String(c.corrected_value ?? '—'))}</strong></td>
-        <td>${esc(c.reason || '')}</td>
-      </tr>`).join('') : '<tr><td colspan="5" class="empty-cell">No silent errors recorded yet.</td></tr>';
+        <td class="mono"><del>${esc(String(first.original_value ?? '—'))}</del> → <strong>${esc(String(last.corrected_value ?? '—'))}</strong></td>
+        <td>${esc(CAUGHT[first.caught_by] || '—')}</td>
+        <td>${esc(last.reason || '')}</td>
+      </tr>`).join('') : '<tr><td colspan="6" class="empty-cell">No silent errors recorded yet.</td></tr>';
   }
 
   async function renderBenchmark() {
@@ -123,9 +129,11 @@
     const byShift = sumBy(r => r.shift && r.shift.name, r => r.production_quantity, metres);
     C.doughnut('shiftChart', Object.keys(byShift), Object.values(byShift));
 
-    const byReason = sumBy(r => (r.downtime_reason || '').trim().toLowerCase().replace(/^\w/, c => c.toUpperCase()) || null, r => r.downtime_minutes, approved);
-    const reasons = Object.entries(byReason).sort((a, b) => b[1] - a[1]).slice(0, 6);
-    C.bar('downtimeChart', reasons.map(x => x[0]), reasons.map(x => x[1]), { color: p.warn, horizontal: true, label: 'Minutes' });
+    // Grouped by reason CODE, so "Loom cleaning", "Cleaning" and "safai" are one bar.
+    const reasonName = (r) => (r.downtime_reason ? (Rules.matchReason(r.downtime_reason, reasons) || Rules.OTHER_REASON).name : null);
+    const byReason = sumBy(reasonName, r => r.downtime_minutes, approved);
+    const topReasons = Object.entries(byReason).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    C.bar('downtimeChart', topReasons.map(x => x[0]), topReasons.map(x => x[1]), { color: p.warn, horizontal: true, label: 'Minutes' });
 
     const defects = sumBy(r => r.machine && r.machine.machine_code, r => r.defects_count, approved);
     const dLabels = Object.keys(defects).sort();

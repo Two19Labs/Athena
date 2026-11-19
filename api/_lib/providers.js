@@ -15,9 +15,12 @@
  *   AI_PROVIDER_ORDER     e.g. "gemini,openrouter" (default)
  */
 
-const DEFAULT_GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.8-flash', 'gemini-2.5-flash']; // fastest + most available first; see SOLUTION_NOTE
+// Fast "lite" models first: on the 6-row register sample (19 Nov 2026) 3.1-flash-lite answered in 9 s and
+// flash-lite-latest in 7.5 s, while 3.8-flash hung for 25 s and 2.5-flash took 19 s. 3.5-flash-lite is the
+// most accurate when it is not overloaded (it fails fast with 503 when it is). 2.5-flash is the last resort.
+const DEFAULT_GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash'];
 const DEFAULT_OPENROUTER_MODELS = ['google/gemma-4-31b-it:free', 'nvidia/nemotron-3.5-super-vl:free'];
-const ATTEMPT_TIMEOUT_MS = 25000; // one model attempt
+const ATTEMPT_TIMEOUT_MS = 20000; // one model attempt: a stuck model fails sooner, leaving time for the next
 const TOTAL_BUDGET_MS = 50000;   // whole fallback chain; Vercel stops the function at 60 s
 
 class ProviderError extends Error {
@@ -138,6 +141,12 @@ async function callOpenAICompatible(p, model, { system, user, imageBase64, mimeT
  * A response is "answered" when the provider returns text; parsing problems
  * are handled by the caller so they are reported, not silently retried forever.
  */
+/**
+ * request.deadline: absolute time (ms) the whole call must finish by (default: now + budget).
+ * request.exclude:  models to skip (e.g. one whose reply was unusable); ignored if it would skip every model.
+ */
+function totalBudgetMs(env = process.env) { return Number(env.AI_TOTAL_BUDGET_MS) || TOTAL_BUDGET_MS; }
+
 async function runVision(request, env = process.env) {
   const providers = configuredProviders(env);
   if (!providers.length) {
@@ -145,9 +154,12 @@ async function runVision(request, env = process.env) {
   }
   const attempts = [];
   let lastErr = null;
-  const deadline = Date.now() + (Number(env.AI_TOTAL_BUDGET_MS) || TOTAL_BUDGET_MS);
+  const deadline = request.deadline || Date.now() + totalBudgetMs(env);
+  const exclude = request.exclude || [];
+  const allModels = providers.flatMap(p => p.models);
+  const skip = allModels.every(m => exclude.includes(m)) ? [] : exclude;
   for (const p of providers) {
-    for (const model of p.models) {
+    for (const model of p.models.filter(m => !skip.includes(m))) {
       const remaining = deadline - Date.now();
       if (remaining < 4000) {
         lastErr = lastErr || new ProviderError('The AI service is busy. Please retry in a minute.', { status: 504, retryable: true, code: 'timeout' });
@@ -160,7 +172,7 @@ async function runVision(request, env = process.env) {
         attempts.push({ provider: p.name, model, ok: true, ms: Date.now() - started });
         return { ...out, provider: p.name, model, attempts };
       } catch (err) {
-        attempts.push({ provider: p.name, model, ok: false, ms: Date.now() - started, error: err.message });
+        attempts.push({ provider: p.name, model, ok: false, ms: Date.now() - started, error: err.message, code: err.code || 'error' });
         lastErr = err;
         if (!(err instanceof ProviderError) || (!err.retryable && err.code !== 'auth')) throw err;
         if (err.code === 'auth') break; // bad key: skip this provider's other models
@@ -171,4 +183,4 @@ async function runVision(request, env = process.env) {
   throw lastErr;
 }
 
-module.exports = { runVision, configuredProviders, ProviderError, DEFAULT_GEMINI_MODELS, DEFAULT_OPENROUTER_MODELS };
+module.exports = { runVision, configuredProviders, totalBudgetMs, ProviderError, DEFAULT_GEMINI_MODELS, DEFAULT_OPENROUTER_MODELS };

@@ -204,6 +204,13 @@
         item.error = null;
         return;
       } catch (err) {
+        if (window.visionExtractor.isOffline(err.code)) {
+          // No signal: keep the photo on the phone; the outbox reads it when back online.
+          await store.addToOutbox({ file: item.file, sha256: item.sha, imageBlob: item.blob });
+          fail(item, 'No signal: saved on this phone and will be read automatically when back online.', 'offline');
+          if (window.AplydOutbox) window.AplydOutbox.render();
+          return;
+        }
         const retryable = window.visionExtractor.isRetryable(err.code);
         const wait = waits[item.attempts - 1];
         if (retryable && wait !== undefined && !batch.stopping) {
@@ -228,7 +235,7 @@
   }
 
   function retry(item) {
-    if (item.status !== 'failed' || item.code === 'bad_file' || !item.blob) return;
+    if (item.status !== 'failed' || item.code === 'bad_file' || item.code === 'offline' || !item.blob) return;
     item.status = 'queued';
     item.attempts = 0;
     item.error = null;
@@ -279,7 +286,7 @@
       const notes = [...(i.issues.length ? [`Photo: ${i.issues.join(', ').toLowerCase()}`] : []), ...(i.note ? [i.note] : [])];
       const actions = [
         i.recordId ? `<a class="btn btn-outline btn-small" href="review.html?id=${encodeURIComponent(i.recordId)}">Open</a>` : (i.recordCount > 1 ? `<a class="btn btn-outline btn-small" href="review.html?batch=${encodeURIComponent(batch.id)}">Open</a>` : ''),
-        i.status === 'failed' && i.code !== 'bad_file' && !batch.running ? `<button type="button" class="btn btn-outline btn-small" data-act="retry" data-n="${i.n}">Retry</button>` : '',
+        i.status === 'failed' && i.code !== 'bad_file' && i.code !== 'offline' && !batch.running ? `<button type="button" class="btn btn-outline btn-small" data-act="retry" data-n="${i.n}">Retry</button>` : '',
         !batch.running && ['queued', 'failed', 'skipped', 'stopped'].includes(i.status) && !i.recordCount ? `<button type="button" class="btn btn-outline btn-small" data-act="remove" data-n="${i.n}" aria-label="Remove photo ${i.n}">✕</button>` : ''
       ].join('');
       return `

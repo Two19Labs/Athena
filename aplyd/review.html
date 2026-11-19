@@ -34,7 +34,7 @@
 
       <!-- Queue -->
       <section id="queueSection" class="hidden">
-        <p id="batchBanner" class="inline-alert hidden"></p>
+        <div id="batchBanner" class="inline-alert group-banner hidden"></div>
         <div class="filter-bar">
           <input type="search" id="queueSearchInput" class="form-control" placeholder="Search record #, loom or batch" aria-label="Search">
           <select id="queueStatusFilter" class="select-control" aria-label="Status filter">
@@ -43,6 +43,10 @@
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
             <option value="all">All</option>
+          </select>
+          <select id="queueSort" class="select-control" aria-label="Sort order">
+            <option value="oldest">Oldest first</option>
+            <option value="newest">Newest first</option>
           </select>
           <a href="capture.html" class="btn btn-primary">+ Capture form</a>
         </div>
@@ -70,7 +74,8 @@
           <span id="detailStatusBadge"></span>
         </div>
 
-        <div id="statusBanner" class="hidden"></div>
+        <div id="statusBanner" class="status-banner hidden"></div>
+        <div id="groupStrip" class="inline-alert group-banner hidden"></div>
 
         <div class="review-split-container">
           <div class="document-viewer-card">
@@ -88,10 +93,11 @@
             </div>
             <div class="canvas-viewport" id="canvasViewport">
               <img id="canvasImg" class="document-img hidden" alt="Photo of the production form" draggable="false">
+              <div id="boxHighlight" class="box-highlight hidden" aria-hidden="true"></div>
               <div id="noImageNote" class="no-image-note hidden"></div>
             </div>
             <div class="viewer-foot">
-              <span>Drag to pan · scroll or pinch to zoom</span>
+              <span>Drag to pan · Ctrl + scroll, pinch or double-click to zoom · <kbd>?</kbd> shortcuts</span>
               <span id="extractionMeta"></span>
             </div>
             <ul id="imageIssues" class="image-issues hidden"></ul>

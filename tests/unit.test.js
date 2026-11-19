@@ -187,8 +187,27 @@ test('AI flags block until corrected or confirmed', () => {
   const payload = R.normalizeExtraction(modelOutput({ production_quantity: { value: 350, raw_value: '350?', status: 'uncertain', reason: '3 or 8' } }), MASTER);
   const rec = baseRecord({ final_payload: payload, production_quantity: 350 });
   assert.ok(R.validateRecord(rec, CTX).blockers.some(b => b.field === 'production_quantity'));
-  rec.corrections = [{ field_key: 'production_quantity', kind: 'confirmation' }];
+  rec.corrections = [{ field_key: 'production_quantity', kind: 'confirmation', corrected_value: 350 }];
   assert.ok(!R.validateRecord(rec, CTX).blockers.some(b => b.field === 'production_quantity'));
+  // A confirmation applies to the value it confirmed: a later change to the field needs a new look...
+  rec.production_quantity = 380;
+  assert.ok(R.validateRecord(rec, CTX).blockers.some(b => b.field === 'production_quantity'));
+  // ...which a correction to that value is.
+  rec.corrections.push({ field_key: 'production_quantity', kind: 'correction', original_value: 350, corrected_value: 380 });
+  assert.ok(!R.validateRecord(rec, CTX).blockers.some(b => b.field === 'production_quantity'));
+});
+
+test('undoing a correction puts an AI flag back (undo is not a review)', () => {
+  const payload = R.normalizeExtraction(modelOutput({ production_quantity: { value: 850, raw_value: '850?', status: 'uncertain', reason: '3 or 8' } }), MASTER);
+  const rec = baseRecord({ final_payload: payload, production_quantity: 850, corrections: [
+    { field_key: 'production_quantity', kind: 'correction', original_value: 850, corrected_value: 350 },
+    { field_key: 'production_quantity', kind: 'undo', original_value: 350, corrected_value: 850 }
+  ] });
+  assert.ok(R.validateRecord(rec, CTX).blockers.some(b => b.field === 'production_quantity'));
+  assert.equal(R.humanChanged(rec, 'production_quantity'), false, 'an undone edit is not a human change');
+  rec.corrections.push({ field_key: 'production_quantity', kind: 'correction', original_value: 850, corrected_value: 350 });
+  rec.production_quantity = 350;
+  assert.equal(R.humanChanged(rec, 'production_quantity'), true);
 });
 
 test('blank optional fields do not block; blank required fields do', () => {
@@ -198,8 +217,13 @@ test('blank optional fields do not block; blank required fields do', () => {
 });
 
 test('business rules: range, downtime vs shift, future date, duplicates', () => {
+  // Out-of-range output: a likely misread digit. Approval waits for a tick ("checked") or a correction.
   let v = R.validateRecord(baseRecord({ production_quantity: 950 }), CTX);
-  assert.ok(v.warnings.some(w => w.field === 'production_quantity' && /maximum/.test(w.message)));
+  assert.ok(v.blockers.some(b => b.field === 'production_quantity' && b.check && /maximum/.test(b.message)));
+  v = R.validateRecord(baseRecord({ production_quantity: 950, corrections: [{ field_key: 'production_quantity', kind: 'check', corrected_value: 950 }] }), CTX);
+  assert.ok(!v.blockers.some(b => b.field === 'production_quantity'), 'ticked "I checked this" for 950');
+  v = R.validateRecord(baseRecord({ production_quantity: 990, corrections: [{ field_key: 'production_quantity', kind: 'check', corrected_value: 950 }] }), CTX);
+  assert.ok(v.blockers.some(b => b.field === 'production_quantity'), 'a tick for 950 does not cover 990');
 
   v = R.validateRecord(baseRecord({ downtime_minutes: 500 }), CTX);
   assert.ok(v.blockers.some(b => b.field === 'downtime_minutes'));
@@ -215,9 +239,9 @@ test('business rules: range, downtime vs shift, future date, duplicates', () => 
   v = R.validateRecord(baseRecord(), { ...CTX, records: [other] });
   assert.ok(v.blockers.some(b => /double-count/.test(b.message)));
   v = R.validateRecord(baseRecord(), { ...CTX, records: [{ ...other, status: 'pending_review' }] });
-  assert.ok(v.warnings.some(w => /already exists/.test(w.message)));
+  assert.ok(v.blockers.some(b => b.check && /already exists/.test(b.message)), 'possible duplicate of a pending record needs a check');
   v = R.validateRecord(baseRecord(), { ...CTX, records: [{ ...other, status: 'rejected' }] });
-  assert.ok(!v.warnings.some(w => /already exists/.test(w.message)), 'rejected records do not count');
+  assert.ok(![...v.warnings, ...v.blockers].some(w => /already exists/.test(w.message)), 'rejected records do not count');
 });
 
 test('defects and downtime without descriptions warn', () => {
@@ -231,7 +255,7 @@ test('defects and downtime without descriptions warn', () => {
 // ERP contract
 // ---------------------------------------------------------------------------
 test('ERP payload is built from master data and validates', () => {
-  const rec = baseRecord({ status: 'approved', reviewed_at: '2026-11-16T10:00:00Z', reviewed_by_name: 'Priya', corrections: [{ kind: 'correction' }, { kind: 'confirmation' }] });
+  const rec = baseRecord({ status: 'approved', reviewed_at: '2026-11-16T10:00:00Z', reviewed_by_name: 'Priya', corrections: [{ field_key: 'production_quantity', kind: 'correction', original_value: 850, corrected_value: 612 }, { field_key: 'shift_id', kind: 'confirmation', corrected_value: 'shift-m' }] });
   const p = R.buildErpPayload(rec, CTX);
   assert.equal(p.machine_code, 'L-12');
   assert.equal(p.shift_code, 'M');
@@ -539,6 +563,91 @@ test('/api/extract: a register page returns one entry per row; a form with no en
       const res = await call(extract, 'POST', EXTRACT_BODY);
       assert.equal(res.statusCode, 422);
       assert.equal(res.body.code, 'unreadable');
+    } finally { stub.restore(); }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Downtime reason codes, "not on form", photo locations
+// ---------------------------------------------------------------------------
+test('downtime reasons map to codes (English, Hinglish, longest match wins)', () => {
+  const code = (t) => (R.matchReason(t) || {}).code;
+  assert.equal(code('Loom cleaning'), 'CLEAN');
+  assert.equal(code('Cleaning'), 'CLEAN');
+  assert.equal(code('safai'), 'CLEAN');
+  assert.equal(code('light gayi'), 'POWER');
+  assert.equal(code('Warp break'), 'BREAK');
+  assert.equal(code('Beam knotting'), 'BEAM');
+  assert.equal(code('Pirn change'), 'PIRN');
+  assert.equal(code('Lubrication'), 'MAINT');
+  assert.equal(code('waited for supervisor signature'), undefined);
+  const p = R.buildErpPayload(baseRecord({ status: 'approved', reviewed_at: '2026-11-16T10:00:00Z', downtime_reason: 'saaf safai' }), CTX);
+  assert.equal(p.downtime_reason_code, 'CLEAN');
+  assert.equal(R.buildErpPayload(baseRecord({ downtime_reason: 'tea break' }), CTX).downtime_reason_code, 'OTHER');
+  const v = R.validateRecord(baseRecord({ downtime_reason: 'tea break' }), { ...CTX, reasons: R.DEFAULT_DOWNTIME_REASONS });
+  assert.ok(v.warnings.some(w => w.field === 'downtime_reason' && /Other/.test(w.message)));
+});
+
+test('fabric name similarity for "did you mean" hints', () => {
+  assert.ok(R.similarity('Poplin 40', 'Poplin 40s') > 0.85);
+  assert.ok(R.similarity('Combed Poplin 40s', 'Denim 3/1') < 0.5);
+});
+
+test('register columns that do not exist are "not on form", and their warnings are skipped', () => {
+  const row = (m) => ({ machine: f(m), production_quantity: f(400), defects_count: f(2, 'read', '2'), downtime_minutes: f(10, 'read', '10') });
+  const sheet = R.normalizeSheet({ header: { production_date: f('14/11/2026', 'read', '14/11/2026'), shift: f('M') }, entries: [row('L-01'), row('L-02'), row('L-03')] }, MASTER);
+  assert.equal(sheet.entries[0].fields.defect_details.not_on_form, true, 'blank on every row of a 3-row sheet');
+  assert.ok(!sheet.entries[0].fields.production_date.not_on_form, 'header fields are on the form');
+  const rec = baseRecord({ final_payload: sheet.entries[0], defects_count: 2, defect_details: null, downtime_minutes: 10, downtime_reason: null });
+  const v = R.validateRecord(rec, CTX);
+  assert.ok(!v.warnings.some(w => w.field === 'defect_details' || w.field === 'downtime_reason'));
+  // A single slip that has the box but left it empty still warns.
+  const slip = R.normalizeSheet({ fields_on_form: ['machine', 'defect_details'], entries: [row('L-04')] }, MASTER);
+  assert.ok(!slip.entries[0].fields.defect_details.not_on_form);
+  assert.equal(slip.entries[0].fields.remarks.not_on_form, true, 'the model said the form has no remarks box');
+});
+
+test('photo locations: valid 0-1000 boxes are kept, junk is dropped', () => {
+  assert.deepEqual(R.cleanBox([100, 200, 150, 400]), [100, 200, 150, 400]);
+  assert.equal(R.cleanBox([100, 200, 100, 400]), null, 'zero height');
+  assert.equal(R.cleanBox([100, 200, 1500, 400]), null, 'out of range');
+  assert.equal(R.cleanBox('100,200'), null);
+  const sheet = R.normalizeSheet({ entries: [{ row_box: [370, 130, 410, 860], machine: { ...f('L-01'), box: [370, 130, 410, 190] }, production_quantity: { ...f(512), box: [9, 9, 9] } }] }, MASTER);
+  assert.deepEqual(sheet.entries[0].row_box, [370, 130, 410, 860]);
+  assert.deepEqual(sheet.entries[0].fields.machine.box, [370, 130, 410, 190]);
+  assert.equal(sheet.entries[0].fields.production_quantity.box, undefined);
+});
+
+test('the model contradicting itself (transcribed "850", value 350) is flagged, never trusted', () => {
+  const c = R.normalizeExtraction(modelOutput({
+    production_quantity: { value: 350, raw_value: '850', status: 'read', reason: null },
+    downtime_minutes: { value: 75, raw_value: '1 hr 15 min', status: 'read', reason: null },
+    production_date: { value: '2026-11-12', raw_value: '12/11/2026', status: 'read', reason: null }
+  }), MASTER);
+  assert.equal(c.fields.production_quantity.status, 'uncertain');
+  assert.match(c.fields.production_quantity.reason, /850/);
+  assert.equal(c.fields.downtime_minutes.status, 'read', '"1 hr 15 min" really is 75 minutes');
+  assert.equal(c.fields.production_date.status, 'read', 'day-first date agrees with its ISO value');
+});
+
+test('/api/extract: a broken JSON reply is retried once on the next model before the operator sees an error', async () => {
+  const extract = require('../api/extract.js');
+  await withEnv({ GEMINI_API_KEY: 'k', GEMINI_MODELS: 'm1,m2' }, async () => {
+    const stub = stubFetch((url) => (url.includes('m1') ? geminiReply('{"entries": [{"machine": {"box": [1,2,3,4]]}') : geminiReply(modelOutput())));
+    try {
+      const res = await call(extract, 'POST', EXTRACT_BODY);
+      assert.equal(res.statusCode, 200);
+      assert.equal(res.body.model, 'm2');
+      assert.ok(res.body.attempts.some(a => a.model === 'm1' && !a.ok && /unusable reply/.test(a.error)), 'the unusable reply is recorded');
+    } finally { stub.restore(); }
+  });
+  await withEnv({ GEMINI_API_KEY: 'k', GEMINI_MODELS: 'only' }, async () => {
+    let n = 0;
+    const stub = stubFetch(() => (++n === 1 ? geminiReply('not json') : geminiReply(modelOutput())));
+    try {
+      const res = await call(extract, 'POST', EXTRACT_BODY);
+      assert.equal(res.statusCode, 200, 'with one model, it is asked again');
+      assert.equal(n, 2);
     } finally { stub.restore(); }
   });
 });

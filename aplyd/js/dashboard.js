@@ -11,7 +11,19 @@
     const user = store.getCurrentUser();
 
     $('kpiMetres').textContent = `${metrics.approvedMetres7d.toLocaleString()} m`;
-    $('kpiFormsToday').textContent = metrics.formsToday;
+    $('kpiMetresNote').textContent = `By approval date · ${metrics.approvedCount7d} record${metrics.approvedCount7d === 1 ? '' : 's'}`;
+    $('kpiFormsToday').textContent = metrics.photosToday;
+    $('kpiFormsTodayNote').textContent = metrics.photosToday
+      ? `${metrics.recordsToday} record${metrics.recordsToday === 1 ? '' : 's'} read by the AI`
+      : 'Read by the AI';
+
+    // Operators hear back when a supervisor changed something they submitted.
+    if (user.role === 'operator' && metrics.mineCorrected.length) {
+      const n = metrics.mineCorrected.length;
+      const el = $('operatorFeedback');
+      el.innerHTML = `<strong>${n} of your record${n === 1 ? ' was' : 's were'} corrected by a supervisor this week.</strong> Open ${n === 1 ? 'it' : 'them'} to see what changed: ${metrics.mineCorrected.slice(0, 5).map(r => `<a href="review.html?id=${encodeURIComponent(r.id)}">${esc(r.record_number)}</a>`).join(', ')}`;
+      el.classList.remove('hidden');
+    }
     $('kpiPending').textContent = metrics.pendingReviews;
     $('kpiExceptions').textContent = metrics.openExceptions;
     $('kpiExceptionsNote').textContent = metrics.erpFailed ? `${metrics.erpFailed} approved record(s) not yet in ERP` : 'Blockers + warnings on pending records';

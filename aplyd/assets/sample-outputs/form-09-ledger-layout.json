@@ -2,183 +2,188 @@
   "sample": "form-09-ledger-layout",
   "condition": "Different form layout (horizontal ledger), written shift name, short date, downtime in hours",
   "http_status": 200,
-  "latency_ms": 57897,
+  "latency_ms": 4243,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 57894,
+    "latency_ms": 4242,
     "attempts": [
-      {
-        "provider": "gemini",
-        "model": "gemini-3.8-flash",
-        "ok": false,
-        "ms": 55012,
-        "error": "The AI model took too long to respond."
-      },
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 2881
+        "ms": 4240
       }
     ],
     "data": {
-      "schema_version": "2.0",
-      "overall_status": "ready_for_approval",
+      "schema_version": "2.1",
       "image_issues": [],
-      "fields": {
-        "machine": {
-          "value": "L-11",
-          "raw_value": "L-11",
-          "status": "read",
-          "reason": null
-        },
-        "production_date": {
-          "value": "2026-11-10",
-          "raw_value": "10-11-26",
-          "status": "read",
-          "reason": null
-        },
-        "shift": {
-          "value": "N",
-          "raw_value": "Night",
-          "status": "read",
-          "reason": null
-        },
-        "production_quantity": {
-          "value": 421,
-          "raw_value": "421",
-          "status": "read",
-          "reason": null
-        },
-        "production_unit": {
-          "value": "metres",
-          "raw_value": "Mtrs",
-          "status": "read",
-          "reason": null
-        },
-        "material_reference": {
-          "value": "Yarn Dyed Check",
-          "raw_value": "Yarn Dyed Check",
-          "status": "read",
-          "reason": null
-        },
-        "batch_reference": {
-          "value": "YDC-22-019",
-          "raw_value": "YDC-22-019",
-          "status": "read",
-          "reason": null
-        },
-        "defects_count": {
-          "value": 1,
-          "raw_value": "1",
-          "status": "read",
-          "reason": null
-        },
-        "defect_details": {
-          "value": "Colour bleed",
-          "raw_value": "Colour bleed",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_minutes": {
-          "value": 75,
-          "raw_value": "1 hr 15 min",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_reason": {
-          "value": "Beam change",
-          "raw_value": "Beam change",
-          "status": "read",
-          "reason": null
-        },
-        "remarks": {
-          "value": null,
-          "raw_value": null,
-          "status": "missing",
-          "reason": null
+      "rows_detected": 1,
+      "incomplete": false,
+      "entries": [
+        {
+          "schema_version": "2.0",
+          "overall_status": "ready_for_approval",
+          "image_issues": [],
+          "fields": {
+            "machine": {
+              "value": "L-11",
+              "raw_value": "L-11",
+              "status": "read",
+              "reason": null
+            },
+            "production_date": {
+              "value": "2026-11-10",
+              "raw_value": "10-11-26",
+              "status": "read",
+              "reason": null
+            },
+            "shift": {
+              "value": "N",
+              "raw_value": "Night",
+              "status": "read",
+              "reason": null
+            },
+            "production_quantity": {
+              "value": 421,
+              "raw_value": "421",
+              "status": "read",
+              "reason": null
+            },
+            "production_unit": {
+              "value": "metres",
+              "raw_value": "Mtrs",
+              "status": "read",
+              "reason": null
+            },
+            "material_reference": {
+              "value": "Yarn Dyed Check",
+              "raw_value": "Yarn Dyed\nCheck",
+              "status": "read",
+              "reason": null
+            },
+            "batch_reference": {
+              "value": "YDC-22-019",
+              "raw_value": "YDC-22-\n019",
+              "status": "read",
+              "reason": null
+            },
+            "defects_count": {
+              "value": 1,
+              "raw_value": "1",
+              "status": "read",
+              "reason": null
+            },
+            "defect_details": {
+              "value": "Colour bleed",
+              "raw_value": "Colour\nbleed",
+              "status": "read",
+              "reason": null
+            },
+            "downtime_minutes": {
+              "value": 75,
+              "raw_value": "1 hr 15\nmin",
+              "status": "read",
+              "reason": null
+            },
+            "downtime_reason": {
+              "value": "Beam change",
+              "raw_value": "Beam\nchange",
+              "status": "read",
+              "reason": null
+            },
+            "remarks": {
+              "value": null,
+              "raw_value": null,
+              "status": "missing",
+              "reason": null
+            }
+          }
         }
-      }
+      ]
     },
     "model_output": {
       "is_production_form": true,
       "image_issues": [],
-      "fields": {
-        "machine": {
-          "value": "L-11",
-          "raw_value": "L-11",
-          "status": "read",
-          "reason": null
-        },
-        "production_date": {
-          "value": "2026-11-10",
-          "raw_value": "10-11-26",
-          "status": "read",
-          "reason": null
-        },
-        "shift": {
-          "value": "Night",
-          "raw_value": "Night",
-          "status": "read",
-          "reason": null
-        },
-        "production_quantity": {
-          "value": 421,
-          "raw_value": "421",
-          "status": "read",
-          "reason": null
-        },
-        "production_unit": {
-          "value": "Mtrs",
-          "raw_value": "Mtrs",
-          "status": "read",
-          "reason": null
-        },
-        "material_reference": {
-          "value": "Yarn Dyed Check",
-          "raw_value": "Yarn Dyed Check",
-          "status": "read",
-          "reason": null
-        },
-        "batch_reference": {
-          "value": "YDC-22-019",
-          "raw_value": "YDC-22-019",
-          "status": "read",
-          "reason": null
-        },
-        "defects_count": {
-          "value": 1,
-          "raw_value": "1",
-          "status": "read",
-          "reason": null
-        },
-        "defect_details": {
-          "value": "Colour bleed",
-          "raw_value": "Colour bleed",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_minutes": {
-          "value": 75,
-          "raw_value": "1 hr 15 min",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_reason": {
-          "value": "Beam change",
-          "raw_value": "Beam change",
-          "status": "read",
-          "reason": null
-        },
-        "remarks": {
-          "value": null,
-          "raw_value": null,
-          "status": "missing",
-          "reason": null
+      "rows_detected": 1,
+      "header": {},
+      "entries": [
+        {
+          "machine": {
+            "value": "L-11",
+            "raw_value": "L-11",
+            "status": "read",
+            "reason": null
+          },
+          "production_date": {
+            "value": "2026-11-10",
+            "raw_value": "10-11-26",
+            "status": "read",
+            "reason": null
+          },
+          "shift": {
+            "value": "Night",
+            "raw_value": "Night",
+            "status": "read",
+            "reason": null
+          },
+          "production_quantity": {
+            "value": 421,
+            "raw_value": "421",
+            "status": "read",
+            "reason": null
+          },
+          "production_unit": {
+            "value": "Mtrs",
+            "raw_value": "Mtrs",
+            "status": "read",
+            "reason": null
+          },
+          "material_reference": {
+            "value": "Yarn Dyed Check",
+            "raw_value": "Yarn Dyed\nCheck",
+            "status": "read",
+            "reason": null
+          },
+          "batch_reference": {
+            "value": "YDC-22-019",
+            "raw_value": "YDC-22-\n019",
+            "status": "read",
+            "reason": null
+          },
+          "defects_count": {
+            "value": 1,
+            "raw_value": "1",
+            "status": "read",
+            "reason": null
+          },
+          "defect_details": {
+            "value": "Colour bleed",
+            "raw_value": "Colour\nbleed",
+            "status": "read",
+            "reason": null
+          },
+          "downtime_minutes": {
+            "value": 75,
+            "raw_value": "1 hr 15\nmin",
+            "status": "read",
+            "reason": null
+          },
+          "downtime_reason": {
+            "value": "Beam change",
+            "raw_value": "Beam\nchange",
+            "status": "read",
+            "reason": null
+          },
+          "remarks": {
+            "value": null,
+            "raw_value": null,
+            "status": "missing",
+            "reason": null
+          }
         }
-      }
+      ]
     }
   }
 }

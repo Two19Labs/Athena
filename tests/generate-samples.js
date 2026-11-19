@@ -87,13 +87,35 @@ function ledgerForm(s) {
   </div>`;
 }
 
+/** Shift register page: header written once, one handwritten row per loom, a few empty lines. */
+function registerForm(s) {
+  const h = s.header;
+  const cell = (row, k) => {
+    const v = row[k];
+    if (v === null || v === undefined) return '';
+    return k === 'downtime_minutes' ? String(v) : String(v);
+  };
+  const rows = s.truth.map(r => `<tr>${['machine', 'production_quantity', 'material_reference', 'batch_reference', 'defects_count', 'downtime_minutes', 'downtime_reason']
+    .map(k => `<td>${cell(r, k) ? hand(cell(r, k)) : '&nbsp;'}</td>`).join('')}</tr>`).join('');
+  return `
+  <div class="paper ledger register">
+    <div class="form-head"><div><div class="co">SHREE LAXMI WEAVING MILLS</div><div class="ti">SHIFT PRODUCTION REGISTER</div></div><div class="fno">Page 31</div></div>
+    <p class="reg-head">Date ${hand(h.date)} &nbsp;&nbsp; Shift ${hand(h.shift)} &nbsp;&nbsp; Supervisor ${hand(h.supervisor)}</p>
+    <table class="ledger-grid">
+      <tr><th>Loom</th><th>Metres</th><th>Quality</th><th>Lot</th><th>Defects</th><th>Stop (min)</th><th>Reason</th></tr>
+      ${rows}
+      ${'<tr>' + '<td>&nbsp;</td>'.repeat(7) + '</tr>'}${'<tr>' + '<td>&nbsp;</td>'.repeat(7) + '</tr>'}
+    </table>
+  </div>`;
+}
+
 function fabric() {
   return `<div class="fabric"></div>`;
 }
 
 function page(sample) {
   const fx = sample.effects || [];
-  const body = sample.layout === 'none' ? fabric() : sample.layout === 'ledger' ? ledgerForm(sample) : standardForm(sample, fx);
+  const body = sample.layout === 'none' ? fabric() : sample.layout === 'register' ? registerForm(sample) : sample.layout === 'ledger' ? ledgerForm(sample) : standardForm(sample, fx);
   const sceneTransform = [
     fx.includes('skew') ? 'perspective(1400px) rotateX(9deg) rotateZ(-11deg) scale(0.86)' : 'rotateZ(-1.2deg) scale(0.92)',
     fx.includes('rotate90') ? 'rotate(90deg) scale(0.72)' : ''
@@ -121,6 +143,9 @@ function page(sample) {
     .ledger-grid th{border:1.5px solid #555;padding:8px 4px;font-weight:normal;background:rgba(0,0,0,.04)}
     .ledger-grid td{border:1.5px solid #555;padding:6px 4px;height:70px;text-align:center}
     .ledger-grid .hw{font-size:30px}
+    .register .ledger-grid td{height:64px}
+    .reg-head{font-size:18px;margin:4px 0 14px}
+    .reg-head .hw{font-size:34px}
     .hw{display:inline-block;font-family:${font},cursive;font-size:44px;color:#1c2f8a;line-height:1}
     .hw.unit{font-size:34px;margin-left:6px}
     .amb-wrap{position:relative;display:inline-block}
@@ -147,7 +172,8 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const browser = await puppeteer.launch({ executablePath: findChrome(), headless: true, args: ['--no-sandbox'] });
   try {
-    for (const s of manifest.samples) {
+    const only = process.argv.slice(2); // optional: render only these sample ids
+    for (const s of manifest.samples.filter(x => !only.length || only.includes(x.id))) {
       const pageObj = await browser.newPage();
       await pageObj.setViewport({ width: 1200, height: 1600 });
       await pageObj.setContent(page(s), { waitUntil: 'load', timeout: 60000 });

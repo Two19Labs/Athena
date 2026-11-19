@@ -156,7 +156,7 @@
     batch.running = false;
     batch.stopping = false;
     render();
-    const done = batch.items.filter(i => i.status === 'ready' || i.status === 'flagged').length;
+    const done = batch.items.reduce((n, i) => n + (i.recordCount || 0), 0);
     if (done) window.toast.show(`${done} record${done > 1 ? 's' : ''} ready for review.`, 'success');
   }
 
@@ -182,16 +182,25 @@
       item.attempts++;
       try {
         const result = await window.visionExtractor.extract(item.blob);
-        const record = await store.createRecordFromExtraction({
+        const records = await store.createRecordsFromExtraction({
           file: item.file, sha256: item.sha, imageBlob: item.blob, extraction: result,
           batch: { id: batch.id, label: batch.label }
         });
-        const v = await store.validationFor(record);
-        const f = record.final_payload.fields;
-        item.recordId = record.id;
-        item.summary = [f.machine.value || f.machine.raw_value || 'Loom ?', record.production_quantity !== null && record.production_quantity !== undefined ? `${record.production_quantity} ${record.production_unit}` : 'qty ?'].join(' · ');
-        item.toCheck = v.blockers.length + v.warnings.length;
-        item.status = item.toCheck ? 'flagged' : 'ready';
+        const loom = (r) => r.final_payload.fields.machine.value || r.final_payload.fields.machine.raw_value || 'Loom ?';
+        let toCheck = 0;
+        for (const r of records) {
+          const v = await store.validationFor(r);
+          toCheck += v.blockers.length + v.warnings.length;
+        }
+        const first = records[0];
+        item.recordId = records.length === 1 ? first.id : null;
+        item.recordCount = records.length;
+        item.summary = records.length === 1
+          ? [loom(first), first.production_quantity !== null && first.production_quantity !== undefined ? `${first.production_quantity} ${first.production_unit}` : 'qty ?'].join(' · ')
+          : `${records.length} entries on this sheet · ${loom(first)} to ${loom(records[records.length - 1])}`;
+        if (result.data.incomplete) item.note = `The AI saw ${result.data.rows_detected} filled rows but captured ${records.length}; check the photo.`;
+        item.toCheck = toCheck;
+        item.status = toCheck ? 'flagged' : 'ready';
         item.error = null;
         return;
       } catch (err) {
@@ -235,6 +244,7 @@
     const items = batch.items;
     const count = (s) => items.filter(i => i.status === s).length;
     const done = count('ready') + count('flagged');
+    const records = items.reduce((n, i) => n + (i.recordCount || 0), 0);
     const failed = count('failed');
     const pending = count('queued') + count('reading') + count('retrying') + count('preparing');
     const preparing = count('preparing') > 0;
@@ -245,7 +255,7 @@
     $('batchSummary').textContent = batch.running
       ? `${done + failed} of ${total} done · ${count('ready')} ready · ${count('flagged')} need a check · ${failed} failed${batch.stopping ? ' · stopping after the current photos…' : ''}`
       : finished
-        ? `${done} read (${count('ready')} ready, ${count('flagged')} need a check) · ${failed} failed${count('stopped') ? ` · ${count('stopped')} not started` : ''}${count('skipped') ? ` · ${count('skipped')} skipped` : ''}`
+        ? `${done} photo${done === 1 ? '' : 's'} read → ${records} record${records === 1 ? '' : 's'} (${count('ready')} ready, ${count('flagged')} need a check) · ${failed} failed${count('stopped') ? ` · ${count('stopped')} not started` : ''}${count('skipped') ? ` · ${count('skipped')} skipped` : ''}`
         : preparing ? 'Preparing photos…' : `${pending} photo${pending === 1 ? '' : 's'} ready to read. Nothing is saved until the AI has read a photo.`;
 
     $('batchStartBtn').classList.toggle('hidden', batch.running || (!count('queued') && !count('stopped')));
@@ -259,7 +269,7 @@
     const review = $('batchReviewLink');
     review.classList.toggle('hidden', !done || batch.running);
     review.href = `review.html?batch=${encodeURIComponent(batch.id)}`;
-    review.textContent = `Review ${done} record${done === 1 ? '' : 's'} from this batch →`;
+    review.textContent = `Review ${records} record${records === 1 ? '' : 's'} from this batch →`;
 
     $('batchList').innerHTML = items.map(i => {
       const [cls, label] = STATUS[i.status];
@@ -268,9 +278,9 @@
         : i.error ? esc(i.error) : '';
       const notes = [...(i.issues.length ? [`Photo: ${i.issues.join(', ').toLowerCase()}`] : []), ...(i.note ? [i.note] : [])];
       const actions = [
-        i.recordId ? `<a class="btn btn-outline btn-small" href="review.html?id=${encodeURIComponent(i.recordId)}">Open</a>` : '',
+        i.recordId ? `<a class="btn btn-outline btn-small" href="review.html?id=${encodeURIComponent(i.recordId)}">Open</a>` : (i.recordCount > 1 ? `<a class="btn btn-outline btn-small" href="review.html?batch=${encodeURIComponent(batch.id)}">Open</a>` : ''),
         i.status === 'failed' && i.code !== 'bad_file' && !batch.running ? `<button type="button" class="btn btn-outline btn-small" data-act="retry" data-n="${i.n}">Retry</button>` : '',
-        !batch.running && ['queued', 'failed', 'skipped', 'stopped'].includes(i.status) && !i.recordId ? `<button type="button" class="btn btn-outline btn-small" data-act="remove" data-n="${i.n}" aria-label="Remove photo ${i.n}">✕</button>` : ''
+        !batch.running && ['queued', 'failed', 'skipped', 'stopped'].includes(i.status) && !i.recordCount ? `<button type="button" class="btn btn-outline btn-small" data-act="remove" data-n="${i.n}" aria-label="Remove photo ${i.n}">✕</button>` : ''
       ].join('');
       return `
         <li class="batch-item batch-${i.status}" data-n="${i.n}">

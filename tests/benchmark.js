@@ -95,28 +95,35 @@ async function extract(file) {
       for (const def of R.FIELD_DEFS) { total++; fieldStats[def.key].total++; }
     } else {
       provider = res.body.provider; model = res.body.model; latencies.push(ms);
-      const fields = res.body.data.fields;
+      // truth is one object (a slip) or an array (a register page: one object per row, in order).
+      const truths = Array.isArray(s.truth) ? s.truth : [s.truth];
+      const entries = res.body.data.entries;
       let sampleCorrect = 0;
-      for (const def of R.FIELD_DEFS) {
-        const truth = s.truth[def.key];
-        const got = fields[def.key];
-        const ok = same(got.value, truth);
-        total++; fieldStats[def.key].total++;
-        if (ok) { correct++; sampleCorrect++; fieldStats[def.key].correct++; }
-        else if (got.status === 'read') silent++;
-        row.fields[def.key] = { truth, value: got.value, raw: got.raw_value, status: got.status, correct: ok };
-      }
+      let sampleTotal = 0;
+      truths.forEach((t, idx) => {
+        const fields = entries[idx] ? entries[idx].fields : null; // a missing row scores 0 for all its fields
+        for (const def of R.FIELD_DEFS) {
+          if (!(def.key in t)) continue; // not on this form layout: not scored
+          const truth = t[def.key];
+          const got = fields ? fields[def.key] : { value: undefined, status: 'absent' };
+          const ok = fields ? same(got.value, truth) : false;
+          total++; sampleTotal++; fieldStats[def.key].total++;
+          if (ok) { correct++; sampleCorrect++; fieldStats[def.key].correct++; }
+          else if (got.status === 'read') silent++;
+          if (truths.length === 1) row.fields[def.key] = { truth, value: got.value, raw: got.raw_value, status: got.status, correct: ok };
+          if (truth === null && fields) {
+            blankTotal++;
+            if (got.value === null && got.status === 'missing') blankHit++;
+          }
+        }
+      });
+      if (entries.length !== truths.length) row.entries_mismatch = `expected ${truths.length} entries, got ${entries.length}`;
       for (const k of [...(s.expect.flag || []), ...(s.expect.invalid || [])]) {
         flagTotal++;
-        if (fields[k] && fields[k].status !== 'read') flagHit++;
+        const fl = entries[0] && entries[0].fields[k];
+        if (fl && fl.status !== 'read') flagHit++;
       }
-      for (const def of R.FIELD_DEFS) {
-        if (s.truth[def.key] === null) {
-          blankTotal++;
-          if (fields[def.key].value === null && fields[def.key].status === 'missing') blankHit++;
-        }
-      }
-      row.result = `${sampleCorrect}/${R.FIELD_DEFS.length} fields correct`;
+      row.result = `${sampleCorrect}/${sampleTotal} fields correct${truths.length > 1 ? ` across ${entries.length}/${truths.length} rows` : ''}${row.entries_mismatch ? ` (${row.entries_mismatch})` : ''}`;
       console.log(`${row.result} (${(ms / 1000).toFixed(1)}s)`);
     }
     perSample.push(row);

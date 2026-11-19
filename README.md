@@ -7,6 +7,7 @@ photo capture → AI extraction → rule checks → supervisor review → ERP-re
 ```
 
 - **Capture:** phone camera or upload, with automatic orientation, manual rotate, downscaling, and checks for low resolution, darkness, glare and blur.
+- **Register pages:** one photo of a shift register listing several looms becomes one record per row (header date and shift applied to each row, empty lines ignored), reviewed together as "Row 3 of 6 on this sheet".
 - **Batch upload:** a stack of up to 25 sheets at once (e.g. at shift end). Photos are read two at a time, retried automatically when the free AI is busy, and each becomes a normal pending record; the supervisor reviews the batch with a "Next record" flow.
 - **Extraction:** a vision LLM (Google Gemini, free tier) transcribes the form. Every field gets a status: `read`, `uncertain`, `missing`, `illegible` or `invalid`. The model is told never to guess.
 - **Validation:** deterministic code maps readings to the loom and shift master and checks business rules: required fields, expected output range, downtime longer than the shift, future dates, duplicate loom/date/shift.
@@ -34,7 +35,7 @@ Pick a demo persona on the first screen:
 - **Supervisor:** review and approve.
 - **Admin:** also edits the loom and shift master data.
 
-The app starts empty: there is no mock data. The capture page has one-click sample photos (clean, unclear digit, oil stain, different layout, not a form), and the files are also in [`aplyd/assets/samples/`](aplyd/assets/samples/).
+The app starts empty: there is no mock data. The capture page has one-click sample photos (clean, unclear digit, oil stain, different layout, a 6-loom register page, not a form) plus "All samples as a batch", and the files are also in [`aplyd/assets/samples/`](aplyd/assets/samples/).
 
 ## Deploy (Vercel, free)
 
@@ -46,8 +47,8 @@ The app starts empty: there is no mock data. The capture page has one-click samp
 
 ```bash
 npm install            # dev only: puppeteer-core, which drives your installed Chrome/Edge
-npm test               # 30 unit tests: rules, strict parsers, ERP contract, /api/erp, /api/extract (stubbed provider, fallback, time budget, origin check)
-npm run test:e2e       # 127 browser checks across every page and workflow incl. batch upload, desktop + mobile, older-browser fallbacks
+npm test               # 34 unit tests: rules, strict parsers, ERP contract, /api/erp, /api/extract (stubbed provider, fallback, time budget, origin check)
+npm run test:e2e       # 137 browser checks across every page and workflow incl. batch upload, desktop + mobile, older-browser fallbacks
 npm run samples        # re-render the synthetic sample photos
 npm run benchmark      # REAL AI run over the labelled samples (needs GEMINI_API_KEY)
 ```

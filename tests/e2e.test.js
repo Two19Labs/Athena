@@ -109,7 +109,8 @@ async function capture(page, file, reply) {
   await sleep(300);
   await page.click('#extractBtn');
   await Promise.race([
-    page.waitForFunction(() => location.pathname.endsWith('review.html') && location.search.includes('id='), { timeout: 20000 }),
+    // one entry opens the record (?id=); a multi-row sheet opens its group in the queue (?batch=)
+    page.waitForFunction(() => location.pathname.endsWith('review.html') && /[?&](id|batch)=/.test(location.search), { timeout: 20000 }),
     page.waitForSelector('#failureCard:not(.hidden)', { timeout: 20000 })
   ]);
   await sleep(500);
@@ -484,7 +485,7 @@ async function overflow(page) {
     console.log('\n14. Sample photo picker');
     await as(page, 'operator');
     await go(page, 'capture.html');
-    check(await page.$$eval('#samplePicker [data-sample]', els => els.length) === 5, 'capture page offers 5 sample photos');
+    check(await page.$$eval('#samplePicker [data-sample]', els => els.length) === 6, 'capture page offers 6 sample photos');
     await page.click('#samplePicker [data-sample="form-01-clean"]');
     await page.waitForSelector('#preflightPreviewCard:not(.hidden)', { timeout: 10000 });
     const sampleState = await page.evaluate(() => ({
@@ -547,7 +548,7 @@ async function overflow(page) {
     check(bs.rows.filter(r => r === 'batch-ready').length === 2 && bs.rows.filter(r => r === 'batch-flagged').length === 1 && bs.rows.filter(r => r === 'batch-failed').length === 1,
       'outcomes: 2 ready, 1 needs a check (uncertain qty), 1 failed (not a form)', JSON.stringify(bs.rows));
     check(await recordCount(page) === nB + 3, 'exactly 3 records created; the failed and skipped photos save nothing');
-    check(!bs.reviewHidden && /batch=batch-/.test(bs.reviewHref) && /3 read/.test(bs.summary), 'summary + "Review 3 records from this batch" link', bs.summary);
+    check(!bs.reviewHidden && /batch=batch-/.test(bs.reviewHref) && /3 photos read → 3 records/.test(bs.summary), 'summary + "Review 3 records from this batch" link', bs.summary);
     const batchId = new URLSearchParams(bs.reviewHref.split('?')[1]).get('batch');
     const recs = await page.evaluate(() => JSON.parse(localStorage.getItem('aplyd_db_v2')).records.slice(-3));
     check(recs.every(r => r.batch_id === batchId && r.status === 'pending_review'), 'batch records are normal pending records tagged with the batch');
@@ -619,9 +620,9 @@ async function overflow(page) {
     await as(page, 'operator');
     await go(page, 'capture.html');
     await page.click('#sampleBatchBtn');
-    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-item').length === 12 && !document.querySelector('#batchList .batch-preparing'), { timeout: 30000 });
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-item').length === 13 && !document.querySelector('#batchList .batch-preparing'), { timeout: 30000 });
     const sb = await batchState(page);
-    check(sb.rows.length === 12 && /Read 12 photos/.test(sb.startText), '"All 12 as a batch" loads every sample into a batch', sb.startText);
+    check(sb.rows.length === 13 && /Read 13 photos/.test(sb.startText), '"All samples as a batch" loads every sample into a batch', sb.startText);
     await page.click('#batchClearBtn');
 
     // Mobile layout of the batch list
@@ -635,6 +636,57 @@ async function overflow(page) {
     await mb.screenshot({ path: path.join(OUT, 'mobile_batch.png'), fullPage: true });
     check(mb.errors.length === 0, 'no errors in the batch flow on mobile', mb.errors.join('|'));
     await mb.close();
+
+    // ── 16. Multi-row sheets (register page = several records) ──
+    console.log('\n16. Multi-row sheets');
+    const ledger = (rowsDetected, looms, date) => ({
+      is_production_form: true, image_issues: [], rows_detected: rowsDetected,
+      header: { production_date: f(date, 'read', date), shift: f('M') },
+      entries: looms.map((l, i) => ({ machine: f(l), production_quantity: f(400 + i * 10), production_unit: f('m'), material_reference: f('Cambric'), defects_count: f(0, 'read', '0'), downtime_minutes: f(0, 'read', '0') }))
+    });
+    await as(page, 'operator');
+    const nS = await recordCount(page);
+    let sheetUrl = await capture(page, path.join(SAMPLES, 'form-09-ledger-layout.jpg'), { status: 200, json: ledger(3, ['L-01', 'L-02', 'L-03'], '20/10/2026') });
+    await page.waitForFunction(() => location.search.includes('batch=sheet-'), { timeout: 10000 }).catch(() => {});
+    check(page.url().includes('review.html?batch=sheet-') && await recordCount(page) === nS + 3, 'one register photo with 3 rows creates 3 records and opens them as a group', page.url());
+    const sheetQ = await page.evaluate(() => ({ banner: document.getElementById('batchBanner').textContent, rows: document.querySelectorAll('#queueTableBody tr').length }));
+    check(/Sheet PF-/.test(sheetQ.banner) && sheetQ.rows === 3, 'queue shows just this sheet', JSON.stringify(sheetQ));
+    const sheetRecs = await page.evaluate(() => JSON.parse(localStorage.getItem('aplyd_db_v2')).records.slice(-3));
+    check(new Set(sheetRecs.map(r => r.form_id)).size === 1 && sheetRecs.every(r => r.production_date === '2026-10-20' && r.shift_id === 'shift-m'),
+      'all rows share one photo and inherit the header date and shift');
+    await as(page, 'supervisor');
+    await go(page, `review.html?id=${sheetRecs[0].id}`);
+    check(/Row 1 of 3 on this sheet/.test(await page.$eval('#detailRecordMeta', el => el.textContent)), 'review header says "Row 1 of 3 on this sheet"');
+    await page.click('#returnBtn');
+    await answerDialog(page, 'check row');
+    const nextRow = await page.$eval('#nextRecordBtn', a => a.getAttribute('href')).catch(() => null);
+    check(nextRow && nextRow.includes(sheetRecs[1].id), '"Next record" moves to row 2 of the same sheet', String(nextRow));
+    await go(page, `production-register.html?highlight=${sheetRecs[1].id}`);
+    await page.waitForSelector('#recordModal:not(.hidden)');
+    check(/row 2 of 3/.test(await page.$eval('#modalFields', el => el.textContent)), 'register shows which row of the sheet a record came from');
+
+    // The AI saw more rows than it returned: every record from that photo is flagged
+    await as(page, 'operator');
+    await capture(page, path.join(SAMPLES, 'form-09-ledger-layout.jpg'), { status: 200, json: ledger(4, ['L-04', 'L-05', 'L-06'], '21/10/2026') });
+    await page.waitForFunction(() => location.search.includes('batch=sheet-'), { timeout: 10000 }).catch(() => {});
+    const inc = await page.evaluate(() => JSON.parse(localStorage.getItem('aplyd_db_v2')).records.slice(-1)[0].id);
+    await as(page, 'supervisor');
+    await go(page, `review.html?id=${inc}`);
+    check(/saw 4 filled rows/.test(await page.$eval('#validationPanel', el => el.textContent)), 'a sheet with a missed row warns on its records');
+
+    // In a batch: a register photo + a single slip
+    await as(page, 'operator');
+    await go(page, 'capture.html');
+    await page.evaluate(() => { window.APLYD_CONFIG.BATCH_CONCURRENCY = 1; });
+    await (await page.$('#galleryInput')).uploadFile(...samples('form-09-ledger-layout', 'form-01-clean'));
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-queued').length === 2, { timeout: 15000 });
+    stub.queue = [{ status: 200, json: ledger(3, ['L-07', 'L-08', 'L-10'], '22/10/2026') }, { status: 200, json: formReply({ machine: f('L-12') }, '22/10/2026') }];
+    await page.click('#batchStartBtn');
+    await waitIdle(page);
+    bs = await batchState(page);
+    const mixed = await page.$eval('#batchList', el => el.textContent);
+    check(/2 photos read → 4 records/.test(bs.summary) && /3 entries on this sheet/.test(mixed), 'batch counts records, not photos (register + slip = 4 records)', bs.summary);
+    check(await page.$eval('#batchReviewLink', a => a.textContent).then(t => /Review 4 records/.test(t)), 'batch review link counts every record');
 
     // ── Whole-run sanity ──
     check(page.errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'no unexpected browser errors across the whole flow', page.errors.join(' | '));

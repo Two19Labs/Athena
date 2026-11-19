@@ -88,7 +88,7 @@
   /** All bundled samples (aplyd/assets/samples) as one batch, to try batch upload without downloading files. */
   const SAMPLE_IDS = [
     'form-01-clean', 'form-02-skewed', 'form-03-low-light', 'form-04-glare', 'form-05-ambiguous-qty', 'form-06-oil-stain',
-    'form-07-blank-and-zero', 'form-08-unknown-loom', 'form-09-ledger-layout', 'form-10-faded-torn', 'form-11-sideways', 'form-12-not-a-form'
+    'form-07-blank-and-zero', 'form-08-unknown-loom', 'form-09-ledger-layout', 'form-10-faded-torn', 'form-11-sideways', 'form-13-register-6-looms', 'form-12-not-a-form'
   ];
 
   async function loadSampleBatch() {
@@ -200,12 +200,19 @@
       const result = await window.visionExtractor.extract(state.processed);
       step = 3;
       setStep(3);
-      const record = await window.aplydStore.createRecordFromExtraction({
+      const records = await window.aplydStore.createRecordsFromExtraction({
         file: state.file, sha256: state.sha256, imageBlob: state.processed, extraction: result
       });
       const secs = ((Date.now() - started) / 1000).toFixed(1);
-      window.toast.show(`Read by ${result.model} in ${secs}s. Opening review…`, 'success');
-      setTimeout(() => { window.location.href = `review.html?id=${encodeURIComponent(record.id)}`; }, 600);
+      if (records.length === 1) {
+        window.toast.show(`Read by ${result.model} in ${secs}s. Opening review…`, 'success');
+        setTimeout(() => { window.location.href = `review.html?id=${encodeURIComponent(records[0].id)}`; }, 600);
+      } else {
+        // A register page / several slips: one record per entry, reviewed together.
+        const missed = result.data.incomplete ? ` The AI saw ${result.data.rows_detected} filled rows; check the photo for any it missed.` : '';
+        window.toast.show(`This photo has ${records.length} entries: ${records.length} records created (${secs}s).${missed}`, result.data.incomplete ? 'warning' : 'success');
+        setTimeout(() => { window.location.href = `review.html?batch=${encodeURIComponent(records[0].batch_id)}`; }, 1200);
+      }
     } catch (err) {
       setStep(step, true);
       showFailure(err);

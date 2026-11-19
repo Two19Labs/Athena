@@ -57,6 +57,7 @@
     if (user.role === 'operator') filters.submitted_by = user.id;
     if (batchFilter) filters.batch_id = batchFilter;
     const rows = await store.getRecords(filters);
+    if (batchFilter) rows.reverse(); // one sheet or batch: show it in paper / capture order, top row first
     const tbody = $('queueTableBody');
     if (!rows.length) {
       tbody.innerHTML = `<tr><td colspan="8" class="empty-cell">Nothing here. <a href="capture.html">Capture a form</a> to start.</td></tr>`;
@@ -133,6 +134,7 @@
     $('detailRecordNumber').textContent = record.record_number;
     const parts = [
       record.form_number ? `Form ${record.form_number}` : null,
+      record.sheet_rows > 1 ? `Row ${record.sheet_row} of ${record.sheet_rows} on this sheet` : null,
       record.submitted_by_name ? `by ${record.submitted_by_name}` : null,
       record.created_at ? new Date(record.created_at).toLocaleString() : null
     ].filter(Boolean);
@@ -141,7 +143,7 @@
     badge.className = L.statusClass(record.status);
     badge.textContent = L.statusLabel(record.status);
     if (record.extraction_model) {
-      const ms = record.form && record.form.extraction_latency_ms;
+      const ms = record.extraction_latency_ms || (record.form && record.form.extraction_latency_ms);
       $('extractionMeta').textContent = `Read by ${record.extraction_model}${ms ? ` in ${(ms / 1000).toFixed(1)}s` : ''}`;
     }
   }

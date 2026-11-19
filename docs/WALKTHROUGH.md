@@ -31,8 +31,13 @@ Open the start page: *"Operators write loom output on paper. Retyping it into th
 2. The system refuses: *"The AI could not find a readable production form…"* with the model's reason. **Nothing was saved, and no values were guessed.**
 3. Mention the other failure paths, each with its own message: provider rate limit, bad key, malformed model output, no network, and no key configured.
 
+## 4a. A register page (45 s)
+1. As the operator, click the sample **Register page (6 looms)**.
+2. One photo becomes **6 records**: the queue opens filtered to that sheet, in paper order. The date and shift written once at the top are on every row.
+3. Open the first record: the header says **"Row 1 of 6 on this sheet"**; approve it and use **Next record →** for the rest.
+
 ## 4b. Optional: a stack of forms (1 min)
-1. As the operator, click **Choose photos** and select several sample photos at once (e.g. all 12 in `aplyd/assets/samples/`).
+1. As the operator, click **All samples as a batch** under the samples (or **Choose photos** and select several of your own).
 2. Each photo gets a row: Waiting → Reading → Ready / Needs check / Failed. Exact duplicates are skipped; the fabric photo fails with its reason.
 3. Click **Review N records from this batch →**, switch to the supervisor, open the first record and, after deciding, use **Next record →** to move through the stack.
 

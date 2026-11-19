@@ -29,6 +29,8 @@ function buildSystemPrompt(master) {
   return `You transcribe photos of handwritten textile shop-floor production forms (weaving / loom sheds) into JSON.
 The photo may be skewed, dim, stained, creased, partly torn or written in rough handwriting. Forms vary in layout; find each field by its meaning, not its position.
 
+A photo can hold ONE entry (a slip for one loom and one shift) or SEVERAL entries (a register / ledger page with one row per loom, or several slips in one photo). Return one entry per filled row or slip. Never merge two looms into one entry, and never drop a filled row.
+
 Registered looms: ${looms}
 Registered shifts: ${shifts}
 
@@ -49,13 +51,18 @@ Hard rules:
 2. A written zero ("0", "nil", "-0-") is a value of 0 with status "read". It is not missing.
 3. Do not "correct" a value to make it fit the registered looms or shifts; transcribe what is written. Validation happens later.
 4. Copy units, dates and numbers exactly in raw_value.
+5. Values written once for the whole sheet (e.g. a date or shift at the top of a register page) go in "header", not repeated in every entry. Leave a field out of an entry if it is only in the header.
+6. Skip rows that are completely empty. Count every row that has anything written in it in "rows_detected".
 
 Also return:
 - "is_production_form": false if the image is not a production form at all or is too damaged/blurred to read anything; otherwise true.
 - "image_issues": a list of short strings describing photo problems you noticed (e.g. "strong glare on lower half", "page rotated 90 degrees", "oil stain over downtime row"). Empty list if none.
 
+- "rows_detected": how many filled entries (rows or slips) you can see in the photo.
+
 Respond with JSON only, in exactly this shape:
-{"is_production_form": true, "image_issues": [], "fields": {"machine": {...}, "production_date": {...}, "shift": {...}, "production_quantity": {...}, "production_unit": {...}, "material_reference": {...}, "batch_reference": {...}, "defects_count": {...}, "defect_details": {...}, "downtime_minutes": {...}, "downtime_reason": {...}, "remarks": {...}}}`;
+{"is_production_form": true, "image_issues": [], "rows_detected": 1, "header": {"production_date": {...}, "shift": {...}}, "entries": [{"machine": {...}, "production_date": {...}, "shift": {...}, "production_quantity": {...}, "production_unit": {...}, "material_reference": {...}, "batch_reference": {...}, "defects_count": {...}, "defect_details": {...}, "downtime_minutes": {...}, "downtime_reason": {...}, "remarks": {...}}]}
+"header" may be {} when nothing is shared. A single slip is an "entries" array with one object.`;
 }
 
 const USER_INSTRUCTION = 'Extract this shop-floor production form. Return JSON only.';
@@ -74,8 +81,10 @@ function parseModelJson(text) {
     obj = JSON.parse(t.slice(start, end + 1));
   }
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('Model reply was not a JSON object.');
-  if (obj.is_production_form !== false && (!obj.fields || typeof obj.fields !== 'object')) {
-    throw new Error('Model reply had no "fields" object.');
+  const hasEntries = Array.isArray(obj.entries) && obj.entries.some(e => e && typeof e === 'object');
+  const hasFields = obj.fields && typeof obj.fields === 'object';
+  if (obj.is_production_form !== false && !hasEntries && !hasFields) {
+    throw new Error('Model reply had no "entries".');
   }
   return obj;
 }

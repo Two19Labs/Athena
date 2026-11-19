@@ -13,7 +13,7 @@ The design principle throughout: **the AI reads, code checks, a human decides.**
 
 | # | Assumption | Why it matters |
 |---|---|---|
-| A1 | One form describes one loom for one shift. | One photo produces one record. Multi-row ledgers are listed under "next steps". |
+| A1 | A photo holds one slip (one loom, one shift) **or** a register page with one row per loom. | One record per filled row. Values written once at the top (date, shift) apply to every row; empty lines are ignored. |
 | A2 | Dates are written day-first (DD/MM/YY or DD/MM/YYYY). | This is Indian shop-floor convention. `05/06/26` is read as 5 June. |
 | A3 | Required fields: loom, date, shift, quantity. Everything else is optional. | A blank batch is a valid outcome. A blank quantity is not. |
 | A4 | The loom and shift master is the source of truth. | A reading like "L-19" that is not in the master is flagged `invalid`, never auto-corrected. |
@@ -87,6 +87,7 @@ This makes the behaviour testable (30 unit tests) and stops the model from "help
 | Different form layout | The prompt finds fields by meaning, not position. Sample 9 tests this. |
 | Not a form at all | The model says `is_production_form: false`, the system returns HTTP 422, the operator is told why, and nothing is saved. |
 | Same photo twice | A SHA-256 duplicate warning at capture; inside a batch the exact duplicate is skipped automatically. |
+| A register page listing several looms | One photo becomes one record per filled row, all linked to the same photo ("Row 3 of 6 on this sheet") and reviewed together with "Next record →". The date and shift written once at the top are applied to every row; empty lines are skipped. If the AI reports more filled rows than it returned, every record from that photo carries a "check the photo for a missed row" warning, so a row is never dropped silently. |
 | A stack of sheets at shift end | Batch upload of up to 25 photos. Read two at a time so the free AI quota is not flooded; "busy" or rate-limit answers are retried automatically (after 8 s, then 20 s) before a photo is marked failed with a Retry button. Each photo becomes a normal pending record, so nothing skips review; the supervisor works through the batch with "Next record →". |
 | Same loom/date/shift twice | A business-key duplicate check at review (it blocks if the other record is already approved). |
 | ERP down | The record stays approved and is marked "ERP failed". It can be retried from the review screen or the register, and the retry is idempotent. |
@@ -104,12 +105,12 @@ Two complementary measurements.
 
 The system's actual outputs per sample are saved in `aplyd/assets/sample-outputs/`.
 
-**Results** (17 Nov 2026, Gemini free tier; produced by the script, see `aplyd/assets/benchmark/results.json`):
+**Results** (19 Nov 2026, Gemini free tier, 13 samples incl. a 6-loom register page; produced by the script, see `aplyd/assets/benchmark/results.json`):
 
 | Metric | Result |
 |---|---|
-| Field accuracy | **99.2%** (131 of 132 fields, 11 forms) |
-| Silent-error rate | 0.8% (1 field) |
+| Field accuracy | **99.5%** (191 of 192 fields, 12 forms; the register page scored 60/60 across all 6 rows) |
+| Silent-error rate | 0.5% (1 field) |
 | Blank fields left blank (not invented) | 100% |
 | Non-form photo refused | 100% (1 of 1) |
 | Flag recall on designed-hard fields | 33% (1 of 3) |
@@ -117,7 +118,7 @@ The system's actual outputs per sample are saved in `aplyd/assets/sample-outputs
 How to read these numbers:
 - **The one error is on the "ambiguous digit" form.** The model read 350 as 850 and marked it `read`. The loom range rule caught it anyway: 850 is above L-12's 800 m maximum, so the review screen shows *"check for a misread digit"*. This is why the rule layer exists.
 - **Low flag recall is mostly a weakness in the synthetic samples, not the model.** The model read the oil-stained text correctly, so there was nothing to flag. On inspection, the rendered "ambiguous" digit also looks more like an 8 than a 3. Real photos of real smudges are needed to measure flagging properly.
-- **11 synthetic forms is a smoke test, not an accuracy claim.** It shows the pipeline works end to end and fails safely.
+- **12 synthetic forms is a smoke test, not an accuracy claim.** It shows the pipeline works end to end and fails safely.
 - **Latency.** The median was about 58 s on that run, because the server tried Google's newest Flash model first and it was overloaded. Two fixes followed. The server now tries `gemini-3.5-flash-lite` first; it produced most of the correct reads above and answers in **2–4 s**, with newer models kept as fallbacks. It also enforces a 50 s total budget across models (Vercel's limit is 60 s).
 
 **Live metrics (Analytics page).** These come from what supervisors did to AI output:
@@ -142,7 +143,6 @@ How to read these numbers:
 - **Data is per browser.** Clearing site data deletes it.
 - **Free-tier limits.** Gemini's free tier caps requests per minute and per day, which is enough for a demo but not a factory.
 - **No field-to-image highlighting.** The model returns no coordinates, so the reviewer finds each value on the photo by eye.
-- **One record per photo.** Multi-row ledgers are not split into several records.
 - **Brightness and blur thresholds are heuristic**, and not tuned on real phones.
 
 ## 8. Next, with more time
@@ -150,7 +150,6 @@ How to read these numbers:
 1. Collect 50–100 real forms from one shed, label them, and benchmark. Tune the prompt and parsers on silent errors.
 2. Replace browser storage with Postgres plus object storage, using the schema in `production-schema.sql`, and add real authentication with row-level security.
 3. Add an offline capture queue (IndexedDB and a service worker) for sheds with poor Wi-Fi.
-4. Extract multi-row ledgers into several records.
-5. Ask the model for bounding boxes so the review screen can highlight each field on the photo.
-6. Detect the page corners and correct perspective on the phone before upload.
-7. Build a real ERP connector behind the same `aplyd.production_record/v1` contract.
+4. Ask the model for bounding boxes so the review screen can highlight each field on the photo.
+5. Detect the page corners and correct perspective on the phone before upload.
+6. Build a real ERP connector behind the same `aplyd.production_record/v1` contract.

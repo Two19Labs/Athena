@@ -98,7 +98,7 @@
       ['Remarks', r.remarks],
       ['Submitted by', r.submitted_by_name],
       ['Reviewed by', r.reviewed_by_name ? `${r.reviewed_by_name}${r.reviewed_at ? ` · ${new Date(r.reviewed_at).toLocaleString()}` : ''}` : null],
-      ['Source', r.form_number ? `${r.form_number} · read by ${r.extraction_model || 'AI'}` : null]
+      ['Source', r.form_number ? `${r.form_number}${r.sheet_rows > 1 ? ` (row ${r.sheet_row} of ${r.sheet_rows})` : ''} · read by ${r.extraction_model || 'AI'}` : null]
     ];
     $('modalFields').innerHTML = kv.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v === null || v === undefined || v === '' ? '—' : v)}</dd></div>`).join('');
 

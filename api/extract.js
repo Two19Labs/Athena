@@ -3,7 +3,7 @@
 /**
  * POST /api/extract
  * Body: { imageBase64, mimeType, master: { machines: [{machine_code, name, is_active}], shifts: [{shift_code, name}] }, today? }
- * 200:  { success, provider, model, latency_ms, data: <5-state contract>, model_output: <raw parsed JSON> }
+ * 200:  { success, provider, model, latency_ms, data: { rows_detected, incomplete, image_issues, entries: [<5-state contract>] }, model_output }
  * 422:  { success:false, code:'unreadable', error }   image is not a readable production form
  * 4xx/5xx: { success:false, code, error }
  *
@@ -13,7 +13,7 @@
 const { send, readJson } = require('./_lib/http');
 const { runVision, configuredProviders } = require('./_lib/providers');
 const { buildSystemPrompt, USER_INSTRUCTION, parseModelJson } = require('./_lib/prompt');
-const { normalizeExtraction } = require('../aplyd/js/rules.js');
+const { normalizeSheet } = require('../aplyd/js/rules.js');
 
 const MAX_BODY = 4 * 1024 * 1024; // Vercel's request limit is 4.5 MB; the client downsizes images well below this.
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
@@ -86,7 +86,16 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const data = normalizeExtraction(parsed, safeMaster);
+  const data = normalizeSheet(parsed, safeMaster);
+  if (!data.entries.length) {
+    return send(res, 422, {
+      success: false,
+      code: 'unreadable',
+      error: 'The AI found a form but no filled entries on it. If the form is filled in, retake the photo closer and in better light.',
+      provider: result.provider,
+      model: result.model
+    });
+  }
   return send(res, 200, {
     success: true,
     provider: result.provider,

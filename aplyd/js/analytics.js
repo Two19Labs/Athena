@@ -50,7 +50,10 @@
       }
     }
     const firstPass = approved.filter(r => !(r.corrections || []).some(c => c.kind !== 'confirmation')).length;
-    const latencies = ai.map(r => r.form && r.form.extraction_latency_ms).filter(Boolean).sort((a, b) => a - b);
+    // One photo can produce several records (register pages): count each photo's read time once.
+    const seenForms = new Set();
+    const latencies = ai.filter(r => r.extraction_latency_ms && !seenForms.has(r.form_id) && seenForms.add(r.form_id))
+      .map(r => r.extraction_latency_ms).sort((a, b) => a - b);
     const median = latencies.length ? latencies[Math.floor(latencies.length / 2)] : null;
     const erpOk = approved.filter(r => r.erp_status === 'submitted').length;
 

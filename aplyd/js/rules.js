@@ -298,6 +298,50 @@
     };
   }
 
+  const MAX_ENTRIES = 30;
+
+  function isBlankField(f) {
+    return !f || typeof f !== 'object' || (isBlank(f.value) && isBlank(f.raw_value) && f.status !== 'illegible');
+  }
+
+  /**
+   * A photo can hold one slip or a multi-row register page. Normalise either shape:
+   *   { fields }                          legacy single entry
+   *   { header, entries: [ {...}, ... ] } one or more entries; header values fill gaps in each entry
+   * Completely blank entries are dropped. If the model says it saw more filled rows than it
+   * returned (or there are more than MAX_ENTRIES), `incomplete` is set so the UI can warn.
+   * @returns { schema_version, image_issues, rows_detected, incomplete, entries: [contract] }
+   */
+  function normalizeSheet(raw, master) {
+    const header = (raw && raw.header && typeof raw.header === 'object') ? raw.header : {};
+    const rawEntries = Array.isArray(raw && raw.entries) ? raw.entries.filter(e => e && typeof e === 'object')
+      : (raw && raw.fields && typeof raw.fields === 'object' ? [raw.fields] : []);
+
+    // Decide emptiness from the row's OWN content first; only then fill gaps from the header.
+    // (Merging first would turn blank ledger lines into phantom records full of header values.)
+    const merged = rawEntries
+      .filter(entry => FIELD_DEFS.some(def => !isBlankField(pickRawField(entry, def.key))))
+      .map(entry => {
+        const out = { ...entry };
+        for (const [key, hf] of Object.entries(header)) {
+          if (isBlankField(out[key]) && !isBlankField(hf)) out[key] = hf;
+        }
+        return out;
+      });
+
+    const kept = merged.slice(0, MAX_ENTRIES);
+    const detected = Number.isInteger(raw && raw.rows_detected) && raw.rows_detected > 0 ? raw.rows_detected : merged.length;
+    const issues = Array.isArray(raw && raw.image_issues) ? raw.image_issues.map(String).slice(0, 10) : [];
+    const entries = kept.map(fields => normalizeExtraction({ fields, image_issues: issues }, master));
+    return {
+      schema_version: '2.1',
+      image_issues: issues,
+      rows_detected: Math.max(detected, merged.length),
+      incomplete: detected > kept.length || merged.length > kept.length,
+      entries
+    };
+  }
+
   // ---------------------------------------------------------------------------
   // Record validation (business rules)
   // ---------------------------------------------------------------------------
@@ -398,6 +442,10 @@
       warnings.push({ field: 'defect_details', message: 'Defects are counted but not described.' });
     }
 
+    if (record.sheet_incomplete) {
+      warnings.push({ field: null, message: `The AI saw ${record.sheet_rows_detected} filled rows on this photo but captured ${record.sheet_rows}. Check the photo for a missed row and capture it separately if needed.` });
+    }
+
     if (record.machine_id && record.shift_id && record.production_date) {
       const dup = records.find(r => r.id !== record.id && r.status !== 'rejected' &&
         r.machine_id === record.machine_id && r.shift_id === record.shift_id && r.production_date === record.production_date);
@@ -441,6 +489,7 @@
       approved_at: record.reviewed_at || null,
       provenance: {
         source_form: record.form_number || null,
+        source_row: record.sheet_rows > 1 ? record.sheet_row : null,
         image_sha256: record.file_sha256 || null,
         extraction_model: record.extraction_model || null,
         fields_corrected: corrections.filter(c => c.kind !== 'confirmation').length,
@@ -480,7 +529,7 @@
   return {
     STATUSES, FIELD_DEFS, THRESHOLDS, ERP_SCHEMA,
     normalizeMachineCode, matchShift, parseNumber, parseDurationMinutes, normalizeUnit, parseDate, todayIso,
-    normalizeExtraction, validateRecord, unresolvedFlags, isFieldResolved,
+    normalizeExtraction, normalizeSheet, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved,
     buildErpPayload, validateErpPayload, erpReference, minutesBetween
   };
 });

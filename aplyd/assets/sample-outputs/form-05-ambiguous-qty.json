@@ -2,183 +2,188 @@
   "sample": "form-05-ambiguous-qty",
   "condition": "Quantity first digit is written so it could be 3 or 8",
   "http_status": 200,
-  "latency_ms": 34570,
+  "latency_ms": 5006,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 34569,
+    "latency_ms": 5003,
     "attempts": [
-      {
-        "provider": "gemini",
-        "model": "gemini-3.8-flash",
-        "ok": false,
-        "ms": 26118,
-        "error": "Gemini gemini-3.8-flash returned 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"
-      },
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 8450
+        "ms": 5002
       }
     ],
     "data": {
-      "schema_version": "2.0",
-      "overall_status": "ready_for_approval",
+      "schema_version": "2.1",
       "image_issues": [],
-      "fields": {
-        "machine": {
-          "value": "L-12",
-          "raw_value": "L-12",
-          "status": "read",
-          "reason": null
-        },
-        "production_date": {
-          "value": "2026-11-12",
-          "raw_value": "12/11/2026",
-          "status": "read",
-          "reason": null
-        },
-        "shift": {
-          "value": "M",
-          "raw_value": "M",
-          "status": "read",
-          "reason": null
-        },
-        "production_quantity": {
-          "value": 850,
-          "raw_value": "850 m",
-          "status": "read",
-          "reason": null
-        },
-        "production_unit": {
-          "value": "metres",
-          "raw_value": "m",
-          "status": "read",
-          "reason": null
-        },
-        "material_reference": {
-          "value": "Combed Poplin 40s",
-          "raw_value": "Combed Poplin 40s",
-          "status": "read",
-          "reason": null
-        },
-        "batch_reference": {
-          "value": "POP-40-880",
-          "raw_value": "POP-40-880",
-          "status": "read",
-          "reason": null
-        },
-        "defects_count": {
-          "value": 1,
-          "raw_value": "1",
-          "status": "read",
-          "reason": null
-        },
-        "defect_details": {
-          "value": "Weft slub",
-          "raw_value": "Weft slub",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_minutes": {
-          "value": 20,
-          "raw_value": "20 min",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_reason": {
-          "value": "Loom cleaning",
-          "raw_value": "Loom cleaning",
-          "status": "read",
-          "reason": null
-        },
-        "remarks": {
-          "value": null,
-          "raw_value": null,
-          "status": "missing",
-          "reason": null
+      "rows_detected": 1,
+      "incomplete": false,
+      "entries": [
+        {
+          "schema_version": "2.0",
+          "overall_status": "ready_for_approval",
+          "image_issues": [],
+          "fields": {
+            "machine": {
+              "value": "L-12",
+              "raw_value": "L-12",
+              "status": "read",
+              "reason": null
+            },
+            "production_date": {
+              "value": "2026-11-12",
+              "raw_value": "12/11/2026",
+              "status": "read",
+              "reason": null
+            },
+            "shift": {
+              "value": "M",
+              "raw_value": "M",
+              "status": "read",
+              "reason": null
+            },
+            "production_quantity": {
+              "value": 850,
+              "raw_value": "850 m",
+              "status": "read",
+              "reason": null
+            },
+            "production_unit": {
+              "value": "metres",
+              "raw_value": "m",
+              "status": "read",
+              "reason": null
+            },
+            "material_reference": {
+              "value": "Combed Poplin 40s",
+              "raw_value": "Combed Poplin 40s",
+              "status": "read",
+              "reason": null
+            },
+            "batch_reference": {
+              "value": "POP-40-880",
+              "raw_value": "POP-40-880",
+              "status": "read",
+              "reason": null
+            },
+            "defects_count": {
+              "value": 1,
+              "raw_value": "1",
+              "status": "read",
+              "reason": null
+            },
+            "defect_details": {
+              "value": "Weft slub",
+              "raw_value": "Weft slub",
+              "status": "read",
+              "reason": null
+            },
+            "downtime_minutes": {
+              "value": 20,
+              "raw_value": "20 min",
+              "status": "read",
+              "reason": null
+            },
+            "downtime_reason": {
+              "value": "Loom cleaning",
+              "raw_value": "Loom cleaning",
+              "status": "read",
+              "reason": null
+            },
+            "remarks": {
+              "value": null,
+              "raw_value": null,
+              "status": "missing",
+              "reason": null
+            }
+          }
         }
-      }
+      ]
     },
     "model_output": {
       "is_production_form": true,
       "image_issues": [],
-      "fields": {
-        "machine": {
-          "value": "L-12",
-          "raw_value": "L-12",
-          "status": "read",
-          "reason": null
-        },
-        "production_date": {
-          "value": "2026-11-12",
-          "raw_value": "12/11/2026",
-          "status": "read",
-          "reason": null
-        },
-        "shift": {
-          "value": "M",
-          "raw_value": "M",
-          "status": "read",
-          "reason": null
-        },
-        "production_quantity": {
-          "value": 850,
-          "raw_value": "850 m",
-          "status": "read",
-          "reason": null
-        },
-        "production_unit": {
-          "value": "metres",
-          "raw_value": "m",
-          "status": "read",
-          "reason": null
-        },
-        "material_reference": {
-          "value": "Combed Poplin 40s",
-          "raw_value": "Combed Poplin 40s",
-          "status": "read",
-          "reason": null
-        },
-        "batch_reference": {
-          "value": "POP-40-880",
-          "raw_value": "POP-40-880",
-          "status": "read",
-          "reason": null
-        },
-        "defects_count": {
-          "value": 1,
-          "raw_value": "1",
-          "status": "read",
-          "reason": null
-        },
-        "defect_details": {
-          "value": "Weft slub",
-          "raw_value": "Weft slub",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_minutes": {
-          "value": 20,
-          "raw_value": "20 min",
-          "status": "read",
-          "reason": null
-        },
-        "downtime_reason": {
-          "value": "Loom cleaning",
-          "raw_value": "Loom cleaning",
-          "status": "read",
-          "reason": null
-        },
-        "remarks": {
-          "value": null,
-          "raw_value": null,
-          "status": "missing",
-          "reason": null
+      "rows_detected": 1,
+      "header": {},
+      "entries": [
+        {
+          "machine": {
+            "value": "L-12",
+            "raw_value": "L-12",
+            "status": "read",
+            "reason": null
+          },
+          "production_date": {
+            "value": "2026-11-12",
+            "raw_value": "12/11/2026",
+            "status": "read",
+            "reason": null
+          },
+          "shift": {
+            "value": "M",
+            "raw_value": "M",
+            "status": "read",
+            "reason": null
+          },
+          "production_quantity": {
+            "value": 850,
+            "raw_value": "850 m",
+            "status": "read",
+            "reason": null
+          },
+          "production_unit": {
+            "value": "m",
+            "raw_value": "m",
+            "status": "read",
+            "reason": null
+          },
+          "material_reference": {
+            "value": "Combed Poplin 40s",
+            "raw_value": "Combed Poplin 40s",
+            "status": "read",
+            "reason": null
+          },
+          "batch_reference": {
+            "value": "POP-40-880",
+            "raw_value": "POP-40-880",
+            "status": "read",
+            "reason": null
+          },
+          "defects_count": {
+            "value": 1,
+            "raw_value": "1",
+            "status": "read",
+            "reason": null
+          },
+          "defect_details": {
+            "value": "Weft slub",
+            "raw_value": "Weft slub",
+            "status": "read",
+            "reason": null
+          },
+          "downtime_minutes": {
+            "value": 20,
+            "raw_value": "20 min",
+            "status": "read",
+            "reason": null
+          },
+          "downtime_reason": {
+            "value": "Loom cleaning",
+            "raw_value": "Loom cleaning",
+            "status": "read",
+            "reason": null
+          },
+          "remarks": {
+            "value": null,
+            "raw_value": null,
+            "status": "missing",
+            "reason": null
+          }
         }
-      }
+      ]
     }
   }
 }

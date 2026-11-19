@@ -342,7 +342,8 @@ test('/api/extract: Gemini success is normalised against master data; key stays 
       assert.equal(res.statusCode, 200);
       assert.equal(res.body.success, true);
       assert.equal(res.body.model, 'm1');
-      assert.equal(res.body.data.fields.machine.value, 'L-03');
+      assert.equal(res.body.data.entries.length, 1, 'a legacy single-form reply becomes one entry');
+      assert.equal(res.body.data.entries[0].fields.machine.value, 'L-03');
       assert.equal(stub.calls[0].headers['x-goog-api-key'], 'secret-key');
       assert.match(stub.calls[0].url, /models\/m1:generateContent$/);
       const sys = stub.calls[0].body.systemInstruction.parts[0].text;
@@ -473,6 +474,71 @@ test('/api/extract: cross-site browser requests are refused, same-origin allowed
       const same = mockReq('POST', EXTRACT_BODY); same.headers = { origin: 'https://aplyd.vercel.app', host: 'aplyd.vercel.app' };
       res = mockRes(); await extract(same, res);
       assert.equal(res.statusCode, 200);
+    } finally { stub.restore(); }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Multi-entry sheets (register pages, several slips in one photo)
+// ---------------------------------------------------------------------------
+const row = (loom, qty, extra = {}) => ({ machine: f(loom), production_quantity: f(qty), production_unit: f('m'), ...extra });
+
+test('normalizeSheet: header values fill every row; rows stay separate', () => {
+  const sheet = R.normalizeSheet({
+    is_production_form: true, rows_detected: 3,
+    header: { production_date: f('2026-10-31', 'read', '31/10/2026'), shift: f('M') },
+    entries: [row('L-01', 512), row('L-02', 498), row('L-03', 301, { shift: f('E') })]
+  }, MASTER);
+  assert.equal(sheet.entries.length, 3);
+  assert.equal(sheet.incomplete, false);
+  assert.deepEqual(sheet.entries.map(e => e.fields.machine.value), ['L-01', 'L-02', 'L-03']);
+  assert.deepEqual(sheet.entries.map(e => e.fields.production_quantity.value), [512, 498, 301]);
+  assert.equal(sheet.entries[0].fields.production_date.value, '2026-10-31', 'date inherited from header');
+  assert.equal(sheet.entries[1].fields.shift.value, 'M', 'shift inherited from header');
+  assert.equal(sheet.entries[2].fields.shift.value, 'E', 'a row-level value wins over the header');
+});
+
+test('normalizeSheet: blank rows dropped, legacy {fields} accepted, mismatch and cap flagged', () => {
+  const blank = { machine: f(null, 'missing'), production_quantity: f(null, 'missing') };
+  let s = R.normalizeSheet({ header: { shift: f('M') }, entries: [row('L-01', 500), blank, {}] }, MASTER);
+  assert.equal(s.entries.length, 1, 'empty rows are not records');
+
+  s = R.normalizeSheet(modelOutput(), MASTER);
+  assert.equal(s.entries.length, 1, 'old single-form reply still works');
+  assert.equal(s.entries[0].fields.machine.value, 'L-12');
+
+  s = R.normalizeSheet({ rows_detected: 6, entries: [row('L-01', 500), row('L-02', 400)] }, MASTER);
+  assert.equal(s.incomplete, true, 'model saw 6 rows but returned 2');
+  assert.equal(s.rows_detected, 6);
+
+  s = R.normalizeSheet({ entries: Array.from({ length: 35 }, (_, i) => row(`L-${String((i % 12) + 1).padStart(2, '0')}`, 300 + i)) }, MASTER);
+  assert.equal(s.entries.length, R.MAX_ENTRIES);
+  assert.equal(s.incomplete, true, 'over the cap is reported, not silently dropped');
+
+  assert.equal(R.normalizeSheet({ entries: [] }, MASTER).entries.length, 0);
+});
+
+test('validateRecord: an incomplete sheet warns on its records', () => {
+  const v = R.validateRecord(baseRecord({ sheet_incomplete: true, sheet_rows: 5, sheet_rows_detected: 6 }), CTX);
+  assert.ok(v.warnings.some(w => /saw 6 filled rows/.test(w.message)));
+});
+
+test('/api/extract: a register page returns one entry per row; a form with no entries is refused', async () => {
+  const extract = require('../api/extract.js');
+  await withEnv({ GEMINI_API_KEY: 'k', GEMINI_MODELS: 'm1' }, async () => {
+    let stub = stubFetch(() => geminiReply({ is_production_form: true, rows_detected: 2, header: { production_date: f('31/10/2026'), shift: f('M') }, entries: [row('L-01', 512), row('L-02', 498)] }));
+    try {
+      const res = await call(extract, 'POST', EXTRACT_BODY);
+      assert.equal(res.statusCode, 200);
+      assert.equal(res.body.data.entries.length, 2);
+      assert.equal(res.body.data.entries[1].fields.production_date.value, '2026-10-31');
+    } finally { stub.restore(); }
+
+    stub = stubFetch(() => geminiReply({ is_production_form: true, rows_detected: 0, header: {}, entries: [{}] }));
+    try {
+      const res = await call(extract, 'POST', EXTRACT_BODY);
+      assert.equal(res.statusCode, 422);
+      assert.equal(res.body.code, 'unreadable');
     } finally { stub.restore(); }
   });
 });

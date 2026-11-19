@@ -243,19 +243,23 @@
     }
 
     /**
-     * Persist the photo, the form metadata and a draft record built from the AI output.
-     * extraction: { provider, model, latency_ms, data: <contract> }
+     * Persist the photo once and one draft record per entry the AI found on it
+     * (a slip gives one entry; a register page gives one per filled row).
+     * extraction: { provider, model, latency_ms, data: { entries: [contract], rows_detected, incomplete, image_issues } }
+     * group: optional { id, label } (a batch). Multi-entry photos outside a batch get their own sheet group,
+     * so the review queue can show "this sheet" and Next record walks through its rows.
+     * @returns array of created records, in row order
      */
-    async createRecordFromExtraction({ file, sha256, imageBlob, extraction, batch }) {
+    async createRecordsFromExtraction({ file, sha256, imageBlob, extraction, batch }) {
       const user = this.getCurrentUser();
       // Store the photo first. Everything after this line runs without an await, so the
       // read-modify-write of the database is atomic even when several batch photos finish together.
       const formId = uid('form');
       await imageDb.put(formId, imageBlob);
       const db = this._db();
-      const fields = extraction.data.fields;
-      const machine = fields.machine.value ? db.machines.find(m => m.machine_code === fields.machine.value) : null;
-      const shift = fields.shift.value ? db.shifts.find(s => s.shift_code === fields.shift.value) : null;
+      const sheet = extraction.data;
+      const entries = sheet.entries || [];
+      if (!entries.length) throw new Error('No entries to save.');
 
       const form = {
         id: formId,
@@ -270,47 +274,61 @@
         extraction_provider: extraction.provider,
         extraction_model: extraction.model,
         extraction_latency_ms: extraction.latency_ms,
-        extraction_payload: extraction.data,
+        rows_detected: sheet.rows_detected,
+        incomplete: Boolean(sheet.incomplete),
+        extraction_payload: sheet,
         model_output: extraction.model_output || null
       };
-
-      const val = (k) => fields[k] ? fields[k].value : null;
-      const record = {
-        id: uid('rec'),
-        record_number: this._nextNumber(db.records, 'PR', 'record_number'),
-        form_id: form.id,
-        form_number: form.form_number,
-        file_sha256: sha256,
-        batch_id: batch ? batch.id : null,
-        batch_label: batch ? batch.label : null,
-        extraction_provider: extraction.provider,
-        extraction_model: extraction.model,
-        final_payload: extraction.data,
-        machine_id: machine ? machine.id : null,
-        machine_raw: fields.machine.raw_value,
-        shift_id: shift ? shift.id : null,
-        shift_raw: fields.shift.raw_value,
-        production_date: val('production_date'),
-        production_date_raw: fields.production_date.raw_value,
-        production_quantity: val('production_quantity'),
-        production_unit: val('production_unit') || (machine && machine.default_unit) || 'metres',
-        material_reference: val('material_reference'),
-        batch_reference: val('batch_reference'),
-        defects_count: val('defects_count'),
-        defect_details: val('defect_details'),
-        downtime_minutes: val('downtime_minutes'),
-        downtime_reason: val('downtime_reason'),
-        remarks: val('remarks'),
-        status: 'pending_review',
-        submitted_by: user.id,
-        submitted_by_name: user.full_name,
-        created_at: nowIso()
-      };
-
       db.forms.push(form);
-      db.records.push(record);
+
+      const group = batch || (entries.length > 1 ? { id: `sheet-${formId}`, label: `Sheet ${form.form_number}` } : null);
+      const created = entries.map((contract, i) => {
+        const fields = contract.fields;
+        const val = (k) => fields[k] ? fields[k].value : null;
+        const machine = fields.machine.value ? db.machines.find(m => m.machine_code === fields.machine.value) : null;
+        const shift = fields.shift.value ? db.shifts.find(s => s.shift_code === fields.shift.value) : null;
+        const record = {
+          id: uid('rec'),
+          record_number: this._nextNumber(db.records, 'PR', 'record_number'),
+          form_id: form.id,
+          form_number: form.form_number,
+          file_sha256: sha256,
+          batch_id: group ? group.id : null,
+          batch_label: group ? group.label : null,
+          sheet_row: i + 1,
+          sheet_rows: entries.length,
+          sheet_rows_detected: sheet.rows_detected,
+          sheet_incomplete: Boolean(sheet.incomplete),
+          extraction_provider: extraction.provider,
+          extraction_model: extraction.model,
+          extraction_latency_ms: extraction.latency_ms,
+          final_payload: contract,
+          machine_id: machine ? machine.id : null,
+          machine_raw: fields.machine.raw_value,
+          shift_id: shift ? shift.id : null,
+          shift_raw: fields.shift.raw_value,
+          production_date: val('production_date'),
+          production_date_raw: fields.production_date.raw_value,
+          production_quantity: val('production_quantity'),
+          production_unit: val('production_unit') || (machine && machine.default_unit) || 'metres',
+          material_reference: val('material_reference'),
+          batch_reference: val('batch_reference'),
+          defects_count: val('defects_count'),
+          defect_details: val('defect_details'),
+          downtime_minutes: val('downtime_minutes'),
+          downtime_reason: val('downtime_reason'),
+          remarks: val('remarks'),
+          status: 'pending_review',
+          submitted_by: user.id,
+          submitted_by_name: user.full_name,
+          created_at: new Date(Date.now() + i).toISOString() // +i ms keeps sheet rows in order when sorting by time
+        };
+        db.records.push(record); // pushed before the next row so record numbers stay unique
+        return record;
+      });
+
       this._write(db);
-      return record;
+      return created;
     }
 
     // --- Records ---

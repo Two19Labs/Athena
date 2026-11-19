@@ -7,3 +7,8 @@ tests/output/
 
 # Local multi-agent handover notes (kept on disk, not published)
 context.md
+
+# Raw AI-generated sample images before review (curated ones move to aplyd/assets/samples)
+incoming-samples/*.png
+incoming-samples/*.jpg
+incoming-samples/*.webp

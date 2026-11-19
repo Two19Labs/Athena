@@ -688,6 +688,79 @@ async function overflow(page) {
     check(/2 photos read → 4 records/.test(bs.summary) && /3 entries on this sheet/.test(mixed), 'batch counts records, not photos (register + slip = 4 records)', bs.summary);
     check(await page.$eval('#batchReviewLink', a => a.textContent).then(t => /Review 4 records/.test(t)), 'batch review link counts every record');
 
+    // ── 17. Mobile: layout quality on every page + phone-specific behaviour ──
+    console.log('\n17. Mobile (360 / 390 / landscape 740 / tablet 768)');
+    const mobileAudit = (pg, phone) => pg.evaluate((phone) => {
+      const vw = document.documentElement.clientWidth;
+      const vis = el => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; };
+      const small = [...document.querySelectorAll('a, button, select, input:not([type=hidden]):not([type=checkbox]):not([type=file]), .persona-btn, .tab-button')]
+        .filter(vis).filter(el => !el.closest('p, .empty-cell, .inline-alert, .kpi-note, .validation-panel li'))
+        .filter(el => { const r = el.getBoundingClientRect(); return r.height < 44 || r.width < 44; })
+        .map(el => `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}(${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)})`);
+      const tiny = [...document.querySelectorAll('body *')].filter(el => vis(el) && [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && parseFloat(getComputedStyle(el).fontSize) < 12)
+        .map(el => `${el.tagName.toLowerCase()}.${el.classList[0] || ''}`);
+      const zoom = phone ? [...document.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=file]), select, textarea')].filter(vis).filter(el => parseFloat(getComputedStyle(el).fontSize) < 16).length : 0;
+      return { overflow: document.documentElement.scrollWidth - vw, small: [...new Set(small)], tiny: [...new Set(tiny)], zoom };
+    }, phone);
+    const mobilePages = ['dashboard.html', 'capture.html', 'review.html', `review.html?id=${recId}`, 'production-register.html', 'analytics.html', 'machines.html', 'shifts.html'];
+    for (const vp of [{ n: '360', width: 360, height: 740 }, { n: '390', width: 390, height: 844 }, { n: '740L', width: 740, height: 360 }, { n: '768', width: 768, height: 1024 }]) {
+      const mp = await newPage(browser, base, { width: vp.width, height: vp.height, isMobile: true, hasTouch: true });
+      await as(mp, 'admin');
+      const problems = [];
+      for (const pg of mobilePages) {
+        await go(mp, pg);
+        const a = await mobileAudit(mp, vp.width < 768);
+        if (a.overflow > 0 || a.small.length || a.tiny.length || a.zoom) problems.push(`${pg}: ${JSON.stringify(a)}`);
+      }
+      check(!problems.length, `[${vp.n}] every page: no sideways scroll, 44 px touch targets, ≥12 px text, no iPhone input zoom`, problems.join(' || ').slice(0, 600));
+      check(mp.errors.length === 0, `[${vp.n}] no errors`, mp.errors.join('|'));
+      await mp.close();
+    }
+
+    const ph = await newPage(browser, base, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await as(ph, 'admin');
+    await go(ph, 'dashboard.html');
+    const shell = await ph.evaluate(() => ({
+      tabs: [...document.querySelectorAll('.tabbar .tab-item')].map(t => t.textContent.trim()),
+      sidebarHidden: getComputedStyle(document.getElementById('appSidebar')).display === 'none',
+      contentTop: Math.round(document.querySelector('main').getBoundingClientRect().top)
+    }));
+    check(shell.sidebarHidden && shell.tabs.join(',') === 'Home,Capture,Review,Register,More', 'phone: bottom tab bar replaces the sidebar (admin gets "More")', JSON.stringify(shell));
+    check(shell.contentTop < 80, 'phone: content starts right under a compact top bar', String(shell.contentTop));
+    await ph.click('#tabMoreBtn');
+    const more = await ph.$$eval('#tabMoreSheet:not(.hidden) .more-item', els => els.map(e => e.textContent.trim()));
+    check(more.join(',') === 'Analytics & Reliability,Looms Master,Shift Schedules', '"More" opens the remaining pages', more.join(','));
+    await ph.keyboard.press('Escape');
+    await ph.click('.persona-compact');
+    check(await ph.$eval('#demoPersonaBar', el => el.classList.contains('open') && getComputedStyle(el.querySelector('.persona-options')).display !== 'none'), 'phone: compact persona chip opens the three personas');
+    await go(ph, 'production-register.html');
+    const filtersBefore = await ph.$eval('#searchRecords', el => getComputedStyle(el).display);
+    await ph.click('#filtersToggle');
+    const filtersAfter = await ph.$eval('#searchRecords', el => getComputedStyle(el).display);
+    check(filtersBefore === 'none' && filtersAfter !== 'none', 'phone: register filters fold behind "Filters & export"');
+    check(await ph.$$eval('#registerTableBody tr td[data-label="Loom"]', els => els.length) > 0 && await ph.$eval('.data-table thead', el => getComputedStyle(el).display === 'none'), 'phone: tables become labelled cards');
+    await as(ph, 'supervisor');
+    await go(ph, `review.html?id=${recId}`);
+    const sticky = await ph.$eval('.document-viewer-card', el => getComputedStyle(el).position);
+    check(sticky === 'sticky', 'phone: the photo stays pinned while scrolling the fields', sticky);
+    await ph.click('#fullscreenBtn');
+    const fs1 = await ph.$eval('.document-viewer-card', el => { const r = el.getBoundingClientRect(); return el.classList.contains('is-fullscreen') && Math.round(r.height) >= innerHeight - 1 && Math.round(r.width) === innerWidth; });
+    await ph.keyboard.press('Escape');
+    const fs2 = await ph.$eval('.document-viewer-card', el => el.classList.contains('is-fullscreen'));
+    check(fs1 && !fs2, 'full-screen photo viewer opens and closes with Escape');
+    await ph.click('#photoToggleBtn');
+    check(await ph.$eval('#canvasViewport', el => getComputedStyle(el).display === 'none'), '"Hide photo" collapses the viewer to give the fields the screen');
+    const manifest = await ph.evaluate(async () => { const r = await fetch('manifest.webmanifest'); const m = await r.json(); const icon = await fetch(m.icons[0].src); return { ok: r.ok, name: m.short_name, display: m.display, icon: icon.ok }; });
+    check(manifest.ok && manifest.name === 'APLYD' && manifest.display === 'standalone' && manifest.icon, '"Add to Home Screen" manifest and icons are served', JSON.stringify(manifest));
+    check(ph.errors.length === 0, 'no errors in the phone flows', ph.errors.join('|'));
+    await ph.close();
+
+    const desk = await newPage(browser, base, { width: 1440, height: 900 });
+    await as(desk, 'supervisor');
+    await go(desk, 'dashboard.html');
+    check(await desk.$eval('.tabbar', el => getComputedStyle(el).display === 'none') && await desk.$eval('#appSidebar', el => getComputedStyle(el).display !== 'none'), 'desktop keeps the sidebar; no tab bar');
+    await desk.close();
+
     // ── Whole-run sanity ──
     check(page.errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'no unexpected browser errors across the whole flow', page.errors.join(' | '));
   } catch (err) {

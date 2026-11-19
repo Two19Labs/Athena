@@ -71,7 +71,7 @@
           flags ? `<span class="badge-uncertain">${flags} AI flag${flags > 1 ? 's' : ''}</span>` : '',
           v.blockers.length - flags > 0 ? `<span class="badge-invalid">${v.blockers.length - flags} blocker${v.blockers.length - flags > 1 ? 's' : ''}</span>` : '',
           v.warnings.length ? `<span class="badge-missing">${v.warnings.length} warning${v.warnings.length > 1 ? 's' : ''}</span>` : ''
-        ].join(' ') || '<span class="badge-read">Ready</span>'
+        ].filter(Boolean).join(' ') || '<span class="badge-read">Ready</span>'
         : (r.status === 'returned_for_correction' ? `<span class="small">${esc(r.return_reason || '')}</span>` : '');
       return `
         <tr>
@@ -236,14 +236,11 @@
     }
     const sections = { 1: 'Loom, date & shift', 2: 'Output & batch', 3: 'Quality & downtime' };
 
-    const html = [1, 2, 3].map(sec => `
-      <p class="section-label">${sections[sec]}</p>
-      <div class="field-grid">
-        ${Rules.FIELD_DEFS.filter(d => d.section === sec).map(def => {
-          const f = record.final_payload && record.final_payload.fields[def.key];
-          const flagged = unresolved.has(def.recordKey);
-          const fieldMsgs = (msgs[def.recordKey] || []).filter(m => !(flagged && m.message.includes('flagged')));
-          return `
+    const fieldHtml = (def) => {
+      const f = record.final_payload && record.final_payload.fields[def.key];
+      const flagged = unresolved.has(def.recordKey);
+      const fieldMsgs = (msgs[def.recordKey] || []).filter(m => !(flagged && m.message.includes('flagged')));
+      return `
           <div class="field-verify-group${flagged ? ' is-flagged' : ''}${def.type === 'text' && ['defect_details', 'downtime_reason', 'remarks', 'material_reference'].includes(def.recordKey) ? ' span-2' : ''}" data-field="${def.recordKey}">
             <div class="field-verify-header">
               <label class="field-verify-label" for="field_${def.recordKey}">${esc(def.label)}${def.required ? ' <span class="req">*</span>' : ''}</label>
@@ -255,8 +252,19 @@
             ${fieldMsgs.map(m => `<div class="field-msg ${m.cls}">${esc(m.message)}</div>`).join('')}
             ${flagged && canEdit && store.can('review', record) ? `<button type="button" class="btn btn-outline btn-tiny confirm-btn" data-key="${def.recordKey}">✓ Value matches photo</button>` : ''}
           </div>`;
-        }).join('')}
-      </div>`).join('');
+    };
+
+    // Fields that need a human (AI flags, blockers, warnings) come first, so nobody has to hunt for them.
+    const attention = Rules.FIELD_DEFS.filter(d => unresolved.has(d.recordKey) || (msgs[d.recordKey] || []).length);
+    const rest = (sec) => Rules.FIELD_DEFS.filter(d => d.section === sec && !attention.includes(d));
+    const issues = (record.final_payload && record.final_payload.image_issues) || [];
+    const html = (issues.length ? `<p class="show-phone small warn">Photo issues noted by the AI: ${issues.map(esc).join('; ')}</p>` : '') +
+      (attention.length ? `
+      <p class="section-label attention-label">Needs your check</p>
+      <div class="field-grid">${attention.map(fieldHtml).join('')}</div>` : '') +
+      [1, 2, 3].filter(sec => rest(sec).length).map(sec => `
+      <p class="section-label">${sections[sec]}</p>
+      <div class="field-grid">${rest(sec).map(fieldHtml).join('')}</div>`).join('');
     $('verificationFieldsContainer').innerHTML = html;
 
     if (!canEdit) return;
@@ -449,6 +457,23 @@
       $('zoomLabel').textContent = `${Math.round(view.scale * 100)}%`;
     };
     const zoom = (factor) => { view.scale = Math.min(6, Math.max(0.5, view.scale * factor)); apply(); };
+
+    const card = vp.closest('.document-viewer-card');
+    const setFullscreen = (on) => {
+      card.classList.toggle('is-fullscreen', on);
+      document.body.classList.toggle('viewer-open', on);
+      $('fullscreenBtn').setAttribute('aria-pressed', String(on));
+      $('fullscreenBtn').setAttribute('aria-label', on ? 'Close full screen' : 'Full screen photo');
+      $('fullscreenBtn').textContent = on ? '✕' : '⛶';
+    };
+    $('fullscreenBtn').addEventListener('click', () => setFullscreen(!card.classList.contains('is-fullscreen')));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && card.classList.contains('is-fullscreen')) setFullscreen(false); });
+    $('photoToggleBtn').addEventListener('click', () => {
+      const collapsed = card.classList.toggle('viewer-collapsed');
+      $('photoToggleBtn').setAttribute('aria-pressed', String(collapsed));
+      $('photoToggleBtn').setAttribute('aria-label', collapsed ? 'Show photo' : 'Hide photo');
+      $('photoToggleBtn').textContent = collapsed ? '▾' : '▴';
+    });
 
     $('zoomInBtn').addEventListener('click', () => zoom(1.25));
     $('zoomOutBtn').addEventListener('click', () => zoom(0.8));

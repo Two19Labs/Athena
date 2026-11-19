@@ -13,6 +13,7 @@ photo capture → AI extraction → rule checks → supervisor review → ERP-re
 - **Validation:** deterministic code maps readings to the loom and shift master and checks business rules: required fields, expected output range, downtime longer than the shift, future dates, duplicate loom/date/shift.
 - **Review:** the supervisor sees the photo and the fields side by side. Flagged fields must be corrected or explicitly confirmed before approval. Every change goes to an append-only audit trail. Records can be returned to the operator or rejected.
 - **ERP handoff:** a mock ERP endpoint with a versioned JSON contract, idempotent references, a failure simulation and retry, plus CSV and ERP-JSON export.
+- **Mobile-first:** on phones a bottom tab bar, card lists, the photo pinned while reviewing (tap for full screen, pinch to zoom), flagged fields listed first, bottom-sheet dialogs, 44 px touch targets and no iPhone input zoom. It can be installed with "Add to Home Screen". Tablets keep a slim sidebar.
 - **Reliability:** live metrics derived from supervisor corrections (correction rate, **silent-error rate**, flag precision) and an offline benchmark on labelled sample forms.
 
 Design notes, assumptions and trade-offs: **[docs/SOLUTION_NOTE.md](docs/SOLUTION_NOTE.md)**. Demo script: **[docs/WALKTHROUGH.md](docs/WALKTHROUGH.md)**.
@@ -48,7 +49,7 @@ The app starts empty: there is no mock data. The capture page has one-click samp
 ```bash
 npm install            # dev only: puppeteer-core, which drives your installed Chrome/Edge
 npm test               # 34 unit tests: rules, strict parsers, ERP contract, /api/erp, /api/extract (stubbed provider, fallback, time budget, origin check)
-npm run test:e2e       # 137 browser checks across every page and workflow incl. batch upload, desktop + mobile, older-browser fallbacks
+npm run test:e2e       # 157 browser checks: every page and workflow incl. batch upload and register pages, plus a mobile audit (360/390/landscape/768 px) and phone-only behaviour
 npm run samples        # re-render the synthetic sample photos
 npm run benchmark      # REAL AI run over the labelled samples (needs GEMINI_API_KEY)
 ```

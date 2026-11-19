@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#18181b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="APLYD">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2318181b%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2717%27 font-family=%27Arial%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EA%3C/text%3E%3C/svg%3E">
   <title>Review Queue · APLYD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,13 +75,15 @@
         <div class="review-split-container">
           <div class="document-viewer-card">
             <div class="document-toolbar">
-              <span class="small strong">Source photo</span>
+              <span class="small strong hide-phone">Source photo</span>
               <div class="toolbar-actions">
-                <button type="button" class="toolbar-btn" id="zoomOutBtn" aria-label="Zoom out">−</button>
-                <span id="zoomLabel" class="zoom-label">100%</span>
-                <button type="button" class="toolbar-btn" id="zoomInBtn" aria-label="Zoom in">+</button>
+                <button type="button" class="toolbar-btn hide-phone" id="zoomOutBtn" aria-label="Zoom out">−</button>
+                <span id="zoomLabel" class="zoom-label hide-phone">100%</span>
+                <button type="button" class="toolbar-btn hide-phone" id="zoomInBtn" aria-label="Zoom in">+</button>
                 <button type="button" class="toolbar-btn" id="rotateViewBtn" aria-label="Rotate view">⟳</button>
-                <button type="button" class="toolbar-btn" id="zoomResetBtn" aria-label="Reset view">⤢</button>
+                <button type="button" class="toolbar-btn" id="zoomResetBtn" aria-label="Reset view">↺</button>
+                <button type="button" class="toolbar-btn" id="fullscreenBtn" aria-label="Full screen photo" aria-pressed="false">⛶</button>
+                <button type="button" class="toolbar-btn show-phone" id="photoToggleBtn" aria-label="Hide photo" aria-pressed="false">▴</button>
               </div>
             </div>
             <div class="canvas-viewport" id="canvasViewport">

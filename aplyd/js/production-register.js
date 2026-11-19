@@ -16,6 +16,10 @@
     $('filterMachineSelect').innerHTML = '<option value="">All looms</option>' + machines.map(m => `<option value="${esc(m.id)}">${esc(m.machine_code)}</option>`).join('');
     $('filterShiftSelect').innerHTML = '<option value="">All shifts</option>' + shifts.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
     ['searchRecords', 'filterMachineSelect', 'filterShiftSelect', 'filterDate'].forEach(id => $(id).addEventListener(id === 'searchRecords' ? 'input' : 'change', render));
+    $('filtersToggle').addEventListener('click', () => {
+      const open = $('registerFilters').classList.toggle('open');
+      $('filtersToggle').setAttribute('aria-expanded', String(open));
+    });
     $('clearDateBtn').addEventListener('click', () => { $('filterDate').value = ''; render(); });
     document.querySelectorAll('.tab-button').forEach(btn => btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-button').forEach(b => { b.classList.remove('tab-button-active'); b.setAttribute('aria-selected', 'false'); });
@@ -51,6 +55,8 @@
       status: tab ? tab.dataset.status : 'all'
     };
     rows = await store.getRecords(filters);
+    const active = ['search', 'machine_id', 'shift_id', 'date'].filter(k => filters[k]).length;
+    $('filtersToggle').textContent = active ? `Filters & export (${active} active)` : 'Filters & export';
     $('registerCount').textContent = `${rows.length} record${rows.length === 1 ? '' : 's'}`;
     const tbody = $('registerTableBody');
     if (!rows.length) {

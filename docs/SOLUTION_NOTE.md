@@ -37,7 +37,7 @@ flowchart LR
   H --> I[Register · CSV · ERP JSON<br/>Analytics]
 ```
 
-- **Front end:** plain HTML/JS, no build step. It runs on any phone browser.
+- **Front end:** plain HTML/JS, no build step, designed phone-first: operators and supervisors work on shared or personal phones, so phones get a bottom tab bar, card lists, a pinned photo with full-screen zoom during review, 44 px touch targets and an installable "Add to Home Screen" app. Tablets and desktops get a sidebar layout.
 - **Serverless functions (Vercel):** `/api/extract` holds the API key and calls the model. `/api/erp` is the mock ERP. Both are under 200 lines.
 - **Shared rules module (`aplyd/js/rules.js`):** the browser and the server load the same code, so both apply the same idea of "valid".
 

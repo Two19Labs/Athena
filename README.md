@@ -46,7 +46,7 @@ Pick a demo persona on the first screen:
 - **Supervisor:** review and approve.
 - **Admin:** also edits the loom and shift master data.
 
-The app starts empty: there is no mock data. The capture page has one-click sample photos (clean, unclear digit, oil stain, different layout, a 6-loom register page, not a form) plus "All samples as a batch", and the files are also in [`aplyd/assets/samples/`](aplyd/assets/samples/).
+The app starts empty: there is no mock data. The capture page has one-click sample photos: 6 synthetic forms (clean, unclear digit, oil stain, different layout, a 6-loom register page, not a form), 5 photorealistic phone photos (crumpled slip, 8-loom register book, Hindi form, overwritten digits, tube-light glare), and "All samples as a batch". The files are in [`aplyd/assets/samples/`](aplyd/assets/samples/), the AI's actual output for each in [`aplyd/assets/sample-outputs/`](aplyd/assets/sample-outputs/), and the answer keys in [`tests/fixtures/samples.json`](tests/fixtures/samples.json).
 
 ## Deploy (Vercel, free)
 
@@ -58,10 +58,10 @@ The app starts empty: there is no mock data. The capture page has one-click samp
 
 ```bash
 npm install            # dev only: puppeteer-core, which drives your installed Chrome/Edge
-npm test               # 39 unit tests: rules, strict parsers, check-required gate, undo, reason codes, photo boxes, ERP contract, /api/erp, /api/extract
-npm run test:e2e       # 183 browser checks: every page and workflow incl. batch upload, register pages, bulk approve, inline edits + undo, offline outbox, a mobile audit (360/390/landscape/768 px) and phone-only behaviour
+npm test               # 42 unit tests: rules, strict parsers, check-required gate, undo, reason codes, photo boxes, ERP contract, /api/erp, /api/extract
+npm run test:e2e       # 184 browser checks: every page and workflow incl. batch upload, register pages, bulk approve, inline edits + undo, offline outbox, a mobile audit (360/390/landscape/768 px) and phone-only behaviour
 npm run samples        # re-render the synthetic sample photos
-npm run benchmark      # REAL AI run over the labelled samples (needs GEMINI_API_KEY)
+npm run benchmark      # REAL AI run over the 18 labelled samples, scored per set (needs GEMINI_API_KEY)
 ```
 
 The end-to-end test runs the real app and the real `/api` functions in headless Chrome. Only the AI provider is replaced, by a local stub, so every branch can be exercised without spending quota. The benchmark is the opposite: it calls the real provider and writes the system's actual outputs to `aplyd/assets/sample-outputs/` and the scores to `aplyd/assets/benchmark/results.json`. The Analytics page shows those scores.

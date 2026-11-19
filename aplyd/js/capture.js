@@ -92,7 +92,8 @@
   /** All bundled samples (aplyd/assets/samples) as one batch, to try batch upload without downloading files. */
   const SAMPLE_IDS = [
     'form-01-clean', 'form-02-skewed', 'form-03-low-light', 'form-04-glare', 'form-05-ambiguous-qty', 'form-06-oil-stain',
-    'form-07-blank-and-zero', 'form-08-unknown-loom', 'form-09-ledger-layout', 'form-10-faded-torn', 'form-11-sideways', 'form-13-register-6-looms', 'form-12-not-a-form'
+    'form-07-blank-and-zero', 'form-08-unknown-loom', 'form-09-ledger-layout', 'form-10-faded-torn', 'form-11-sideways', 'form-13-register-6-looms', 'form-12-not-a-form',
+    'real-01-crumpled-slip', 'real-02-carbon-register', 'real-03-hindi-slip', 'real-04-ambiguous-digits', 'real-05-tubelight-glare'
   ];
 
   async function loadSampleBatch() {

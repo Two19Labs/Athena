@@ -1,19 +1,20 @@
 {
   "sample": "form-01-clean",
+  "set": "synthetic",
   "condition": "Clean, well-lit, flat",
   "http_status": 200,
-  "latency_ms": 9678,
+  "latency_ms": 3490,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 9674,
+    "latency_ms": 3483,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 9663
+        "ms": 3471
       }
     ],
     "data": {
@@ -27,10 +28,10 @@
           "overall_status": "ready_for_approval",
           "image_issues": [],
           "row_box": [
-            180,
-            155,
-            700,
-            838
+            198,
+            160,
+            707,
+            835
           ],
           "fields": {
             "machine": {
@@ -39,10 +40,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                215,
+                217,
                 427,
-                238,
-                490
+                240,
+                483
               ]
             },
             "production_date": {
@@ -51,10 +52,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                261,
-                431,
-                290,
-                570
+                263,
+                428,
+                283,
+                571
               ]
             },
             "shift": {
@@ -63,10 +64,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                305,
+                307,
                 429,
-                332,
-                457
+                325,
+                454
               ]
             },
             "production_quantity": {
@@ -75,10 +76,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                356,
-                430,
-                380,
-                482
+                349,
+                429,
+                368,
+                477
               ]
             },
             "production_unit": {
@@ -87,10 +88,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                357,
-                500,
-                376,
-                516
+                355,
+                484,
+                366,
+                498
               ]
             },
             "material_reference": {
@@ -99,10 +100,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                399,
-                429,
+                390,
                 431,
-                641
+                412,
+                642
               ]
             },
             "batch_reference": {
@@ -111,10 +112,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                443,
-                429,
-                476,
-                579
+                434,
+                431,
+                455,
+                574
               ]
             },
             "defects_count": {
@@ -123,10 +124,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                491,
-                430,
-                512,
-                442
+                483,
+                436,
+                497,
+                449
               ]
             },
             "defect_details": {
@@ -135,22 +136,22 @@
               "status": "missing",
               "reason": null,
               "box": [
-                523,
-                431,
-                552,
+                516,
+                423,
+                551,
                 832
               ]
             },
             "downtime_minutes": {
               "value": 20,
-              "raw_value": "20",
+              "raw_value": "20 min",
               "status": "read",
               "reason": null,
               "box": [
-                568,
-                434,
-                594,
-                467
+                566,
+                438,
+                584,
+                514
               ]
             },
             "downtime_reason": {
@@ -159,10 +160,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                607,
-                434,
-                639,
-                598
+                609,
+                437,
+                629,
+                595
               ]
             },
             "remarks": {
@@ -171,10 +172,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                653,
-                434,
-                682,
-                573
+                650,
+                440,
+                671,
+                572
               ]
             }
           }
@@ -203,10 +204,10 @@
       "entries": [
         {
           "row_box": [
-            180,
-            155,
-            700,
-            838
+            198,
+            160,
+            707,
+            835
           ],
           "machine": {
             "value": "L-12",
@@ -214,10 +215,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              215,
+              217,
               427,
-              238,
-              490
+              240,
+              483
             ]
           },
           "production_date": {
@@ -226,10 +227,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              261,
-              431,
-              290,
-              570
+              263,
+              428,
+              283,
+              571
             ]
           },
           "shift": {
@@ -238,10 +239,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              305,
+              307,
               429,
-              332,
-              457
+              325,
+              454
             ]
           },
           "production_quantity": {
@@ -250,10 +251,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              356,
-              430,
-              380,
-              482
+              349,
+              429,
+              368,
+              477
             ]
           },
           "production_unit": {
@@ -262,10 +263,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              357,
-              500,
-              376,
-              516
+              355,
+              484,
+              366,
+              498
             ]
           },
           "material_reference": {
@@ -274,10 +275,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              399,
-              429,
+              390,
               431,
-              641
+              412,
+              642
             ]
           },
           "batch_reference": {
@@ -286,10 +287,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              443,
-              429,
-              476,
-              579
+              434,
+              431,
+              455,
+              574
             ]
           },
           "defects_count": {
@@ -298,10 +299,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              491,
-              430,
-              512,
-              442
+              483,
+              436,
+              497,
+              449
             ]
           },
           "defect_details": {
@@ -310,22 +311,22 @@
             "status": "missing",
             "reason": null,
             "box": [
-              523,
-              431,
-              552,
+              516,
+              423,
+              551,
               832
             ]
           },
           "downtime_minutes": {
             "value": 20,
-            "raw_value": "20",
+            "raw_value": "20 min",
             "status": "read",
             "reason": null,
             "box": [
-              568,
-              434,
-              594,
-              467
+              566,
+              438,
+              584,
+              514
             ]
           },
           "downtime_reason": {
@@ -334,10 +335,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              607,
-              434,
-              639,
-              598
+              609,
+              437,
+              629,
+              595
             ]
           },
           "remarks": {
@@ -346,10 +347,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              653,
-              434,
-              682,
-              573
+              650,
+              440,
+              671,
+              572
             ]
           }
         }

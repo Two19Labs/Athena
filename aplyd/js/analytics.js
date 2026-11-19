@@ -105,6 +105,10 @@
             ['Blank detection', s.blank_detection, 'blank fields left blank']
           ].map(([k, v, n]) => `<div class="kpi-card"><p class="kpi-label">${esc(k)}</p><p class="kpi-value">${esc(v === null ? '—' : `${(v * 100).toFixed(1)}%`)}</p><p class="kpi-note">${esc(n)}</p></div>`).join('')}
         </div>
+        ${b.by_set ? `<div class="table-scroll"><table class="data-table data-table-compact">
+          <thead><tr><th>Sample set</th><th class="num">Forms</th><th class="num">Field accuracy</th><th class="num">Silent errors</th><th class="num">Median read</th></tr></thead>
+          <tbody>${Object.entries(b.by_set).map(([k, v]) => `<tr><td><strong>${esc(k)}</strong> <span class="muted">${esc(v.description || '')}</span></td><td class="num">${esc(v.samples)}</td><td class="num">${esc(v.field_accuracy === null ? '—' : `${(v.field_accuracy * 100).toFixed(1)}% (${v.fields_correct}/${v.fields_total})`)}</td><td class="num">${esc(v.silent_error_rate === null ? '—' : `${(v.silent_error_rate * 100).toFixed(1)}%`)}</td><td class="num">${esc(v.median_latency_ms ? `${(v.median_latency_ms / 1000).toFixed(1)} s` : '—')}</td></tr>`).join('')}</tbody>
+        </table></div>` : ''}
         <p class="small"><a href="assets/benchmark/results.json" target="_blank" rel="noopener">Per-sample results (JSON)</a></p>`;
     } catch (_) {
       el.innerHTML = '<p class="muted">The offline benchmark has not been run on this deployment yet. Run <code>npm run benchmark</code> with an API key to measure field accuracy against the labelled sample forms.</p>';

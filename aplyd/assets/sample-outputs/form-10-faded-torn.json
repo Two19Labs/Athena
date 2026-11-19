@@ -1,19 +1,20 @@
 {
   "sample": "form-10-faded-torn",
+  "set": "synthetic",
   "condition": "Faded pencil-like writing and a torn bottom corner (remarks lost)",
   "http_status": 200,
-  "latency_ms": 3785,
+  "latency_ms": 3453,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 3783,
+    "latency_ms": 3450,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 3782
+        "ms": 3449
       }
     ],
     "data": {
@@ -27,10 +28,10 @@
           "overall_status": "ready_for_approval",
           "image_issues": [],
           "row_box": [
-            192,
-            149,
+            187,
+            155,
             700,
-            849
+            845
           ],
           "fields": {
             "machine": {
@@ -39,9 +40,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                218,
-                429,
-                241,
+                208,
+                423,
+                238,
                 513
               ]
             },
@@ -51,9 +52,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                261,
-                432,
-                289,
+                255,
+                424,
+                285,
                 570
               ]
             },
@@ -64,9 +65,9 @@
               "reason": null,
               "box": [
                 305,
-                430,
-                332,
-                448
+                424,
+                334,
+                450
               ]
             },
             "production_quantity": {
@@ -75,10 +76,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                356,
-                433,
-                380,
-                472
+                354,
+                424,
+                384,
+                505
               ]
             },
             "production_unit": {
@@ -87,10 +88,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                355,
-                484,
-                376,
-                502
+                354,
+                510,
+                384,
+                529
               ]
             },
             "material_reference": {
@@ -99,10 +100,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                407,
-                431,
-                434,
-                583
+                403,
+                424,
+                433,
+                580
               ]
             },
             "batch_reference": {
@@ -111,10 +112,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                457,
-                432,
-                480,
-                580
+                452,
+                425,
+                482,
+                581
               ]
             },
             "defects_count": {
@@ -123,10 +124,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                505,
-                433,
-                529,
-                443
+                501,
+                425,
+                531,
+                438
               ]
             },
             "defect_details": {
@@ -135,10 +136,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                551,
-                433,
-                578,
-                564
+                550,
+                424,
+                580,
+                561
               ]
             },
             "downtime_minutes": {
@@ -147,10 +148,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                599,
-                435,
-                621,
-                513
+                600,
+                425,
+                630,
+                515
               ]
             },
             "downtime_reason": {
@@ -160,22 +161,16 @@
               "reason": null,
               "box": [
                 648,
-                436,
-                671,
-                666
+                426,
+                679,
+                668
               ]
             },
             "remarks": {
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null,
-              "box": [
-                690,
-                430,
-                699,
-                436
-              ]
+              "reason": null
             }
           }
         }
@@ -203,10 +198,10 @@
       "entries": [
         {
           "row_box": [
-            192,
-            149,
+            187,
+            155,
             700,
-            849
+            845
           ],
           "machine": {
             "value": "L-08",
@@ -214,9 +209,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              218,
-              429,
-              241,
+              208,
+              423,
+              238,
               513
             ]
           },
@@ -226,9 +221,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              261,
-              432,
-              289,
+              255,
+              424,
+              285,
               570
             ]
           },
@@ -239,9 +234,9 @@
             "reason": null,
             "box": [
               305,
-              430,
-              332,
-              448
+              424,
+              334,
+              450
             ]
           },
           "production_quantity": {
@@ -250,10 +245,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              356,
-              433,
-              380,
-              472
+              354,
+              424,
+              384,
+              505
             ]
           },
           "production_unit": {
@@ -262,10 +257,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              355,
-              484,
-              376,
-              502
+              354,
+              510,
+              384,
+              529
             ]
           },
           "material_reference": {
@@ -274,10 +269,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              407,
-              431,
-              434,
-              583
+              403,
+              424,
+              433,
+              580
             ]
           },
           "batch_reference": {
@@ -286,10 +281,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              457,
-              432,
-              480,
-              580
+              452,
+              425,
+              482,
+              581
             ]
           },
           "defects_count": {
@@ -298,10 +293,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              505,
-              433,
-              529,
-              443
+              501,
+              425,
+              531,
+              438
             ]
           },
           "defect_details": {
@@ -310,10 +305,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              551,
-              433,
-              578,
-              564
+              550,
+              424,
+              580,
+              561
             ]
           },
           "downtime_minutes": {
@@ -322,10 +317,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              599,
-              435,
-              621,
-              513
+              600,
+              425,
+              630,
+              515
             ]
           },
           "downtime_reason": {
@@ -335,9 +330,9 @@
             "reason": null,
             "box": [
               648,
-              436,
-              671,
-              666
+              426,
+              679,
+              668
             ]
           },
           "remarks": {
@@ -346,10 +341,10 @@
             "status": "missing",
             "reason": null,
             "box": [
-              690,
-              430,
               699,
-              436
+              423,
+              699,
+              423
             ]
           }
         }

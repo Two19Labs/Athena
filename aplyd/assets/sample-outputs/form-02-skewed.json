@@ -1,19 +1,20 @@
 {
   "sample": "form-02-skewed",
+  "set": "synthetic",
   "condition": "Photographed at an angle (perspective + 11° rotation)",
   "http_status": 200,
-  "latency_ms": 4151,
+  "latency_ms": 3659,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 4147,
+    "latency_ms": 3654,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 4146
+        "ms": 3649
       }
     ],
     "data": {
@@ -27,10 +28,10 @@
           "overall_status": "ready_for_approval",
           "image_issues": [],
           "row_box": [
-            202,
-            140,
+            205,
+            138,
             715,
-            857
+            820
           ],
           "fields": {
             "machine": {
@@ -39,10 +40,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                261,
-                378,
+                258,
+                381,
                 283,
-                431
+                429
               ]
             },
             "production_date": {
@@ -51,10 +52,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                313,
-                391,
-                341,
-                516
+                311,
+                390,
+                343,
+                519
               ]
             },
             "shift": {
@@ -64,9 +65,9 @@
               "reason": null,
               "box": [
                 361,
-                399,
-                379,
-                418
+                397,
+                380,
+                420
               ]
             },
             "production_quantity": {
@@ -75,10 +76,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                395,
-                407,
-                416,
-                472
+                397,
+                410,
+                421,
+                479
               ]
             },
             "production_unit": {
@@ -89,8 +90,8 @@
               "box": [
                 396,
                 476,
-                410,
-                489
+                414,
+                492
               ]
             },
             "material_reference": {
@@ -99,10 +100,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                431,
+                432,
                 418,
-                453,
-                531
+                457,
+                533
               ]
             },
             "batch_reference": {
@@ -112,9 +113,9 @@
               "reason": null,
               "box": [
                 461,
-                428,
-                484,
-                569
+                425,
+                491,
+                570
               ]
             },
             "defects_count": {
@@ -123,9 +124,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                514,
-                438,
-                528,
+                510,
+                437,
+                531,
                 450
               ]
             },
@@ -135,9 +136,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                547,
-                448,
-                570,
+                542,
+                447,
+                572,
                 570
               ]
             },
@@ -147,10 +148,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                593,
+                589,
                 459,
-                607,
-                527
+                613,
+                532
               ]
             },
             "downtime_reason": {
@@ -159,10 +160,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                616,
+                619,
                 467,
-                639,
-                666
+                653,
+                668
               ]
             },
             "remarks": {
@@ -171,10 +172,10 @@
               "status": "missing",
               "reason": null,
               "box": [
-                673,
-                466,
-                707,
-                851
+                667,
+                464,
+                709,
+                514
               ]
             }
           }
@@ -203,10 +204,10 @@
       "entries": [
         {
           "row_box": [
-            202,
-            140,
+            205,
+            138,
             715,
-            857
+            820
           ],
           "machine": {
             "value": "L-03",
@@ -214,10 +215,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              261,
-              378,
+              258,
+              381,
               283,
-              431
+              429
             ]
           },
           "production_date": {
@@ -226,10 +227,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              313,
-              391,
-              341,
-              516
+              311,
+              390,
+              343,
+              519
             ]
           },
           "shift": {
@@ -239,9 +240,9 @@
             "reason": null,
             "box": [
               361,
-              399,
-              379,
-              418
+              397,
+              380,
+              420
             ]
           },
           "production_quantity": {
@@ -250,10 +251,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              395,
-              407,
-              416,
-              472
+              397,
+              410,
+              421,
+              479
             ]
           },
           "production_unit": {
@@ -264,8 +265,8 @@
             "box": [
               396,
               476,
-              410,
-              489
+              414,
+              492
             ]
           },
           "material_reference": {
@@ -274,10 +275,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              431,
+              432,
               418,
-              453,
-              531
+              457,
+              533
             ]
           },
           "batch_reference": {
@@ -287,9 +288,9 @@
             "reason": null,
             "box": [
               461,
-              428,
-              484,
-              569
+              425,
+              491,
+              570
             ]
           },
           "defects_count": {
@@ -298,9 +299,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              514,
-              438,
-              528,
+              510,
+              437,
+              531,
               450
             ]
           },
@@ -310,9 +311,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              547,
-              448,
-              570,
+              542,
+              447,
+              572,
               570
             ]
           },
@@ -322,10 +323,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              593,
+              589,
               459,
-              607,
-              527
+              613,
+              532
             ]
           },
           "downtime_reason": {
@@ -334,10 +335,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              616,
+              619,
               467,
-              639,
-              666
+              653,
+              668
             ]
           },
           "remarks": {
@@ -346,10 +347,10 @@
             "status": "missing",
             "reason": null,
             "box": [
-              673,
-              466,
-              707,
-              851
+              667,
+              464,
+              709,
+              514
             ]
           }
         }

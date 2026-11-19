@@ -38,6 +38,7 @@ const MASTER = {
 };
 
 function same(a, b) {
+  if (Array.isArray(b)) return b.some(x => same(a, x)); // several acceptable readings (e.g. Devanagari or its transliteration)
   if (a === null || a === undefined || a === '') return b === null || b === undefined || b === '';
   if (typeof b === 'number') return Number(a) === b;
   return String(a).trim().replace(/\s+/g, ' ').toLowerCase() === String(b).trim().replace(/\s+/g, ' ').toLowerCase();
@@ -52,6 +53,15 @@ async function extract(file) {
   return res;
 }
 
+const SET_NAMES = {
+  synthetic: 'synthetic forms rendered by tests/generate-samples.js',
+  realistic: 'photorealistic AI-generated phone photos (crumpled, carbon register, Hindi, glare, ambiguous digits)'
+};
+
+function newStats() {
+  return { samples: 0, total: 0, correct: 0, silent: 0, flagTotal: 0, flagHit: 0, blankTotal: 0, blankHit: 0, unreadTotal: 0, unreadHit: 0, latencies: [] };
+}
+
 (async () => {
   if (!process.env.GEMINI_API_KEY && !process.env.OPENROUTER_API_KEY) {
     console.error('No AI key found. Set GEMINI_API_KEY (free at https://aistudio.google.com/apikey) in .env or the environment.');
@@ -62,12 +72,16 @@ async function extract(file) {
 
   const perSample = [];
   const fieldStats = Object.fromEntries(R.FIELD_DEFS.map(d => [d.key, { correct: 0, total: 0 }]));
-  let total = 0, correct = 0, silent = 0, flagTotal = 0, flagHit = 0, blankTotal = 0, blankHit = 0, unreadTotal = 0, unreadHit = 0;
+  const stats = { all: newStats() };
   let provider = null, model = null;
-  const latencies = [];
 
   for (let i = 0; i < manifest.samples.length; i++) {
     const s = manifest.samples[i];
+    const set = s.set || 'synthetic';
+    stats[set] = stats[set] || newStats();
+    const targets = [stats.all, stats[set]];
+    const inc = (k, n = 1) => targets.forEach(t => { t[k] += n; });
+    inc('samples');
     const file = path.join(SAMPLE_DIR, `${s.id}.jpg`);
     process.stdout.write(`[${i + 1}/${manifest.samples.length}] ${s.id} … `);
     const started = Date.now();
@@ -78,25 +92,26 @@ async function extract(file) {
       res = { statusCode: 0, body: { success: false, error: err.message } };
     }
     const ms = Date.now() - started;
-    const out = { sample: s.id, condition: s.condition, http_status: res.statusCode, latency_ms: ms, response: res.body };
+    const out = { sample: s.id, set, condition: s.condition, http_status: res.statusCode, latency_ms: ms, response: res.body };
     fs.writeFileSync(path.join(OUT_DIR, `${s.id}.json`), JSON.stringify(out, null, 2));
 
-    const row = { id: s.id, condition: s.condition, status: res.statusCode, latency_ms: ms, fields: {} };
+    const row = { id: s.id, set, condition: s.condition, status: res.statusCode, latency_ms: ms, fields: {} };
+    const truths = s.truth ? (Array.isArray(s.truth) ? s.truth : [s.truth]) : [];
     if (s.expect.unreadable) {
-      unreadTotal++;
+      inc('unreadTotal');
       const ok = res.statusCode === 422;
-      if (ok) unreadHit++;
+      if (ok) inc('unreadHit');
       row.result = ok ? 'refused (correct)' : `NOT refused (${res.statusCode})`;
       console.log(row.result);
     } else if (res.statusCode !== 200) {
       row.result = `error ${res.statusCode}: ${res.body && res.body.error}`;
       console.log(row.result);
-      // Count every field as wrong so failures lower the score instead of disappearing.
-      for (const def of R.FIELD_DEFS) { total++; fieldStats[def.key].total++; }
+      // Count every scored field as wrong so failures lower the score instead of disappearing.
+      for (const t of truths) for (const def of R.FIELD_DEFS) if (def.key in t) { inc('total'); fieldStats[def.key].total++; }
     } else {
-      provider = res.body.provider; model = res.body.model; latencies.push(ms);
+      provider = res.body.provider; model = res.body.model;
+      targets.forEach(t => t.latencies.push(ms));
       // truth is one object (a slip) or an array (a register page: one object per row, in order).
-      const truths = Array.isArray(s.truth) ? s.truth : [s.truth];
       const entries = res.body.data.entries;
       let sampleCorrect = 0;
       let sampleTotal = 0;
@@ -107,21 +122,22 @@ async function extract(file) {
           const truth = t[def.key];
           const got = fields ? fields[def.key] : { value: undefined, status: 'absent' };
           const ok = fields ? same(got.value, truth) : false;
-          total++; sampleTotal++; fieldStats[def.key].total++;
-          if (ok) { correct++; sampleCorrect++; fieldStats[def.key].correct++; }
-          else if (got.status === 'read') silent++;
+          inc('total'); sampleTotal++; fieldStats[def.key].total++;
+          if (ok) { inc('correct'); sampleCorrect++; fieldStats[def.key].correct++; }
+          else if (got.status === 'read') inc('silent');
           if (truths.length === 1) row.fields[def.key] = { truth, value: got.value, raw: got.raw_value, status: got.status, correct: ok };
+          else if (!ok) (row.wrong = row.wrong || []).push({ row: idx + 1, field: def.key, truth, value: got.value, status: got.status });
           if (truth === null && fields) {
-            blankTotal++;
-            if (got.value === null && got.status === 'missing') blankHit++;
+            inc('blankTotal');
+            if (got.value === null && got.status === 'missing') inc('blankHit');
           }
         }
       });
       if (entries.length !== truths.length) row.entries_mismatch = `expected ${truths.length} entries, got ${entries.length}`;
       for (const k of [...(s.expect.flag || []), ...(s.expect.invalid || [])]) {
-        flagTotal++;
+        inc('flagTotal');
         const fl = entries[0] && entries[0].fields[k];
-        if (fl && fl.status !== 'read') flagHit++;
+        if (fl && fl.status !== 'read') inc('flagHit');
       }
       row.result = `${sampleCorrect}/${sampleTotal} fields correct${truths.length > 1 ? ` across ${entries.length}/${truths.length} rows` : ''}${row.entries_mismatch ? ` (${row.entries_mismatch})` : ''}`;
       console.log(`${row.result} (${(ms / 1000).toFixed(1)}s)`);
@@ -131,22 +147,31 @@ async function extract(file) {
   }
 
   const rate = (n, d) => (d ? Number((n / d).toFixed(4)) : null);
+  const median = (xs) => {
+    if (!xs.length) return null;
+    const v = [...xs].sort((a, b) => a - b);
+    const m = Math.floor(v.length / 2);
+    return v.length % 2 ? v[m] : Math.round((v[m - 1] + v[m]) / 2);
+  };
+  const summarise = (st) => ({
+    samples: st.samples,
+    fields_total: st.total,
+    fields_correct: st.correct,
+    field_accuracy: rate(st.correct, st.total),
+    silent_error_rate: rate(st.silent, st.total),
+    flag_recall: rate(st.flagHit, st.flagTotal),
+    blank_detection: rate(st.blankHit, st.blankTotal),
+    unreadable_caught: rate(st.unreadHit, st.unreadTotal),
+    median_latency_ms: median(st.latencies)
+  });
+  const bySet = Object.fromEntries(Object.entries(stats).filter(([k]) => k !== 'all').map(([k, v]) => [k, { description: SET_NAMES[k] || k, ...summarise(v) }]));
   const results = {
     status: 'complete',
     generated_at: new Date().toISOString(),
     provider, model,
-    sample_set: 'synthetic (tests/generate-samples.js)',
-    summary: {
-      samples: manifest.samples.length,
-      fields_total: total,
-      fields_correct: correct,
-      field_accuracy: rate(correct, total),
-      silent_error_rate: rate(silent, total),
-      flag_recall: rate(flagHit, flagTotal),
-      blank_detection: rate(blankHit, blankTotal),
-      unreadable_caught: rate(unreadHit, unreadTotal),
-      median_latency_ms: latencies.length ? latencies.sort((a, b) => a - b)[Math.floor(latencies.length / 2)] : null
-    },
+    sample_set: Object.keys(bySet).map(k => `${bySet[k].samples} ${k}`).join(' + '),
+    summary: summarise(stats.all),
+    by_set: bySet,
     per_field_accuracy: Object.fromEntries(Object.entries(fieldStats).map(([k, v]) => [k, rate(v.correct, v.total)])),
     samples: perSample
   };
@@ -154,10 +179,9 @@ async function extract(file) {
 
   const pct = v => (v === null ? '—' : `${(v * 100).toFixed(1)}%`);
   console.log('\nResults');
-  console.log(`  field accuracy     ${pct(results.summary.field_accuracy)} (${correct}/${total})`);
-  console.log(`  silent error rate  ${pct(results.summary.silent_error_rate)}`);
-  console.log(`  flag recall        ${pct(results.summary.flag_recall)}`);
-  console.log(`  blank detection    ${pct(results.summary.blank_detection)}`);
-  console.log(`  unreadable caught  ${pct(results.summary.unreadable_caught)}`);
+  for (const [name, sm] of [['all', results.summary], ...Object.entries(bySet)]) {
+    console.log(`  [${name}] accuracy ${pct(sm.field_accuracy)} (${sm.fields_correct}/${sm.fields_total}) · silent ${pct(sm.silent_error_rate)} · flag recall ${pct(sm.flag_recall)} · blanks ${pct(sm.blank_detection)} · refused ${pct(sm.unreadable_caught)} · median ${sm.median_latency_ms} ms`);
+  }
+  for (const r of perSample.filter(x => x.wrong)) console.log(`  ${r.id}: ${r.wrong.map(w => `row ${w.row} ${w.field}=${JSON.stringify(w.value)} (truth ${JSON.stringify(w.truth)}, ${w.status})`).join('; ')}`);
   console.log(`\nWrote ${path.relative(ROOT, RESULTS)} and ${manifest.samples.length} files in ${path.relative(ROOT, OUT_DIR)}/`);
 })();

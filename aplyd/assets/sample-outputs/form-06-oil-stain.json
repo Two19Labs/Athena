@@ -1,25 +1,34 @@
 {
   "sample": "form-06-oil-stain",
+  "set": "synthetic",
   "condition": "Oil stain over the downtime reason",
   "http_status": 200,
-  "latency_ms": 3969,
+  "latency_ms": 23923,
   "response": {
     "success": true,
     "provider": "gemini",
-    "model": "gemini-3.5-flash-lite",
-    "latency_ms": 3966,
+    "model": "gemini-3.1-flash-lite",
+    "latency_ms": 23920,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
+        "ok": false,
+        "ms": 20017,
+        "error": "The AI model took too long to respond.",
+        "code": "timeout"
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
         "ok": true,
-        "ms": 3966
+        "ms": 3902
       }
     ],
     "data": {
       "schema_version": "2.1",
       "image_issues": [
-        "dark smudge over stoppage reason"
+        "dark stain over stoppage reason"
       ],
       "rows_detected": 1,
       "incomplete": false,
@@ -28,13 +37,13 @@
           "schema_version": "2.0",
           "overall_status": "needs_review",
           "image_issues": [
-            "dark smudge over stoppage reason"
+            "dark stain over stoppage reason"
           ],
           "row_box": [
-            185,
-            155,
-            711,
-            838
+            195,
+            160,
+            688,
+            825
           ],
           "fields": {
             "machine": {
@@ -43,10 +52,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                221,
-                428,
-                241,
-                485
+                195,
+                415,
+                245,
+                825
               ]
             },
             "production_date": {
@@ -55,10 +64,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                261,
-                430,
-                285,
-                570
+                245,
+                415,
+                295,
+                825
               ]
             },
             "shift": {
@@ -67,10 +76,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                305,
-                429,
-                325,
-                451
+                295,
+                415,
+                345,
+                825
               ]
             },
             "production_quantity": {
@@ -79,10 +88,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                348,
-                432,
-                368,
-                472
+                345,
+                415,
+                395,
+                825
               ]
             },
             "production_unit": {
@@ -91,10 +100,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                348,
-                485,
-                363,
-                500
+                345,
+                415,
+                395,
+                825
               ]
             },
             "material_reference": {
@@ -103,10 +112,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                391,
-                432,
-                412,
-                569
+                395,
+                415,
+                445,
+                825
               ]
             },
             "batch_reference": {
@@ -115,10 +124,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                432,
-                431,
-                454,
-                579
+                445,
+                415,
+                495,
+                825
               ]
             },
             "defects_count": {
@@ -127,10 +136,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                476,
-                433,
-                496,
-                442
+                495,
+                415,
+                545,
+                825
               ]
             },
             "defect_details": {
@@ -139,10 +148,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                517,
-                432,
-                539,
-                494
+                545,
+                415,
+                595,
+                825
               ]
             },
             "downtime_minutes": {
@@ -151,22 +160,22 @@
               "status": "read",
               "reason": null,
               "box": [
-                561,
-                432,
-                583,
-                517
+                595,
+                415,
+                645,
+                825
               ]
             },
             "downtime_reason": {
-              "value": "Motor overheating",
-              "raw_value": "Motor overheating",
-              "status": "uncertain",
-              "reason": "text partially obscured by dark smudge",
+              "value": null,
+              "raw_value": null,
+              "status": "illegible",
+              "reason": "dark stain obscuring text",
               "box": [
-                600,
-                433,
-                631,
-                648
+                645,
+                415,
+                695,
+                825
               ]
             },
             "remarks": {
@@ -175,10 +184,10 @@
               "status": "missing",
               "reason": null,
               "box": [
-                653,
-                428,
-                689,
-                443
+                695,
+                415,
+                745,
+                825
               ]
             }
           }
@@ -188,7 +197,7 @@
     "model_output": {
       "is_production_form": true,
       "image_issues": [
-        "dark smudge over stoppage reason"
+        "dark stain over stoppage reason"
       ],
       "rows_detected": 1,
       "fields_on_form": [
@@ -209,10 +218,10 @@
       "entries": [
         {
           "row_box": [
-            185,
-            155,
-            711,
-            838
+            195,
+            160,
+            688,
+            825
           ],
           "machine": {
             "value": "L-05",
@@ -220,10 +229,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              221,
-              428,
-              241,
-              485
+              195,
+              415,
+              245,
+              825
             ]
           },
           "production_date": {
@@ -232,10 +241,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              261,
-              430,
-              285,
-              570
+              245,
+              415,
+              295,
+              825
             ]
           },
           "shift": {
@@ -244,10 +253,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              305,
-              429,
-              325,
-              451
+              295,
+              415,
+              345,
+              825
             ]
           },
           "production_quantity": {
@@ -256,22 +265,22 @@
             "status": "read",
             "reason": null,
             "box": [
-              348,
-              432,
-              368,
-              472
+              345,
+              415,
+              395,
+              825
             ]
           },
           "production_unit": {
-            "value": "metres",
+            "value": "m",
             "raw_value": "m",
             "status": "read",
             "reason": null,
             "box": [
-              348,
-              485,
-              363,
-              500
+              345,
+              415,
+              395,
+              825
             ]
           },
           "material_reference": {
@@ -280,10 +289,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              391,
-              432,
-              412,
-              569
+              395,
+              415,
+              445,
+              825
             ]
           },
           "batch_reference": {
@@ -292,10 +301,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              432,
-              431,
-              454,
-              579
+              445,
+              415,
+              495,
+              825
             ]
           },
           "defects_count": {
@@ -304,10 +313,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              476,
-              433,
-              496,
-              442
+              495,
+              415,
+              545,
+              825
             ]
           },
           "defect_details": {
@@ -316,10 +325,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              517,
-              432,
-              539,
-              494
+              545,
+              415,
+              595,
+              825
             ]
           },
           "downtime_minutes": {
@@ -328,22 +337,22 @@
             "status": "read",
             "reason": null,
             "box": [
-              561,
-              432,
-              583,
-              517
+              595,
+              415,
+              645,
+              825
             ]
           },
           "downtime_reason": {
-            "value": "Motor overheating",
-            "raw_value": "Motor overheating",
-            "status": "uncertain",
-            "reason": "text partially obscured by dark smudge",
+            "value": null,
+            "raw_value": null,
+            "status": "illegible",
+            "reason": "dark stain obscuring text",
             "box": [
-              600,
-              433,
-              631,
-              648
+              645,
+              415,
+              695,
+              825
             ]
           },
           "remarks": {
@@ -352,10 +361,10 @@
             "status": "missing",
             "reason": null,
             "box": [
-              653,
-              428,
-              689,
-              443
+              695,
+              415,
+              745,
+              825
             ]
           }
         }

@@ -1,0 +1,360 @@
+{
+  "sample": "real-04-ambiguous-digits",
+  "set": "realistic",
+  "condition": "Continental \"1\" that looks like a 7 (175 vs 775) and a 2 written over a 3 in the defects box",
+  "http_status": 200,
+  "latency_ms": 9606,
+  "response": {
+    "success": true,
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "latency_ms": 9594,
+    "attempts": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "ok": true,
+        "ms": 9593
+      }
+    ],
+    "data": {
+      "schema_version": "2.1",
+      "image_issues": [],
+      "rows_detected": 1,
+      "incomplete": false,
+      "entries": [
+        {
+          "schema_version": "2.0",
+          "overall_status": "ready_for_approval",
+          "image_issues": [],
+          "row_box": [
+            307,
+            180,
+            760,
+            838
+          ],
+          "fields": {
+            "machine": {
+              "value": "L-03",
+              "raw_value": "L-03",
+              "status": "read",
+              "reason": null,
+              "box": [
+                311,
+                477,
+                348,
+                583
+              ]
+            },
+            "production_date": {
+              "value": "2026-11-14",
+              "raw_value": "14/11/2026",
+              "status": "read",
+              "reason": null,
+              "box": [
+                350,
+                476,
+                387,
+                657
+              ]
+            },
+            "shift": {
+              "value": "N",
+              "raw_value": "N",
+              "status": "read",
+              "reason": null,
+              "box": [
+                392,
+                487,
+                420,
+                514
+              ]
+            },
+            "production_quantity": {
+              "value": 175,
+              "raw_value": "175",
+              "status": "read",
+              "reason": null,
+              "box": [
+                428,
+                492,
+                457,
+                584
+              ]
+            },
+            "production_unit": {
+              "value": "metres",
+              "raw_value": "mtrs",
+              "status": "read",
+              "reason": null,
+              "box": [
+                429,
+                279,
+                452,
+                376
+              ]
+            },
+            "material_reference": {
+              "value": "Denim 3/1",
+              "raw_value": "Denim 3/1",
+              "status": "read",
+              "reason": null,
+              "box": [
+                461,
+                484,
+                491,
+                653
+              ]
+            },
+            "batch_reference": {
+              "value": "DEN-26-297",
+              "raw_value": "DEN-26-297",
+              "status": "read",
+              "reason": null,
+              "box": [
+                500,
+                487,
+                531,
+                709
+              ]
+            },
+            "defects_count": {
+              "value": 32,
+              "raw_value": "32",
+              "status": "read",
+              "reason": null,
+              "box": [
+                535,
+                519,
+                573,
+                592
+              ]
+            },
+            "defect_details": {
+              "value": "Reed mark",
+              "raw_value": "Reed mark",
+              "status": "read",
+              "reason": null,
+              "box": [
+                576,
+                486,
+                607,
+                686
+              ]
+            },
+            "downtime_minutes": {
+              "value": 120,
+              "raw_value": "2 hrs",
+              "status": "read",
+              "reason": null,
+              "box": [
+                614,
+                500,
+                644,
+                588
+              ]
+            },
+            "downtime_reason": {
+              "value": "Beam change",
+              "raw_value": "Beam change",
+              "status": "read",
+              "reason": null,
+              "box": [
+                653,
+                487,
+                686,
+                700
+              ]
+            },
+            "remarks": {
+              "value": "Loom slow, check tomorrow.",
+              "raw_value": "Loom slow, check tomorrow.",
+              "status": "read",
+              "reason": null,
+              "box": [
+                691,
+                462,
+                729,
+                826
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "model_output": {
+      "is_production_form": true,
+      "image_issues": [],
+      "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
+      "header": {},
+      "entries": [
+        {
+          "row_box": [
+            307,
+            180,
+            760,
+            838
+          ],
+          "machine": {
+            "value": "L-03",
+            "raw_value": "L-03",
+            "status": "read",
+            "reason": null,
+            "box": [
+              311,
+              477,
+              348,
+              583
+            ]
+          },
+          "production_date": {
+            "value": "2026-11-14",
+            "raw_value": "14/11/2026",
+            "status": "read",
+            "reason": null,
+            "box": [
+              350,
+              476,
+              387,
+              657
+            ]
+          },
+          "shift": {
+            "value": "N",
+            "raw_value": "N",
+            "status": "read",
+            "reason": null,
+            "box": [
+              392,
+              487,
+              420,
+              514
+            ]
+          },
+          "production_quantity": {
+            "value": 175,
+            "raw_value": "175",
+            "status": "read",
+            "reason": null,
+            "box": [
+              428,
+              492,
+              457,
+              584
+            ]
+          },
+          "production_unit": {
+            "value": "mtrs",
+            "raw_value": "mtrs",
+            "status": "read",
+            "reason": null,
+            "box": [
+              429,
+              279,
+              452,
+              376
+            ]
+          },
+          "material_reference": {
+            "value": "Denim 3/1",
+            "raw_value": "Denim 3/1",
+            "status": "read",
+            "reason": null,
+            "box": [
+              461,
+              484,
+              491,
+              653
+            ]
+          },
+          "batch_reference": {
+            "value": "DEN-26-297",
+            "raw_value": "DEN-26-297",
+            "status": "read",
+            "reason": null,
+            "box": [
+              500,
+              487,
+              531,
+              709
+            ]
+          },
+          "defects_count": {
+            "value": 32,
+            "raw_value": "32",
+            "status": "read",
+            "reason": null,
+            "box": [
+              535,
+              519,
+              573,
+              592
+            ]
+          },
+          "defect_details": {
+            "value": "Reed mark",
+            "raw_value": "Reed mark",
+            "status": "read",
+            "reason": null,
+            "box": [
+              576,
+              486,
+              607,
+              686
+            ]
+          },
+          "downtime_minutes": {
+            "value": 120,
+            "raw_value": "2 hrs",
+            "status": "read",
+            "reason": null,
+            "box": [
+              614,
+              500,
+              644,
+              588
+            ]
+          },
+          "downtime_reason": {
+            "value": "Beam change",
+            "raw_value": "Beam change",
+            "status": "read",
+            "reason": null,
+            "box": [
+              653,
+              487,
+              686,
+              700
+            ]
+          },
+          "remarks": {
+            "value": "Loom slow, check tomorrow.",
+            "raw_value": "Loom slow, check tomorrow.",
+            "status": "read",
+            "reason": null,
+            "box": [
+              691,
+              462,
+              729,
+              826
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

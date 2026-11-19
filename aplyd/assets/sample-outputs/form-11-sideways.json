@@ -1,25 +1,26 @@
 {
   "sample": "form-11-sideways",
+  "set": "synthetic",
   "condition": "Photo taken sideways (rotated 90°), rough handwriting",
   "http_status": 200,
-  "latency_ms": 3596,
+  "latency_ms": 3630,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 3596,
+    "latency_ms": 3621,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 3595
+        "ms": 3621
       }
     ],
     "data": {
       "schema_version": "2.1",
       "image_issues": [
-        "page rotated 90 degrees clockwise"
+        "page rotated 90 degrees counter-clockwise"
       ],
       "rows_detected": 1,
       "incomplete": false,
@@ -28,13 +29,13 @@
           "schema_version": "2.0",
           "overall_status": "ready_for_approval",
           "image_issues": [
-            "page rotated 90 degrees clockwise"
+            "page rotated 90 degrees counter-clockwise"
           ],
           "row_box": [
             308,
-            321,
-            694,
-            792
+            329,
+            699,
+            832
           ],
           "fields": {
             "machine": {
@@ -43,10 +44,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                458,
-                751,
-                483,
-                765
+                457,
+                753,
+                480,
+                766
               ]
             },
             "production_date": {
@@ -55,10 +56,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                459,
-                712,
-                526,
-                723
+                461,
+                711,
+                525,
+                725
               ]
             },
             "shift": {
@@ -68,9 +69,9 @@
               "reason": null,
               "box": [
                 461,
-                668,
-                471,
-                686
+                666,
+                477,
+                681
               ]
             },
             "production_quantity": {
@@ -79,10 +80,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                459,
-                627,
+                460,
+                626,
                 479,
-                640
+                643
               ]
             },
             "production_unit": {
@@ -91,10 +92,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                488,
+                461,
                 627,
-                497,
-                638
+                476,
+                641
               ]
             },
             "material_reference": {
@@ -103,10 +104,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                463,
-                588,
-                511,
-                603
+                461,
+                585,
+                477,
+                611
               ]
             },
             "batch_reference": {
@@ -115,10 +116,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                459,
-                546,
-                526,
-                560
+                461,
+                542,
+                524,
+                558
               ]
             },
             "defects_count": {
@@ -127,10 +128,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                463,
-                505,
-                470,
-                516
+                462,
+                502,
+                475,
+                512
               ]
             },
             "defect_details": {
@@ -139,10 +140,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                463,
-                464,
-                523,
-                482
+                462,
+                462,
+                500,
+                478
               ]
             },
             "downtime_minutes": {
@@ -151,10 +152,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                465,
-                423,
-                505,
-                437
+                462,
+                421,
+                479,
+                435
               ]
             },
             "downtime_reason": {
@@ -163,9 +164,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                465,
-                380,
-                528,
+                462,
+                377,
+                527,
                 396
               ]
             },
@@ -173,13 +174,7 @@
               "value": null,
               "raw_value": null,
               "status": "missing",
-              "reason": null,
-              "box": [
-                463,
-                339,
-                471,
-                351
-              ]
+              "reason": null
             }
           }
         }
@@ -188,7 +183,7 @@
     "model_output": {
       "is_production_form": true,
       "image_issues": [
-        "page rotated 90 degrees clockwise"
+        "page rotated 90 degrees counter-clockwise"
       ],
       "rows_detected": 1,
       "fields_on_form": [
@@ -210,9 +205,9 @@
         {
           "row_box": [
             308,
-            321,
-            694,
-            792
+            329,
+            699,
+            832
           ],
           "machine": {
             "value": "L-06",
@@ -220,10 +215,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              458,
-              751,
-              483,
-              765
+              457,
+              753,
+              480,
+              766
             ]
           },
           "production_date": {
@@ -232,10 +227,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              459,
-              712,
-              526,
-              723
+              461,
+              711,
+              525,
+              725
             ]
           },
           "shift": {
@@ -245,9 +240,9 @@
             "reason": null,
             "box": [
               461,
-              668,
-              471,
-              686
+              666,
+              477,
+              681
             ]
           },
           "production_quantity": {
@@ -256,10 +251,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              459,
-              627,
+              460,
+              626,
               479,
-              640
+              643
             ]
           },
           "production_unit": {
@@ -268,10 +263,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              488,
+              461,
               627,
-              497,
-              638
+              476,
+              641
             ]
           },
           "material_reference": {
@@ -280,10 +275,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              463,
-              588,
-              511,
-              603
+              461,
+              585,
+              477,
+              611
             ]
           },
           "batch_reference": {
@@ -292,10 +287,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              459,
-              546,
-              526,
-              560
+              461,
+              542,
+              524,
+              558
             ]
           },
           "defects_count": {
@@ -304,10 +299,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              463,
-              505,
-              470,
-              516
+              462,
+              502,
+              475,
+              512
             ]
           },
           "defect_details": {
@@ -316,10 +311,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              463,
-              464,
-              523,
-              482
+              462,
+              462,
+              500,
+              478
             ]
           },
           "downtime_minutes": {
@@ -328,10 +323,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              465,
-              423,
-              505,
-              437
+              462,
+              421,
+              479,
+              435
             ]
           },
           "downtime_reason": {
@@ -340,9 +335,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              465,
-              380,
-              528,
+              462,
+              377,
+              527,
               396
             ]
           },
@@ -353,9 +348,9 @@
             "reason": null,
             "box": [
               463,
-              339,
-              471,
-              351
+              337,
+              463,
+              337
             ]
           }
         }

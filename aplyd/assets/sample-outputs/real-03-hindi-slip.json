@@ -1,0 +1,360 @@
+{
+  "sample": "real-03-hindi-slip",
+  "set": "realistic",
+  "condition": "Hindi (Devanagari) form with Hindi values and a fold line, cotton lint on the table",
+  "http_status": 200,
+  "latency_ms": 4215,
+  "response": {
+    "success": true,
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "latency_ms": 4206,
+    "attempts": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "ok": true,
+        "ms": 4204
+      }
+    ],
+    "data": {
+      "schema_version": "2.1",
+      "image_issues": [],
+      "rows_detected": 1,
+      "incomplete": false,
+      "entries": [
+        {
+          "schema_version": "2.0",
+          "overall_status": "ready_for_approval",
+          "image_issues": [],
+          "row_box": [
+            300,
+            96,
+            830,
+            815
+          ],
+          "fields": {
+            "machine": {
+              "value": "L-11",
+              "raw_value": "L-11",
+              "status": "read",
+              "reason": null,
+              "box": [
+                311,
+                500,
+                348,
+                590
+              ]
+            },
+            "production_date": {
+              "value": "2026-11-16",
+              "raw_value": "16/11/2026",
+              "status": "read",
+              "reason": null,
+              "box": [
+                356,
+                492,
+                392,
+                682
+              ]
+            },
+            "shift": {
+              "value": "N",
+              "raw_value": "रात (N)",
+              "status": "read",
+              "reason": null,
+              "box": [
+                398,
+                490,
+                438,
+                632
+              ]
+            },
+            "production_quantity": {
+              "value": 344,
+              "raw_value": "344",
+              "status": "read",
+              "reason": null,
+              "box": [
+                442,
+                503,
+                472,
+                571
+              ]
+            },
+            "production_unit": {
+              "value": "metres",
+              "raw_value": "मीटर",
+              "status": "read",
+              "reason": null,
+              "box": [
+                440,
+                332,
+                472,
+                424
+              ]
+            },
+            "material_reference": {
+              "value": "Yarn Dyed Check",
+              "raw_value": "Yarn Dyed Check",
+              "status": "read",
+              "reason": null,
+              "box": [
+                485,
+                491,
+                517,
+                768
+              ]
+            },
+            "batch_reference": {
+              "value": "YDC-11-207",
+              "raw_value": "YDC-11-207",
+              "status": "read",
+              "reason": null,
+              "box": [
+                529,
+                492,
+                561,
+                742
+              ]
+            },
+            "defects_count": {
+              "value": 4,
+              "raw_value": "4",
+              "status": "read",
+              "reason": null,
+              "box": [
+                576,
+                502,
+                601,
+                533
+              ]
+            },
+            "defect_details": {
+              "value": "दाग, छेद",
+              "raw_value": "दाग, छेद",
+              "status": "read",
+              "reason": null,
+              "box": [
+                614,
+                490,
+                651,
+                641
+              ]
+            },
+            "downtime_minutes": {
+              "value": 45,
+              "raw_value": "45 मिनिट",
+              "status": "read",
+              "reason": null,
+              "box": [
+                659,
+                493,
+                696,
+                648
+              ]
+            },
+            "downtime_reason": {
+              "value": "लाइट गई",
+              "raw_value": "लाइट गई",
+              "status": "read",
+              "reason": null,
+              "box": [
+                701,
+                492,
+                740,
+                659
+              ]
+            },
+            "remarks": {
+              "value": null,
+              "raw_value": null,
+              "status": "missing",
+              "reason": null,
+              "box": [
+                752,
+                470,
+                819,
+                816
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "model_output": {
+      "is_production_form": true,
+      "image_issues": [],
+      "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
+      "header": {},
+      "entries": [
+        {
+          "row_box": [
+            300,
+            96,
+            830,
+            815
+          ],
+          "machine": {
+            "value": "L-11",
+            "raw_value": "L-11",
+            "status": "read",
+            "reason": null,
+            "box": [
+              311,
+              500,
+              348,
+              590
+            ]
+          },
+          "production_date": {
+            "value": "2026-11-16",
+            "raw_value": "16/11/2026",
+            "status": "read",
+            "reason": null,
+            "box": [
+              356,
+              492,
+              392,
+              682
+            ]
+          },
+          "shift": {
+            "value": "N",
+            "raw_value": "रात (N)",
+            "status": "read",
+            "reason": null,
+            "box": [
+              398,
+              490,
+              438,
+              632
+            ]
+          },
+          "production_quantity": {
+            "value": 344,
+            "raw_value": "344",
+            "status": "read",
+            "reason": null,
+            "box": [
+              442,
+              503,
+              472,
+              571
+            ]
+          },
+          "production_unit": {
+            "value": "m",
+            "raw_value": "मीटर",
+            "status": "read",
+            "reason": null,
+            "box": [
+              440,
+              332,
+              472,
+              424
+            ]
+          },
+          "material_reference": {
+            "value": "Yarn Dyed Check",
+            "raw_value": "Yarn Dyed Check",
+            "status": "read",
+            "reason": null,
+            "box": [
+              485,
+              491,
+              517,
+              768
+            ]
+          },
+          "batch_reference": {
+            "value": "YDC-11-207",
+            "raw_value": "YDC-11-207",
+            "status": "read",
+            "reason": null,
+            "box": [
+              529,
+              492,
+              561,
+              742
+            ]
+          },
+          "defects_count": {
+            "value": 4,
+            "raw_value": "4",
+            "status": "read",
+            "reason": null,
+            "box": [
+              576,
+              502,
+              601,
+              533
+            ]
+          },
+          "defect_details": {
+            "value": "दाग, छेद",
+            "raw_value": "दाग, छेद",
+            "status": "read",
+            "reason": null,
+            "box": [
+              614,
+              490,
+              651,
+              641
+            ]
+          },
+          "downtime_minutes": {
+            "value": 45,
+            "raw_value": "45 मिनिट",
+            "status": "read",
+            "reason": null,
+            "box": [
+              659,
+              493,
+              696,
+              648
+            ]
+          },
+          "downtime_reason": {
+            "value": "लाइट गई",
+            "raw_value": "लाइट गई",
+            "status": "read",
+            "reason": null,
+            "box": [
+              701,
+              492,
+              740,
+              659
+            ]
+          },
+          "remarks": {
+            "value": null,
+            "raw_value": null,
+            "status": "missing",
+            "reason": null,
+            "box": [
+              752,
+              470,
+              819,
+              816
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

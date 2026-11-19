@@ -1,0 +1,366 @@
+{
+  "sample": "real-05-tubelight-glare",
+  "set": "realistic",
+  "condition": "Dim shed, strong angle, tube-light glare washing out the loom number; loom written without \"L\", short date, \"Evening\", Hinglish reason",
+  "http_status": 200,
+  "latency_ms": 6037,
+  "response": {
+    "success": true,
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "latency_ms": 6032,
+    "attempts": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "ok": true,
+        "ms": 6032
+      }
+    ],
+    "data": {
+      "schema_version": "2.1",
+      "image_issues": [
+        "strong light glare across upper middle portion"
+      ],
+      "rows_detected": 1,
+      "incomplete": false,
+      "entries": [
+        {
+          "schema_version": "2.0",
+          "overall_status": "ready_for_approval",
+          "image_issues": [
+            "strong light glare across upper middle portion"
+          ],
+          "row_box": [
+            300,
+            329,
+            829,
+            903
+          ],
+          "fields": {
+            "machine": {
+              "value": "L-10",
+              "raw_value": "10",
+              "status": "read",
+              "reason": null,
+              "box": [
+                336,
+                583,
+                363,
+                614
+              ]
+            },
+            "production_date": {
+              "value": "2026-11-15",
+              "raw_value": "15-11-26",
+              "status": "read",
+              "reason": null,
+              "box": [
+                372,
+                570,
+                399,
+                702
+              ]
+            },
+            "shift": {
+              "value": "E",
+              "raw_value": "Evening",
+              "status": "read",
+              "reason": null,
+              "box": [
+                403,
+                569,
+                438,
+                689
+              ]
+            },
+            "production_quantity": {
+              "value": 702,
+              "raw_value": "702",
+              "status": "read",
+              "reason": null,
+              "box": [
+                436,
+                581,
+                470,
+                655
+              ]
+            },
+            "production_unit": {
+              "value": "metres",
+              "raw_value": "Mtr",
+              "status": "read",
+              "reason": null,
+              "box": [
+                436,
+                480,
+                477,
+                533
+              ]
+            },
+            "material_reference": {
+              "value": "Satin 50s",
+              "raw_value": "Satin 50s",
+              "status": "read",
+              "reason": null,
+              "box": [
+                477,
+                575,
+                509,
+                725
+              ]
+            },
+            "batch_reference": {
+              "value": "SAT-50-118",
+              "raw_value": "SAT-50-118",
+              "status": "read",
+              "reason": null,
+              "box": [
+                517,
+                560,
+                547,
+                787
+              ]
+            },
+            "defects_count": {
+              "value": 0,
+              "raw_value": "0",
+              "status": "read",
+              "reason": null,
+              "box": [
+                558,
+                588,
+                587,
+                610
+              ]
+            },
+            "defect_details": {
+              "value": null,
+              "raw_value": null,
+              "status": "missing",
+              "reason": null,
+              "box": [
+                593,
+                579,
+                621,
+                614
+              ]
+            },
+            "downtime_minutes": {
+              "value": 20,
+              "raw_value": "20 mins",
+              "status": "read",
+              "reason": null,
+              "box": [
+                648,
+                578,
+                679,
+                695
+              ]
+            },
+            "downtime_reason": {
+              "value": "safai",
+              "raw_value": "safai",
+              "status": "read",
+              "reason": null,
+              "box": [
+                691,
+                578,
+                723,
+                655
+              ]
+            },
+            "remarks": {
+              "value": "OK",
+              "raw_value": "OK",
+              "status": "read",
+              "reason": null,
+              "box": [
+                740,
+                567,
+                780,
+                627
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "model_output": {
+      "is_production_form": true,
+      "image_issues": [
+        "strong light glare across upper middle portion"
+      ],
+      "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
+      "header": {},
+      "entries": [
+        {
+          "row_box": [
+            300,
+            329,
+            829,
+            903
+          ],
+          "machine": {
+            "value": "10",
+            "raw_value": "10",
+            "status": "read",
+            "reason": null,
+            "box": [
+              336,
+              583,
+              363,
+              614
+            ]
+          },
+          "production_date": {
+            "value": "2026-11-15",
+            "raw_value": "15-11-26",
+            "status": "read",
+            "reason": null,
+            "box": [
+              372,
+              570,
+              399,
+              702
+            ]
+          },
+          "shift": {
+            "value": "Evening",
+            "raw_value": "Evening",
+            "status": "read",
+            "reason": null,
+            "box": [
+              403,
+              569,
+              438,
+              689
+            ]
+          },
+          "production_quantity": {
+            "value": 702,
+            "raw_value": "702",
+            "status": "read",
+            "reason": null,
+            "box": [
+              436,
+              581,
+              470,
+              655
+            ]
+          },
+          "production_unit": {
+            "value": "Mtr",
+            "raw_value": "Mtr",
+            "status": "read",
+            "reason": null,
+            "box": [
+              436,
+              480,
+              477,
+              533
+            ]
+          },
+          "material_reference": {
+            "value": "Satin 50s",
+            "raw_value": "Satin 50s",
+            "status": "read",
+            "reason": null,
+            "box": [
+              477,
+              575,
+              509,
+              725
+            ]
+          },
+          "batch_reference": {
+            "value": "SAT-50-118",
+            "raw_value": "SAT-50-118",
+            "status": "read",
+            "reason": null,
+            "box": [
+              517,
+              560,
+              547,
+              787
+            ]
+          },
+          "defects_count": {
+            "value": 0,
+            "raw_value": "0",
+            "status": "read",
+            "reason": null,
+            "box": [
+              558,
+              588,
+              587,
+              610
+            ]
+          },
+          "defect_details": {
+            "value": null,
+            "raw_value": null,
+            "status": "missing",
+            "reason": null,
+            "box": [
+              593,
+              579,
+              621,
+              614
+            ]
+          },
+          "downtime_minutes": {
+            "value": 20,
+            "raw_value": "20 mins",
+            "status": "read",
+            "reason": null,
+            "box": [
+              648,
+              578,
+              679,
+              695
+            ]
+          },
+          "downtime_reason": {
+            "value": "safai",
+            "raw_value": "safai",
+            "status": "read",
+            "reason": null,
+            "box": [
+              691,
+              578,
+              723,
+              655
+            ]
+          },
+          "remarks": {
+            "value": "OK",
+            "raw_value": "OK",
+            "status": "read",
+            "reason": null,
+            "box": [
+              740,
+              567,
+              780,
+              627
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

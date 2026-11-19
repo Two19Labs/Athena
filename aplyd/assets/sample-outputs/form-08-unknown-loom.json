@@ -1,19 +1,20 @@
 {
   "sample": "form-08-unknown-loom",
+  "set": "synthetic",
   "condition": "Loom number not in the loom master (L-19)",
   "http_status": 200,
-  "latency_ms": 4075,
+  "latency_ms": 4251,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 4071,
+    "latency_ms": 4243,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 4070
+        "ms": 4241
       }
     ],
     "data": {
@@ -27,20 +28,20 @@
           "overall_status": "needs_review",
           "image_issues": [],
           "row_box": [
-            197,
-            158,
-            687,
-            836
+            203,
+            161,
+            685,
+            838
           ],
           "fields": {
             "machine": {
-              "value": "L-19",
+              "value": "L-09",
               "raw_value": "L-19",
-              "status": "invalid",
-              "reason": "\"L-19\" does not match any loom in the loom master.",
+              "status": "uncertain",
+              "reason": "Could be L-09 or L-19",
               "box": [
                 225,
-                427,
+                428,
                 243,
                 492
               ]
@@ -51,9 +52,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                261,
+                263,
                 428,
-                287,
+                283,
                 570
               ]
             },
@@ -64,9 +65,9 @@
               "reason": null,
               "box": [
                 305,
-                428,
-                327,
-                451
+                429,
+                322,
+                453
               ]
             },
             "production_quantity": {
@@ -75,10 +76,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                350,
-                429,
-                372,
-                480
+                349,
+                432,
+                368,
+                476
               ]
             },
             "production_unit": {
@@ -87,10 +88,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                352,
-                500,
+                349,
+                482,
                 368,
-                514
+                499
               ]
             },
             "material_reference": {
@@ -99,8 +100,8 @@
               "status": "read",
               "reason": null,
               "box": [
-                391,
-                429,
+                392,
+                432,
                 413,
                 533
               ]
@@ -111,10 +112,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                432,
-                429,
-                455,
-                575
+                433,
+                430,
+                454,
+                576
               ]
             },
             "defects_count": {
@@ -123,10 +124,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                476,
-                429,
-                498,
-                440
+                475,
+                431,
+                494,
+                446
               ]
             },
             "defect_details": {
@@ -135,9 +136,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                517,
-                429,
-                538,
+                518,
+                432,
+                536,
                 542
               ]
             },
@@ -147,9 +148,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                558,
-                430,
-                583,
+                561,
+                432,
+                580,
                 514
               ]
             },
@@ -159,9 +160,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                601,
-                430,
-                626,
+                603,
+                431,
+                624,
                 576
               ]
             },
@@ -171,10 +172,10 @@
               "status": "missing",
               "reason": null,
               "box": [
-                644,
-                423,
-                672,
-                436
+                645,
+                172,
+                679,
+                426
               ]
             }
           }
@@ -203,19 +204,19 @@
       "entries": [
         {
           "row_box": [
-            197,
-            158,
-            687,
-            836
+            203,
+            161,
+            685,
+            838
           ],
           "machine": {
-            "value": "L-19",
+            "value": "L-09",
             "raw_value": "L-19",
-            "status": "read",
-            "reason": null,
+            "status": "uncertain",
+            "reason": "Could be L-09 or L-19",
             "box": [
               225,
-              427,
+              428,
               243,
               492
             ]
@@ -226,9 +227,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              261,
+              263,
               428,
-              287,
+              283,
               570
             ]
           },
@@ -239,9 +240,9 @@
             "reason": null,
             "box": [
               305,
-              428,
-              327,
-              451
+              429,
+              322,
+              453
             ]
           },
           "production_quantity": {
@@ -250,10 +251,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              350,
-              429,
-              372,
-              480
+              349,
+              432,
+              368,
+              476
             ]
           },
           "production_unit": {
@@ -262,10 +263,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              352,
-              500,
+              349,
+              482,
               368,
-              514
+              499
             ]
           },
           "material_reference": {
@@ -274,8 +275,8 @@
             "status": "read",
             "reason": null,
             "box": [
-              391,
-              429,
+              392,
+              432,
               413,
               533
             ]
@@ -286,10 +287,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              432,
-              429,
-              455,
-              575
+              433,
+              430,
+              454,
+              576
             ]
           },
           "defects_count": {
@@ -298,10 +299,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              476,
-              429,
-              498,
-              440
+              475,
+              431,
+              494,
+              446
             ]
           },
           "defect_details": {
@@ -310,9 +311,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              517,
-              429,
-              538,
+              518,
+              432,
+              536,
               542
             ]
           },
@@ -322,9 +323,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              558,
-              430,
-              583,
+              561,
+              432,
+              580,
               514
             ]
           },
@@ -334,9 +335,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              601,
-              430,
-              626,
+              603,
+              431,
+              624,
               576
             ]
           },
@@ -346,10 +347,10 @@
             "status": "missing",
             "reason": null,
             "box": [
-              644,
-              423,
-              672,
-              436
+              645,
+              172,
+              679,
+              426
             ]
           }
         }

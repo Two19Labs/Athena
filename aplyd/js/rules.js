@@ -39,6 +39,7 @@
 
   const THRESHOLDS = {
     highDefects: 5,          // defects per shift that warrant a warning
+    implausibleDefects: 10,  // more than this in one shift is almost certainly a misread (e.g. a 2 written over a 3 read as 32)
     highDowntimeMinutes: 120 // downtime per shift that warrants a warning
   };
 
@@ -47,13 +48,13 @@
    * matched to a code so reports and the ERP group "Loom cleaning" and "safai" together.
    */
   const DEFAULT_DOWNTIME_REASONS = [
-    { code: 'CLEAN', name: 'Cleaning', synonyms: ['clean', 'cleaning', 'loom cleaning', 'safai', 'saaf', 'saf safai', 'dusting'] },
-    { code: 'BEAM', name: 'Beam change / knotting', synonyms: ['beam', 'beam change', 'beam knotting', 'knotting', 'gaiting', 'beam gaiting', 'tying'] },
-    { code: 'BREAK', name: 'Warp / weft break', synonyms: ['warp break', 'weft break', 'thread break', 'yarn break', 'end break', 'breakage', 'dhaga', 'dhaga tuta', 'taar'] },
+    { code: 'CLEAN', name: 'Cleaning', synonyms: ['clean', 'cleaning', 'loom cleaning', 'safai', 'saaf', 'saf safai', 'dusting', 'सफाई', 'साफ सफाई'] },
+    { code: 'BEAM', name: 'Beam change / knotting', synonyms: ['beam', 'beam change', 'beam knotting', 'knotting', 'gaiting', 'beam gaiting', 'tying', 'बीम', 'बीम बदलना', 'बीम बदली'] },
+    { code: 'BREAK', name: 'Warp / weft break', synonyms: ['warp break', 'weft break', 'thread break', 'yarn break', 'end break', 'breakage', 'dhaga', 'dhaga tuta', 'taar', 'धागा', 'धागा टूटा', 'तार टूटा'] },
     { code: 'PIRN', name: 'Pirn / bobbin change', synonyms: ['pirn', 'pirn change', 'bobbin', 'bobbin change', 'cop change'] },
-    { code: 'POWER', name: 'Power cut', synonyms: ['power', 'power cut', 'power failure', 'no power', 'light', 'light gayi', 'light cut', 'bijli', 'electricity', 'load shedding'] },
-    { code: 'MAINT', name: 'Maintenance / repair', synonyms: ['maintenance', 'repair', 'breakdown', 'mechanical', 'lubrication', 'oiling', 'greasing', 'motor', 'belt', 'mistri', 'fitter'] },
-    { code: 'WAIT', name: 'Waiting for yarn / material', synonyms: ['no yarn', 'yarn shortage', 'waiting', 'waiting for yarn', 'no material', 'material shortage', 'maal nahi'] }
+    { code: 'POWER', name: 'Power cut', synonyms: ['power', 'power cut', 'power failure', 'no power', 'light', 'light gayi', 'light cut', 'bijli', 'electricity', 'load shedding', 'लाइट', 'लाइट गई', 'बिजली', 'बिजली गई'] },
+    { code: 'MAINT', name: 'Maintenance / repair', synonyms: ['maintenance', 'repair', 'breakdown', 'mechanical', 'lubrication', 'oiling', 'greasing', 'motor', 'belt', 'mistri', 'fitter', 'मरम्मत', 'मिस्त्री', 'मशीन खराब'] },
+    { code: 'WAIT', name: 'Waiting for yarn / material', synonyms: ['no yarn', 'yarn shortage', 'waiting', 'waiting for yarn', 'no material', 'material shortage', 'maal nahi', 'माल नहीं', 'धागा नहीं'] }
   ];
   const OTHER_REASON = { code: 'OTHER', name: 'Other' };
 
@@ -183,7 +184,8 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  const normText = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  // Letters in any script (Devanagari, Gujarati, ...) and digits; everything else becomes a space.
+  const normText = (v) => String(v || '').toLowerCase().normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim();
 
   /**
    * Map a handwritten downtime reason to the reason list. Exact name/synonym first, then the
@@ -568,7 +570,9 @@
     }
 
     const defects = isBlank(record.defects_count) ? null : Number(record.defects_count);
-    if (defects !== null && defects >= THRESHOLDS.highDefects) {
+    if (defects !== null && defects >= THRESHOLDS.implausibleDefects) {
+      needsCheck('defects_count', `${defects} defects in one shift is unusually high. Check the photo for an overwritten or misread digit.`);
+    } else if (defects !== null && defects >= THRESHOLDS.highDefects) {
       warnings.push({ field: 'defects_count', message: `High defect count: ${defects} in one shift.` });
     }
     if (defects > 0 && isBlank(record.defect_details) && onForm(record, 'defect_details')) {

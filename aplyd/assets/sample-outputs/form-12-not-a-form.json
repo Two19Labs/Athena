@@ -1,12 +1,13 @@
 {
   "sample": "form-12-not-a-form",
+  "set": "synthetic",
   "condition": "Close-up of woven fabric, no form in frame (operator mistake)",
   "http_status": 422,
-  "latency_ms": 2456,
+  "latency_ms": 5064,
   "response": {
     "success": false,
     "code": "unreadable",
-    "error": "The AI could not find a readable production form in this photo: The image shows a textile fabric sample, not a production form.",
+    "error": "The AI could not find a readable production form in this photo: The image is a photo of a woven textile fabric sample, not a textile shop-floor production form.",
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite"
   }

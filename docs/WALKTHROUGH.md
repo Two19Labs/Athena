@@ -35,6 +35,9 @@ Open the start page: *"Operators write loom output on paper. Retyping it into th
 3. Mention the other failure paths, each with its own message: provider busy (it switches to a backup model and the review screen notes it), bad key, malformed model output, no key configured.
 4. **No signal** (patchy shed Wi-Fi): the photo is kept on the phone and read automatically when the connection returns ("1 photo waiting for signal").
 
+## 3a. Realistic phone photos (1 min)
+The second row of samples is photorealistic: try **Hindi form** (Devanagari values; "लाइट गई" maps to the POWER reason code), **Tube-light glare** (the loom number is washed out; the AI reads "10" as L-10, and **📍 Show on photo** zooms straight to it) and **Overwritten digits** (a 2 written over a 3: if the AI reads 32 defects, approval is blocked until someone checks it).
+
 ## 4a. A register page (1 min)
 1. As the operator, click the sample **Register page (6 looms)**.
 2. One photo becomes **6 records**: the queue opens filtered to that sheet, in paper order. The date and shift written once at the top are on every row. Columns the register does not have (defect details, remarks) are marked **Not on form**, so they raise no warnings.

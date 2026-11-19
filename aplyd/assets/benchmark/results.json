@@ -1,40 +1,67 @@
 {
   "status": "complete",
-  "generated_at": "2026-11-19T11:20:57.603Z",
+  "generated_at": "2026-11-19T12:11:16.169Z",
   "provider": "gemini",
   "model": "gemini-3.5-flash-lite",
-  "sample_set": "synthetic (tests/generate-samples.js)",
+  "sample_set": "13 synthetic + 5 realistic",
   "summary": {
-    "samples": 13,
-    "fields_total": 192,
-    "fields_correct": 191,
-    "field_accuracy": 0.9948,
-    "silent_error_rate": 0.0052,
-    "flag_recall": 0.6667,
+    "samples": 18,
+    "fields_total": 308,
+    "fields_correct": 303,
+    "field_accuracy": 0.9838,
+    "silent_error_rate": 0.0097,
+    "flag_recall": 0.4,
     "blank_detection": 1,
     "unreadable_caught": 1,
-    "median_latency_ms": 4151
+    "median_latency_ms": 4251
+  },
+  "by_set": {
+    "synthetic": {
+      "description": "synthetic forms rendered by tests/generate-samples.js",
+      "samples": 13,
+      "fields_total": 192,
+      "fields_correct": 189,
+      "field_accuracy": 0.9844,
+      "silent_error_rate": 0.0052,
+      "flag_recall": 0.6667,
+      "blank_detection": 1,
+      "unreadable_caught": 1,
+      "median_latency_ms": 4089
+    },
+    "realistic": {
+      "description": "photorealistic AI-generated phone photos (crumpled, carbon register, Hindi, glare, ambiguous digits)",
+      "samples": 5,
+      "fields_total": 116,
+      "fields_correct": 114,
+      "field_accuracy": 0.9828,
+      "silent_error_rate": 0.0172,
+      "flag_recall": 0,
+      "blank_detection": 1,
+      "unreadable_caught": null,
+      "median_latency_ms": 8057
+    }
   },
   "per_field_accuracy": {
-    "machine": 1,
+    "machine": 0.9655,
     "production_date": 1,
     "shift": 1,
-    "production_quantity": 0.9412,
+    "production_quantity": 0.9655,
     "production_unit": 1,
     "material_reference": 1,
-    "batch_reference": 1,
-    "defects_count": 1,
+    "batch_reference": 0.9655,
+    "defects_count": 0.9655,
     "defect_details": 1,
     "downtime_minutes": 1,
-    "downtime_reason": 1,
+    "downtime_reason": 0.9655,
     "remarks": 1
   },
   "samples": [
     {
       "id": "form-01-clean",
+      "set": "synthetic",
       "condition": "Clean, well-lit, flat",
       "status": 200,
-      "latency_ms": 9678,
+      "latency_ms": 3490,
       "fields": {
         "machine": {
           "truth": "L-12",
@@ -102,7 +129,7 @@
         "downtime_minutes": {
           "truth": 20,
           "value": 20,
-          "raw": "20",
+          "raw": "20 min",
           "status": "read",
           "correct": true
         },
@@ -125,9 +152,10 @@
     },
     {
       "id": "form-02-skewed",
+      "set": "synthetic",
       "condition": "Photographed at an angle (perspective + 11° rotation)",
       "status": 200,
-      "latency_ms": 4151,
+      "latency_ms": 3659,
       "fields": {
         "machine": {
           "truth": "L-03",
@@ -218,9 +246,10 @@
     },
     {
       "id": "form-03-low-light",
+      "set": "synthetic",
       "condition": "Night shift, dim light with noise",
       "status": 200,
-      "latency_ms": 3534,
+      "latency_ms": 4041,
       "fields": {
         "machine": {
           "truth": "L-07",
@@ -288,7 +317,7 @@
         "downtime_minutes": {
           "truth": 30,
           "value": 30,
-          "raw": "30",
+          "raw": "30 min",
           "status": "read",
           "correct": true
         },
@@ -311,9 +340,10 @@
     },
     {
       "id": "form-04-glare",
+      "set": "synthetic",
       "condition": "Overhead lamp glare across the top half",
       "status": 200,
-      "latency_ms": 3696,
+      "latency_ms": 4137,
       "fields": {
         "machine": {
           "truth": "L-01",
@@ -404,9 +434,10 @@
     },
     {
       "id": "form-05-ambiguous-qty",
+      "set": "synthetic",
       "condition": "Quantity first digit is written so it could be 3 or 8",
       "status": 200,
-      "latency_ms": 5679,
+      "latency_ms": 3896,
       "fields": {
         "machine": {
           "truth": "L-12",
@@ -497,9 +528,10 @@
     },
     {
       "id": "form-06-oil-stain",
+      "set": "synthetic",
       "condition": "Oil stain over the downtime reason",
       "status": 200,
-      "latency_ms": 3969,
+      "latency_ms": 23923,
       "fields": {
         "machine": {
           "truth": "L-05",
@@ -573,10 +605,10 @@
         },
         "downtime_reason": {
           "truth": "Motor overheating",
-          "value": "Motor overheating",
-          "raw": "Motor overheating",
-          "status": "uncertain",
-          "correct": true
+          "value": null,
+          "raw": null,
+          "status": "illegible",
+          "correct": false
         },
         "remarks": {
           "truth": null,
@@ -586,13 +618,14 @@
           "correct": true
         }
       },
-      "result": "12/12 fields correct"
+      "result": "11/12 fields correct"
     },
     {
       "id": "form-07-blank-and-zero",
+      "set": "synthetic",
       "condition": "Batch left blank; defects written as an explicit 0",
       "status": 200,
-      "latency_ms": 4163,
+      "latency_ms": 8996,
       "fields": {
         "machine": {
           "truth": "L-10",
@@ -683,16 +716,17 @@
     },
     {
       "id": "form-08-unknown-loom",
+      "set": "synthetic",
       "condition": "Loom number not in the loom master (L-19)",
       "status": 200,
-      "latency_ms": 4075,
+      "latency_ms": 4251,
       "fields": {
         "machine": {
           "truth": "L-19",
-          "value": "L-19",
+          "value": "L-09",
           "raw": "L-19",
-          "status": "invalid",
-          "correct": true
+          "status": "uncertain",
+          "correct": false
         },
         "production_date": {
           "truth": "2026-11-11",
@@ -772,13 +806,14 @@
           "correct": true
         }
       },
-      "result": "12/12 fields correct"
+      "result": "11/12 fields correct"
     },
     {
       "id": "form-09-ledger-layout",
+      "set": "synthetic",
       "condition": "Different form layout (horizontal ledger), written shift name, short date, downtime in hours",
       "status": 200,
-      "latency_ms": 4300,
+      "latency_ms": 4267,
       "fields": {
         "machine": {
           "truth": "L-11",
@@ -869,9 +904,10 @@
     },
     {
       "id": "form-10-faded-torn",
+      "set": "synthetic",
       "condition": "Faded pencil-like writing and a torn bottom corner (remarks lost)",
       "status": 200,
-      "latency_ms": 3785,
+      "latency_ms": 3453,
       "fields": {
         "machine": {
           "truth": "L-08",
@@ -962,9 +998,10 @@
     },
     {
       "id": "form-11-sideways",
+      "set": "synthetic",
       "condition": "Photo taken sideways (rotated 90°), rough handwriting",
       "status": 200,
-      "latency_ms": 3596,
+      "latency_ms": 3630,
       "fields": {
         "machine": {
           "truth": "L-06",
@@ -1055,19 +1092,408 @@
     },
     {
       "id": "form-13-register-6-looms",
+      "set": "synthetic",
       "condition": "Shift register page: header (date, shift) written once, 6 looms as rows, empty lines below",
       "status": 200,
-      "latency_ms": 9199,
+      "latency_ms": 14279,
       "fields": {},
       "result": "60/60 fields correct across 6/6 rows"
     },
     {
       "id": "form-12-not-a-form",
+      "set": "synthetic",
       "condition": "Close-up of woven fabric, no form in frame (operator mistake)",
       "status": 422,
-      "latency_ms": 2456,
+      "latency_ms": 5064,
       "fields": {},
       "result": "refused (correct)"
+    },
+    {
+      "id": "real-01-crumpled-slip",
+      "set": "realistic",
+      "condition": "Folded and crumpled slip held against a loom, blue ballpoint, mixed tube light and daylight, slight angle",
+      "status": 200,
+      "latency_ms": 8057,
+      "fields": {
+        "machine": {
+          "truth": "L-07",
+          "value": "L-07",
+          "raw": "L-07",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-17",
+          "value": "2026-11-17",
+          "raw": "17/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "M",
+          "value": "M",
+          "raw": "M",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 486,
+          "value": 486,
+          "raw": "486",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Sheeting 30s",
+          "value": "Sheeting 30s",
+          "raw": "Sheeting 30s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "SHT-30-412",
+          "value": "SHT-30-412",
+          "raw": "SHT-30-412",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 2,
+          "value": 2,
+          "raw": "2",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": [
+            "Float, double pick",
+            "Float double pick"
+          ],
+          "value": "Float, double pick",
+          "raw": "Float, double pick",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 70,
+          "value": 70,
+          "raw": "1 hr 10 min",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Warp break",
+          "value": "Warp break",
+          "raw": "Warp break",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": [
+            "Beam almost over",
+            "Beam almost over."
+          ],
+          "value": "Beam almost over.",
+          "raw": "Beam almost over.",
+          "status": "read",
+          "correct": true
+        }
+      },
+      "result": "11/11 fields correct"
+    },
+    {
+      "id": "real-02-carbon-register",
+      "set": "realistic",
+      "condition": "Bound shift register book, 8 looms, a struck-through correction (412 -> 421), Hinglish reason, a loom stopped all shift",
+      "status": 200,
+      "latency_ms": 19624,
+      "fields": {},
+      "wrong": [
+        {
+          "row": 6,
+          "field": "batch_reference",
+          "truth": "VOI-60-323",
+          "value": "V01-60-323",
+          "status": "read"
+        }
+      ],
+      "result": "71/72 fields correct across 8/8 rows"
+    },
+    {
+      "id": "real-03-hindi-slip",
+      "set": "realistic",
+      "condition": "Hindi (Devanagari) form with Hindi values and a fold line, cotton lint on the table",
+      "status": 200,
+      "latency_ms": 4215,
+      "fields": {
+        "machine": {
+          "truth": "L-11",
+          "value": "L-11",
+          "raw": "L-11",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-16",
+          "value": "2026-11-16",
+          "raw": "16/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "N",
+          "value": "N",
+          "raw": "रात (N)",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 344,
+          "value": 344,
+          "raw": "344",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Yarn Dyed Check",
+          "value": "Yarn Dyed Check",
+          "raw": "Yarn Dyed Check",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "YDC-11-207",
+          "value": "YDC-11-207",
+          "raw": "YDC-11-207",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 4,
+          "value": 4,
+          "raw": "4",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": [
+            "दाग, छेद",
+            "दाग छेद",
+            "daag, chhed",
+            "daag, ched",
+            "stain, hole"
+          ],
+          "value": "दाग, छेद",
+          "raw": "दाग, छेद",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 45,
+          "value": 45,
+          "raw": "45 मिनिट",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": [
+            "लाइट गई",
+            "light gayi",
+            "light gai",
+            "light gaya",
+            "power cut"
+          ],
+          "value": "लाइट गई",
+          "raw": "लाइट गई",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        }
+      },
+      "result": "11/11 fields correct"
+    },
+    {
+      "id": "real-04-ambiguous-digits",
+      "set": "realistic",
+      "condition": "Continental \"1\" that looks like a 7 (175 vs 775) and a 2 written over a 3 in the defects box",
+      "status": 200,
+      "latency_ms": 9606,
+      "fields": {
+        "machine": {
+          "truth": "L-03",
+          "value": "L-03",
+          "raw": "L-03",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-14",
+          "value": "2026-11-14",
+          "raw": "14/11/2026",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "N",
+          "value": "N",
+          "raw": "N",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 175,
+          "value": 175,
+          "raw": "175",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Denim 3/1",
+          "value": "Denim 3/1",
+          "raw": "Denim 3/1",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "DEN-26-297",
+          "value": "DEN-26-297",
+          "raw": "DEN-26-297",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 2,
+          "value": 32,
+          "raw": "32",
+          "status": "read",
+          "correct": false
+        },
+        "defect_details": {
+          "truth": "Reed mark",
+          "value": "Reed mark",
+          "raw": "Reed mark",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 120,
+          "value": 120,
+          "raw": "2 hrs",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "Beam change",
+          "value": "Beam change",
+          "raw": "Beam change",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": [
+            "Loom slow, check tomorrow",
+            "Loom slow, check tomorrow."
+          ],
+          "value": "Loom slow, check tomorrow.",
+          "raw": "Loom slow, check tomorrow.",
+          "status": "read",
+          "correct": true
+        }
+      },
+      "result": "10/11 fields correct"
+    },
+    {
+      "id": "real-05-tubelight-glare",
+      "set": "realistic",
+      "condition": "Dim shed, strong angle, tube-light glare washing out the loom number; loom written without \"L\", short date, \"Evening\", Hinglish reason",
+      "status": 200,
+      "latency_ms": 6037,
+      "fields": {
+        "machine": {
+          "truth": "L-10",
+          "value": "L-10",
+          "raw": "10",
+          "status": "read",
+          "correct": true
+        },
+        "production_date": {
+          "truth": "2026-11-15",
+          "value": "2026-11-15",
+          "raw": "15-11-26",
+          "status": "read",
+          "correct": true
+        },
+        "shift": {
+          "truth": "E",
+          "value": "E",
+          "raw": "Evening",
+          "status": "read",
+          "correct": true
+        },
+        "production_quantity": {
+          "truth": 702,
+          "value": 702,
+          "raw": "702",
+          "status": "read",
+          "correct": true
+        },
+        "material_reference": {
+          "truth": "Satin 50s",
+          "value": "Satin 50s",
+          "raw": "Satin 50s",
+          "status": "read",
+          "correct": true
+        },
+        "batch_reference": {
+          "truth": "SAT-50-118",
+          "value": "SAT-50-118",
+          "raw": "SAT-50-118",
+          "status": "read",
+          "correct": true
+        },
+        "defects_count": {
+          "truth": 0,
+          "value": 0,
+          "raw": "0",
+          "status": "read",
+          "correct": true
+        },
+        "defect_details": {
+          "truth": null,
+          "value": null,
+          "raw": null,
+          "status": "missing",
+          "correct": true
+        },
+        "downtime_minutes": {
+          "truth": 20,
+          "value": 20,
+          "raw": "20 mins",
+          "status": "read",
+          "correct": true
+        },
+        "downtime_reason": {
+          "truth": "safai",
+          "value": "safai",
+          "raw": "safai",
+          "status": "read",
+          "correct": true
+        },
+        "remarks": {
+          "truth": "OK",
+          "value": "OK",
+          "raw": "OK",
+          "status": "read",
+          "correct": true
+        }
+      },
+      "result": "11/11 fields correct"
     }
   ]
 }

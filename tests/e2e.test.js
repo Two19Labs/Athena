@@ -493,7 +493,7 @@ async function overflow(page) {
     console.log('\n14. Sample photo picker');
     await as(page, 'operator');
     await go(page, 'capture.html');
-    check(await page.$$eval('#samplePicker [data-sample]', els => els.length) === 6, 'capture page offers 6 sample photos');
+    check(await page.$$eval('#samplePicker [data-sample]', els => els.length) === 11, 'capture page offers 11 sample photos (6 synthetic + 5 realistic)');
     await page.click('#samplePicker [data-sample="form-01-clean"]');
     await page.waitForSelector('#preflightPreviewCard:not(.hidden)', { timeout: 10000 });
     const sampleState = await page.evaluate(() => ({
@@ -628,9 +628,9 @@ async function overflow(page) {
     await as(page, 'operator');
     await go(page, 'capture.html');
     await page.click('#sampleBatchBtn');
-    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-item').length === 13 && !document.querySelector('#batchList .batch-preparing'), { timeout: 30000 });
+    await page.waitForFunction(() => document.querySelectorAll('#batchList .batch-item').length === 18 && !document.querySelector('#batchList .batch-preparing'), { timeout: 30000 });
     const sb = await batchState(page);
-    check(sb.rows.length === 13 && /Read 13 photos/.test(sb.startText), '"All samples as a batch" loads every sample into a batch', sb.startText);
+    check(sb.rows.length === 18 && /Read 18 photos/.test(sb.startText), '"All samples as a batch" loads every sample into a batch', sb.startText);
     await page.click('#batchClearBtn');
 
     // Mobile layout of the batch list

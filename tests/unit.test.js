@@ -580,6 +580,8 @@ test('downtime reasons map to codes (English, Hinglish, longest match wins)', ()
   assert.equal(code('Beam knotting'), 'BEAM');
   assert.equal(code('Pirn change'), 'PIRN');
   assert.equal(code('Lubrication'), 'MAINT');
+  assert.equal(code('लाइट गई'), 'POWER', 'Devanagari');
+  assert.equal(code('सफाई'), 'CLEAN');
   assert.equal(code('waited for supervisor signature'), undefined);
   const p = R.buildErpPayload(baseRecord({ status: 'approved', reviewed_at: '2026-11-16T10:00:00Z', downtime_reason: 'saaf safai' }), CTX);
   assert.equal(p.downtime_reason_code, 'CLEAN');
@@ -650,4 +652,11 @@ test('/api/extract: a broken JSON reply is retried once on the next model before
       assert.equal(n, 2);
     } finally { stub.restore(); }
   });
+});
+
+test('an implausible defect count (a 2 written over a 3 read as 32) needs a check; a high but plausible one only warns', () => {
+  let v = R.validateRecord(baseRecord({ defects_count: 32, defect_details: 'Reed mark' }), CTX);
+  assert.ok(v.blockers.some(b => b.field === 'defects_count' && b.check));
+  v = R.validateRecord(baseRecord({ defects_count: 6, defect_details: 'Reed mark' }), CTX);
+  assert.ok(!v.blockers.some(b => b.field === 'defects_count') && v.warnings.some(w => w.field === 'defects_count'));
 });

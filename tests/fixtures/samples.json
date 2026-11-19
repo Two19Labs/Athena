@@ -19,7 +19,8 @@
         "downtime_reason": "Beam knotting",
         "remarks": "Smooth run"
       },
-      "expect": {}
+      "expect": {},
+      "set": "synthetic"
     },
     {
       "id": "form-02-skewed",
@@ -46,7 +47,8 @@
         "blank": [
           "remarks"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-03-low-light",
@@ -73,7 +75,8 @@
         "blank": [
           "remarks"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-04-glare",
@@ -96,7 +99,8 @@
         "downtime_reason": "Nozzle cleaning",
         "remarks": "Check nozzle 4"
       },
-      "expect": {}
+      "expect": {},
+      "set": "synthetic"
     },
     {
       "id": "form-05-ambiguous-qty",
@@ -126,7 +130,8 @@
         "blank": [
           "remarks"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-06-oil-stain",
@@ -156,7 +161,8 @@
         "blank": [
           "remarks"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-07-blank-and-zero",
@@ -182,7 +188,8 @@
           "defect_details",
           "downtime_reason"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-08-unknown-loom",
@@ -209,7 +216,8 @@
         "blank": [
           "remarks"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-09-ledger-layout",
@@ -238,7 +246,8 @@
         "production_date": "10-11-26",
         "shift": "Night",
         "downtime_minutes": "1 hr 15 min"
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-10-faded-torn",
@@ -266,7 +275,8 @@
         "blank": [
           "remarks"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-11-sideways",
@@ -294,7 +304,8 @@
         "blank": [
           "remarks"
         ]
-      }
+      },
+      "set": "synthetic"
     },
     {
       "id": "form-13-register-6-looms",
@@ -379,7 +390,8 @@
           "downtime_reason": "Beam knotting"
         }
       ],
-      "expect": {}
+      "expect": {},
+      "set": "synthetic"
     },
     {
       "id": "form-12-not-a-form",
@@ -388,6 +400,218 @@
       "truth": null,
       "expect": {
         "unreadable": true
+      },
+      "set": "synthetic"
+    },
+    {
+      "id": "real-01-crumpled-slip",
+      "set": "realistic",
+      "condition": "Folded and crumpled slip held against a loom, blue ballpoint, mixed tube light and daylight, slight angle",
+      "layout": "standard",
+      "truth": {
+        "machine": "L-07",
+        "production_date": "2026-11-17",
+        "shift": "M",
+        "production_quantity": 486,
+        "material_reference": "Sheeting 30s",
+        "batch_reference": "SHT-30-412",
+        "defects_count": 2,
+        "defect_details": [
+          "Float, double pick",
+          "Float double pick"
+        ],
+        "downtime_minutes": 70,
+        "downtime_reason": "Warp break",
+        "remarks": [
+          "Beam almost over",
+          "Beam almost over."
+        ]
+      },
+      "expect": {}
+    },
+    {
+      "id": "real-02-carbon-register",
+      "set": "realistic",
+      "condition": "Bound shift register book, 8 looms, a struck-through correction (412 -> 421), Hinglish reason, a loom stopped all shift",
+      "layout": "register",
+      "truth": [
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-01",
+          "production_quantity": 534,
+          "material_reference": "Cambric",
+          "batch_reference": "CMB-60-318",
+          "defects_count": 1,
+          "downtime_minutes": 15,
+          "downtime_reason": "Cleaning"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-02",
+          "production_quantity": 488,
+          "material_reference": "Poplin 40s",
+          "batch_reference": "POP-40-319",
+          "defects_count": 0,
+          "downtime_minutes": 0,
+          "downtime_reason": null
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-03",
+          "production_quantity": 312,
+          "material_reference": "Denim 3/1",
+          "batch_reference": "DEN-26-320",
+          "defects_count": 2,
+          "downtime_minutes": 35,
+          "downtime_reason": "Warp break"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-04",
+          "production_quantity": 276,
+          "material_reference": "Oxford",
+          "batch_reference": "OXF-18-321",
+          "defects_count": 1,
+          "downtime_minutes": 50,
+          "downtime_reason": "Pirn change"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-05",
+          "production_quantity": 421,
+          "material_reference": "Linen Blend",
+          "batch_reference": "LIN-55-322",
+          "defects_count": 0,
+          "downtime_minutes": 20,
+          "downtime_reason": "light gayi"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-06",
+          "production_quantity": 605,
+          "material_reference": "Voile 60s",
+          "batch_reference": "VOI-60-323",
+          "defects_count": 3,
+          "downtime_minutes": 10,
+          "downtime_reason": "Beam knotting"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-07",
+          "production_quantity": 0,
+          "material_reference": "Sheeting 30s",
+          "batch_reference": "SHT-30-324",
+          "defects_count": 0,
+          "downtime_minutes": 480,
+          "downtime_reason": "Motor burnt"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-08",
+          "production_quantity": 188,
+          "material_reference": "Drill",
+          "batch_reference": "DRL-14-325",
+          "defects_count": 1,
+          "downtime_minutes": 25,
+          "downtime_reason": "Shuttle change"
+        }
+      ],
+      "expect": {}
+    },
+    {
+      "id": "real-03-hindi-slip",
+      "set": "realistic",
+      "condition": "Hindi (Devanagari) form with Hindi values and a fold line, cotton lint on the table",
+      "layout": "standard",
+      "truth": {
+        "machine": "L-11",
+        "production_date": "2026-11-16",
+        "shift": "N",
+        "production_quantity": 344,
+        "material_reference": "Yarn Dyed Check",
+        "batch_reference": "YDC-11-207",
+        "defects_count": 4,
+        "defect_details": [
+          "दाग, छेद",
+          "दाग छेद",
+          "daag, chhed",
+          "daag, ched",
+          "stain, hole"
+        ],
+        "downtime_minutes": 45,
+        "downtime_reason": [
+          "लाइट गई",
+          "light gayi",
+          "light gai",
+          "light gaya",
+          "power cut"
+        ],
+        "remarks": null
+      },
+      "expect": {
+        "blank": [
+          "remarks"
+        ]
+      }
+    },
+    {
+      "id": "real-04-ambiguous-digits",
+      "set": "realistic",
+      "condition": "Continental \"1\" that looks like a 7 (175 vs 775) and a 2 written over a 3 in the defects box",
+      "layout": "standard",
+      "truth": {
+        "machine": "L-03",
+        "production_date": "2026-11-14",
+        "shift": "N",
+        "production_quantity": 175,
+        "material_reference": "Denim 3/1",
+        "batch_reference": "DEN-26-297",
+        "defects_count": 2,
+        "defect_details": "Reed mark",
+        "downtime_minutes": 120,
+        "downtime_reason": "Beam change",
+        "remarks": [
+          "Loom slow, check tomorrow",
+          "Loom slow, check tomorrow."
+        ]
+      },
+      "expect": {
+        "flag": [
+          "production_quantity",
+          "defects_count"
+        ]
+      }
+    },
+    {
+      "id": "real-05-tubelight-glare",
+      "set": "realistic",
+      "condition": "Dim shed, strong angle, tube-light glare washing out the loom number; loom written without \"L\", short date, \"Evening\", Hinglish reason",
+      "layout": "other",
+      "truth": {
+        "machine": "L-10",
+        "production_date": "2026-11-15",
+        "shift": "E",
+        "production_quantity": 702,
+        "material_reference": "Satin 50s",
+        "batch_reference": "SAT-50-118",
+        "defects_count": 0,
+        "defect_details": null,
+        "downtime_minutes": 20,
+        "downtime_reason": "safai",
+        "remarks": "OK"
+      },
+      "expect": {
+        "blank": [
+          "defect_details"
+        ]
       }
     }
   ]

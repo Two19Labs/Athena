@@ -1,19 +1,20 @@
 {
   "sample": "form-09-ledger-layout",
+  "set": "synthetic",
   "condition": "Different form layout (horizontal ledger), written shift name, short date, downtime in hours",
   "http_status": 200,
-  "latency_ms": 4300,
+  "latency_ms": 4267,
   "response": {
     "success": true,
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
-    "latency_ms": 4298,
+    "latency_ms": 4261,
     "attempts": [
       {
         "provider": "gemini",
         "model": "gemini-3.5-flash-lite",
         "ok": true,
-        "ms": 4297
+        "ms": 4261
       }
     ],
     "data": {
@@ -28,8 +29,8 @@
           "image_issues": [],
           "row_box": [
             387,
-            127,
-            453,
+            123,
+            456,
             867
           ],
           "fields": {
@@ -39,9 +40,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                393,
-                257,
-                448,
+                396,
+                255,
+                453,
                 285
               ]
             },
@@ -51,9 +52,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                393,
-                132,
-                450,
+                400,
+                135,
+                453,
                 191
               ]
             },
@@ -63,10 +64,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                399,
-                201,
-                450,
-                249
+                402,
+                198,
+                448,
+                248
               ]
             },
             "production_quantity": {
@@ -75,10 +76,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                401,
-                490,
-                443,
-                521
+                405,
+                488,
+                442,
+                520
               ]
             },
             "production_unit": {
@@ -87,9 +88,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                367,
+                370,
                 488,
-                381,
+                379,
                 512
               ]
             },
@@ -99,10 +100,10 @@
               "status": "read",
               "reason": null,
               "box": [
-                393,
+                396,
                 301,
-                442,
-                387
+                449,
+                386
               ]
             },
             "batch_reference": {
@@ -112,9 +113,9 @@
               "reason": null,
               "box": [
                 395,
-                401,
-                448,
-                480
+                399,
+                451,
+                481
               ]
             },
             "defects_count": {
@@ -123,9 +124,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                401,
-                542,
-                435,
+                405,
+                540,
+                443,
                 552
               ]
             },
@@ -135,9 +136,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                393,
-                584,
-                446,
+                394,
+                579,
+                451,
                 637
               ]
             },
@@ -147,9 +148,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                389,
+                391,
                 658,
-                446,
+                449,
                 721
               ]
             },
@@ -159,9 +160,9 @@
               "status": "read",
               "reason": null,
               "box": [
-                391,
-                746,
-                442,
+                390,
+                745,
+                438,
                 803
               ]
             },
@@ -171,10 +172,10 @@
               "status": "missing",
               "reason": null,
               "box": [
-                391,
+                390,
                 822,
-                448,
-                863
+                450,
+                865
               ]
             }
           }
@@ -204,8 +205,8 @@
         {
           "row_box": [
             387,
-            127,
-            453,
+            123,
+            456,
             867
           ],
           "machine": {
@@ -214,9 +215,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              393,
-              257,
-              448,
+              396,
+              255,
+              453,
               285
             ]
           },
@@ -226,9 +227,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              393,
-              132,
-              450,
+              400,
+              135,
+              453,
               191
             ]
           },
@@ -238,10 +239,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              399,
-              201,
-              450,
-              249
+              402,
+              198,
+              448,
+              248
             ]
           },
           "production_quantity": {
@@ -250,10 +251,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              401,
-              490,
-              443,
-              521
+              405,
+              488,
+              442,
+              520
             ]
           },
           "production_unit": {
@@ -262,9 +263,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              367,
+              370,
               488,
-              381,
+              379,
               512
             ]
           },
@@ -274,10 +275,10 @@
             "status": "read",
             "reason": null,
             "box": [
-              393,
+              396,
               301,
-              442,
-              387
+              449,
+              386
             ]
           },
           "batch_reference": {
@@ -287,9 +288,9 @@
             "reason": null,
             "box": [
               395,
-              401,
-              448,
-              480
+              399,
+              451,
+              481
             ]
           },
           "defects_count": {
@@ -298,9 +299,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              401,
-              542,
-              435,
+              405,
+              540,
+              443,
               552
             ]
           },
@@ -310,9 +311,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              393,
-              584,
-              446,
+              394,
+              579,
+              451,
               637
             ]
           },
@@ -322,9 +323,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              389,
+              391,
               658,
-              446,
+              449,
               721
             ]
           },
@@ -334,9 +335,9 @@
             "status": "read",
             "reason": null,
             "box": [
-              391,
-              746,
-              442,
+              390,
+              745,
+              438,
               803
             ]
           },
@@ -346,10 +347,10 @@
             "status": "missing",
             "reason": null,
             "box": [
-              391,
+              390,
               822,
-              448,
-              863
+              450,
+              865
             ]
           }
         }

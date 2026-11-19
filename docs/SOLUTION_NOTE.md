@@ -59,7 +59,7 @@ The provider layer is pluggable: an OpenAI-compatible adapter (OpenRouter free v
 - unit aliases
 - negative-value checks
 
-This makes the behaviour testable (39 unit tests) and stops the model from "helpfully" fixing an unknown loom into a known one.
+This makes the behaviour testable (42 unit tests) and stops the model from "helpfully" fixing an unknown loom into a known one.
 
 **Show the reviewer where each value came from.** The model also returns a box per field (where on the photo it read the value) and per register row. The review screen uses them to zoom straight to the handwriting when a field is clicked, and opens each register row zoomed to its own line. Boxes are only a navigation aid: they are sanity-checked (0–1000 range, non-zero size) and silently ignored if missing or malformed, so they never affect a value or a decision. The model also lists which fields the printed form actually has, so a register with no "defect details" column does not produce "defects not described" warnings on every row.
 
@@ -67,7 +67,7 @@ This makes the behaviour testable (39 unit tests) and stops the model from "help
 
 **Human gate, not a confidence threshold.** Self-reported model confidence is not calibrated, so the approval gate does not rely on it. Instead there are three levels:
 - **AI flags block.** Any field the AI marked uncertain, illegible or invalid blocks approval until a supervisor either corrects it or confirms "value matches photo".
-- **Suspicious values need a tick.** Output outside the loom's normal range (the classic misread digit: 350 read as 850) and a possible duplicate of a pending record block approval until someone corrects the value or ticks "I checked this against the photo". The tick applies to that exact value: if the value later changes, it needs checking again. This is what catches the AI's *confident* mistakes.
+- **Suspicious values need a tick.** Output outside the loom's normal range (the classic misread digit: 350 read as 850) an implausible defect count (more than 10 in a shift, e.g. a 2 written over a 3 read as 32) and a possible duplicate of a pending record block approval until someone corrects the value or ticks "I checked this against the photo". The tick applies to that exact value: if the value later changes, it needs checking again. This is what catches the AI's *confident* mistakes.
 - **Hard rule failures block.** Downtime longer than the shift, a future date, or a duplicate of an already-approved loom/date/shift (which would double-count in the ERP).
 - **Soft anomalies warn**, and approving with them open is an explicit, recorded choice. Examples: defects counted but not described, high downtime, a downtime reason not in the list.
 
@@ -119,22 +119,31 @@ Two complementary measurements.
 
 The system's actual outputs per sample are saved in `aplyd/assets/sample-outputs/`.
 
-**Results** (19 Nov 2026, Gemini free tier, 13 samples incl. a 6-loom register page, with the final prompt that also asks for photo locations; produced by the script, see `aplyd/assets/benchmark/results.json`):
+**Results** (19 Nov 2026, Gemini free tier, final prompt incl. photo locations; produced by the script, see `aplyd/assets/benchmark/results.json`). Two sample sets:
+- **Synthetic** (13): forms rendered by `tests/generate-samples.js` with handwriting fonts and simulated skew, glare, stains and tears, incl. a 6-row register page and a non-form photo.
+- **Realistic** (5): photorealistic phone photos generated with an image model from detailed prompts, each answer key written by reading the finished image (not the prompt): a crumpled slip held against a loom; an 8-loom bound register with a struck-through correction ("~~412~~ 421"), a Hinglish reason and a loom stopped all shift; a Hindi (Devanagari) form; a slip with a continental "1" that looks like a 7 and a "2" written over a "3"; and a dim shed photo with tube-light glare washing out the loom number.
 
-| Metric | Result |
-|---|---|
-| Field accuracy | **99.5%** (191 of 192 fields, 12 forms; the register page scored 60/60 across all 6 rows) |
-| Silent-error rate | 0.5% (1 field, and the loom-range rule blocks approval on it) |
-| Blank fields left blank (not invented) | 100% |
-| Non-form photo refused | 100% (1 of 1) |
-| Flag recall on designed-hard fields | 67% (2 of 3) |
-| Median read time | **4.2 s** per photo (register page: 9–12 s) |
+| Metric | Synthetic (13) | Realistic (5) |
+|---|---|---|
+| Field accuracy | 98.4% (189/192) | **98.3% (114/116)** |
+| Silent errors (wrong but marked `read`) | 1 field | 2 fields |
+| Blank fields left blank (not invented) | 100% | 100% |
+| Non-form photo refused | 100% (1/1) | — |
+| Median read time | 4.1 s | 8.1 s (8-row register: 20 s) |
+
+What the AI got right on the realistic photos: the crumpled slip, the Hindi form (it kept "लाइट गई" as written and read "रात (N)" as the night shift) and the glare photo (it read the washed-out "10" as loom L-10) were all perfect; on the register it took **421**, not the struck-through 412, on all 8 rows.
+
+The misses, and what catches them:
+- **Overwritten digit read as 32 defects** (a 2 written over a 3). The model was confident. More than 10 defects in one shift is not plausible, so a business rule now blocks approval until someone checks the photo or corrects it.
+- **Lot "VOI-60-323" read as "V01-60-323"** (letter O vs zero). Nothing flags this; it is a free-text code. A lot-number master (or a check digit) is the real fix; it is listed under next steps.
+- **Synthetic "ambiguous digit" (350 read as 850)**: blocked by the loom-range rule until checked.
+- **Synthetic unknown loom "L-19"**: flagged `uncertain` (so it blocks approval), with the AI's suggested value L-09 shown beside "Written: L-19".
 
 How to read these numbers:
-- **The one error is the "ambiguous digit" form**, which is designed to be genuinely ambiguous (a 3 that looks like an 8). The model read 350 as 850 and marked it `read`. The loom range rule catches it: 850 is above L-12's 800 m maximum, so approval is **blocked** until someone corrects the value or ticks "I checked this against the photo". This is the case the rule layer exists for.
-- **Runs vary.** Three runs on the same day scored 192/192, 179/192 and 191/192. The low run was one reply that came back as broken JSON (the register-style answer with photo locations is long), which lost a whole form. The server now asks the next model once when a reply is unusable, inside the same time budget, and the final run had no broken replies. In one run the model also contradicted itself on the ambiguous digit (it transcribed "850" but returned 350); that is now flagged as uncertain by code, since a model that disagrees with itself is not confident.
-- **13 synthetic forms is a smoke test, not an accuracy claim.** It shows the pipeline works end to end and fails safely. The synthetic stain and fade are still readable, so the model has little to flag.
-- **Latency.** Measured per model on the register page: the server tries `gemini-3.5-flash-lite` first (≈4 s per slip), then the other lite models, and skips a stuck model after 20 s within a 50 s total budget (Vercel's limit is 60 s).
+- **Runs vary.** Repeated runs on the same day ranged from 93% to 100% on the synthetic set; the low run was one reply that came back as broken JSON (the reply with photo locations is long). The server now asks the next model once when a reply is unusable, inside the same time budget.
+- **The model contradicting itself is flagged by code.** In one run it transcribed "850" but returned 350; any disagreement between the transcription and the value of a number, duration or date is now marked `uncertain`.
+- **18 forms is a smoke test, not an accuracy claim.** The realistic set is still generated, not photographed on a real shop floor; real forms are the next step (below).
+- **Latency.** The server tries `gemini-3.5-flash-lite` first (≈4 s per slip), then the other lite models, skips a stuck model after 20 s, and stays within a 50 s total budget (Vercel's limit is 60 s).
 
 **Live metrics (Analytics page).** These come from what supervisors did to AI output:
 - correction rate
@@ -150,7 +159,7 @@ How to read these numbers:
 3. Add the photo to the labelled set so the benchmark guards against regressions.
 4. Only then consider a model change.
 
-**Honest caveat.** The bundled samples are synthetic: handwriting fonts plus simulated skew, glare, stains and tears. They test the pipeline and the failure handling, but real accuracy has to be measured on real photographed forms from the floor. The benchmark accepts them by adding an image plus a ground-truth entry to `tests/fixtures/samples.json`.
+**Honest caveat.** The bundled samples are synthetic (rendered) or AI-generated photographs. They test the pipeline and the failure handling, but real accuracy has to be measured on real photographed forms from the floor. The benchmark accepts them by adding an image plus a ground-truth entry to `tests/fixtures/samples.json`.
 
 ## 7. Limitations
 
@@ -169,3 +178,4 @@ How to read these numbers:
 4. Detect the page corners and correct perspective on the phone before upload.
 5. Build a real ERP connector behind the same `aplyd.production_record/v1` contract (including the downtime reason codes).
 6. Learn per-loom output ranges from approved history instead of fixed master values, so the misread-digit check tightens over time.
+7. Validate lot/beam numbers against a lot master (or a check digit), so an O/0 confusion in a code is caught like an unknown loom is today.

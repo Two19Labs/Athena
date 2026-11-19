@@ -1,0 +1,360 @@
+{
+  "sample": "real-01-crumpled-slip",
+  "set": "realistic",
+  "condition": "Folded and crumpled slip held against a loom, blue ballpoint, mixed tube light and daylight, slight angle",
+  "http_status": 200,
+  "latency_ms": 8057,
+  "response": {
+    "success": true,
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "latency_ms": 8048,
+    "attempts": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "ok": true,
+        "ms": 8048
+      }
+    ],
+    "data": {
+      "schema_version": "2.1",
+      "image_issues": [],
+      "rows_detected": 1,
+      "incomplete": false,
+      "entries": [
+        {
+          "schema_version": "2.0",
+          "overall_status": "ready_for_approval",
+          "image_issues": [],
+          "row_box": [
+            168,
+            71,
+            971,
+            824
+          ],
+          "fields": {
+            "machine": {
+              "value": "L-07",
+              "raw_value": "L-07",
+              "status": "read",
+              "reason": null,
+              "box": [
+                307,
+                458,
+                339,
+                568
+              ]
+            },
+            "production_date": {
+              "value": "2026-11-17",
+              "raw_value": "17/11/2026",
+              "status": "read",
+              "reason": null,
+              "box": [
+                355,
+                455,
+                393,
+                650
+              ]
+            },
+            "shift": {
+              "value": "M",
+              "raw_value": "M",
+              "status": "read",
+              "reason": null,
+              "box": [
+                403,
+                471,
+                429,
+                508
+              ]
+            },
+            "production_quantity": {
+              "value": 486,
+              "raw_value": "486",
+              "status": "read",
+              "reason": null,
+              "box": [
+                447,
+                467,
+                479,
+                544
+              ]
+            },
+            "production_unit": {
+              "value": "metres",
+              "raw_value": "mtrs",
+              "status": "read",
+              "reason": null,
+              "box": [
+                442,
+                337,
+                466,
+                401
+              ]
+            },
+            "material_reference": {
+              "value": "Sheeting 30s",
+              "raw_value": "Sheeting 30s",
+              "status": "read",
+              "reason": null,
+              "box": [
+                486,
+                451,
+                517,
+                670
+              ]
+            },
+            "batch_reference": {
+              "value": "SHT-30-412",
+              "raw_value": "SHT-30-412",
+              "status": "read",
+              "reason": null,
+              "box": [
+                529,
+                453,
+                558,
+                672
+              ]
+            },
+            "defects_count": {
+              "value": 2,
+              "raw_value": "2",
+              "status": "read",
+              "reason": null,
+              "box": [
+                569,
+                476,
+                595,
+                504
+              ]
+            },
+            "defect_details": {
+              "value": "Float, double pick",
+              "raw_value": "Float, double pick",
+              "status": "read",
+              "reason": null,
+              "box": [
+                611,
+                447,
+                645,
+                718
+              ]
+            },
+            "downtime_minutes": {
+              "value": 70,
+              "raw_value": "1 hr 10 min",
+              "status": "read",
+              "reason": null,
+              "box": [
+                652,
+                451,
+                683,
+                663
+              ]
+            },
+            "downtime_reason": {
+              "value": "Warp break",
+              "raw_value": "Warp break",
+              "status": "read",
+              "reason": null,
+              "box": [
+                697,
+                448,
+                730,
+                659
+              ]
+            },
+            "remarks": {
+              "value": "Beam almost over.",
+              "raw_value": "Beam almost over.",
+              "status": "read",
+              "reason": null,
+              "box": [
+                744,
+                447,
+                775,
+                744
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "model_output": {
+      "is_production_form": true,
+      "image_issues": [],
+      "rows_detected": 1,
+      "fields_on_form": [
+        "machine",
+        "production_date",
+        "shift",
+        "production_quantity",
+        "production_unit",
+        "material_reference",
+        "batch_reference",
+        "defects_count",
+        "defect_details",
+        "downtime_minutes",
+        "downtime_reason",
+        "remarks"
+      ],
+      "header": {},
+      "entries": [
+        {
+          "row_box": [
+            168,
+            71,
+            971,
+            824
+          ],
+          "machine": {
+            "value": "L-07",
+            "raw_value": "L-07",
+            "status": "read",
+            "reason": null,
+            "box": [
+              307,
+              458,
+              339,
+              568
+            ]
+          },
+          "production_date": {
+            "value": "2026-11-17",
+            "raw_value": "17/11/2026",
+            "status": "read",
+            "reason": null,
+            "box": [
+              355,
+              455,
+              393,
+              650
+            ]
+          },
+          "shift": {
+            "value": "M",
+            "raw_value": "M",
+            "status": "read",
+            "reason": null,
+            "box": [
+              403,
+              471,
+              429,
+              508
+            ]
+          },
+          "production_quantity": {
+            "value": 486,
+            "raw_value": "486",
+            "status": "read",
+            "reason": null,
+            "box": [
+              447,
+              467,
+              479,
+              544
+            ]
+          },
+          "production_unit": {
+            "value": "mtrs",
+            "raw_value": "mtrs",
+            "status": "read",
+            "reason": null,
+            "box": [
+              442,
+              337,
+              466,
+              401
+            ]
+          },
+          "material_reference": {
+            "value": "Sheeting 30s",
+            "raw_value": "Sheeting 30s",
+            "status": "read",
+            "reason": null,
+            "box": [
+              486,
+              451,
+              517,
+              670
+            ]
+          },
+          "batch_reference": {
+            "value": "SHT-30-412",
+            "raw_value": "SHT-30-412",
+            "status": "read",
+            "reason": null,
+            "box": [
+              529,
+              453,
+              558,
+              672
+            ]
+          },
+          "defects_count": {
+            "value": 2,
+            "raw_value": "2",
+            "status": "read",
+            "reason": null,
+            "box": [
+              569,
+              476,
+              595,
+              504
+            ]
+          },
+          "defect_details": {
+            "value": "Float, double pick",
+            "raw_value": "Float, double pick",
+            "status": "read",
+            "reason": null,
+            "box": [
+              611,
+              447,
+              645,
+              718
+            ]
+          },
+          "downtime_minutes": {
+            "value": 70,
+            "raw_value": "1 hr 10 min",
+            "status": "read",
+            "reason": null,
+            "box": [
+              652,
+              451,
+              683,
+              663
+            ]
+          },
+          "downtime_reason": {
+            "value": "Warp break",
+            "raw_value": "Warp break",
+            "status": "read",
+            "reason": null,
+            "box": [
+              697,
+              448,
+              730,
+              659
+            ]
+          },
+          "remarks": {
+            "value": "Beam almost over.",
+            "raw_value": "Beam almost over.",
+            "status": "read",
+            "reason": null,
+            "box": [
+              744,
+              447,
+              775,
+              744
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

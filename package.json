@@ -10,7 +10,10 @@
     "test:e2e": "node tests/e2e.test.js",
     "test:all": "npm test && npm run test:e2e",
     "samples": "node tests/generate-samples.js",
-    "benchmark": "node tests/benchmark.js"
+    "benchmark": "node tests/benchmark.js",
+    "realworld:kit": "node real-world/make-kit.js",
+    "realworld": "node real-world/run.js",
+    "realworld:report": "node real-world/report.js"
   },
   "engines": {
     "node": ">=18"

@@ -660,3 +660,76 @@ test('an implausible defect count (a 2 written over a 3 read as 32) needs a chec
   v = R.validateRecord(baseRecord({ defects_count: 6, defect_details: 'Reed mark' }), CTX);
   assert.ok(!v.blockers.some(b => b.field === 'defects_count') && v.warnings.some(w => w.field === 'defects_count'));
 });
+
+// ---------------------------------------------------------------------------
+// Real-world test fixes (Nov 2026): the AI's silent mistakes on 15 handwritten photos
+// ---------------------------------------------------------------------------
+test('lot numbers: look-alike characters, lost hyphens and crossed-out starts are caught with a suggestion', () => {
+  const cases = [
+    ['V01-60-446', 'Voile 60s', 'VOI-60-446'],
+    ['lin-55405', 'Linen Blend', 'LIN-55-405'],
+    ['Ock-12-412', 'Duck Canvas', 'DCK-12-412'],
+    ['Vol-60-420', 'Voile 60s', 'VOI-60-420'],
+    ['CAM CMB-60-401', 'Cambric', 'CMB-60-401']
+  ];
+  for (const [value, material, want] of cases) {
+    const lot = R.checkLot(value, material);
+    assert.equal(lot.ok, false, value);
+    assert.equal(lot.suggestion, want, value);
+    const v = R.validateRecord(baseRecord({ batch_reference: value, material_reference: material }), CTX);
+    assert.ok(v.blockers.some(b => b.field === 'batch_reference' && b.check), `${value} needs a check`);
+  }
+  // Correct codes (any case) pass; an unusual format with nothing to suggest only warns.
+  for (const [ok, m] of [['VOI-60-446', 'Voile 60s'], ['cmb-60-401', 'Cambric'], ['POP-40-881', 'Combed Poplin 40s']]) assert.equal(R.checkLot(ok, m).ok, true, ok);
+  assert.equal(R.checkLot('VOI-60-446', 'Combed Poplin 40s').ok, false, 'prefix must match the fabric');
+  const v = R.validateRecord(baseRecord({ batch_reference: 'B-2231' }), CTX);
+  assert.ok(!v.blockers.some(b => b.field === 'batch_reference') && v.warnings.some(w => w.field === 'batch_reference'));
+  // Ticking "checked against the photo" clears the check.
+  const rec = baseRecord({ batch_reference: 'V01-60-446', material_reference: 'Voile 60s' });
+  rec.corrections = [{ field_key: 'batch_reference', kind: 'check', corrected_value: 'V01-60-446' }];
+  assert.ok(!R.validateRecord(rec, CTX).blockers.some(b => b.field === 'batch_reference'));
+});
+
+test('fabric one or two letters off a known fabric gets a "did you mean"; new fabrics do not', () => {
+  assert.equal(R.nearFabric('Poplin 405'), 'Poplin 40s');
+  assert.equal(R.nearFabric('Denin 3/1'), 'Denim 3/1');
+  assert.equal(R.nearFabric('Poplin 40s'), null);
+  assert.equal(R.nearFabric('Combed Poplin 40s'), null);
+  assert.equal(R.nearFabric('Cotton Cambric'), null);
+  const v = R.validateRecord(baseRecord({ material_reference: 'Poplin 405' }), CTX);
+  assert.ok(v.warnings.some(w => w.field === 'material_reference' && w.suggestion === 'Poplin 40s'));
+});
+
+test('defect details that are only a number, or with zero defects, are flagged as a likely scribble', () => {
+  let v = R.validateRecord(baseRecord({ defects_count: 1, defect_details: '0' }), CTX);
+  assert.ok(v.warnings.some(w => w.field === 'defect_details' && /only a number/.test(w.message)));
+  v = R.validateRecord(baseRecord({ defects_count: 0, defect_details: 'Float' }), CTX);
+  assert.ok(v.warnings.some(w => w.field === 'defect_details' && /count is 0/.test(w.message)));
+  v = R.validateRecord(baseRecord({ defects_count: 1, defect_details: 'Float' }), CTX);
+  assert.ok(!v.warnings.some(w => w.field === 'defect_details'));
+});
+
+test('crossed-out writing is carried from the AI and shown as a warning until checked', () => {
+  const out = modelOutput();
+  out.fields.batch_reference = { value: 'CMB-60-401', raw_value: 'CMB-60-401', status: 'read', reason: null, struck_out: true };
+  const rec = baseRecord({ final_payload: R.normalizeExtraction(out, MASTER), batch_reference: 'CMB-60-401', material_reference: 'Cambric' });
+  assert.equal(rec.final_payload.fields.batch_reference.struck_out, true);
+  assert.ok(R.validateRecord(rec, CTX).warnings.some(w => w.field === 'batch_reference' && /crossed-out/.test(w.message)));
+  rec.corrections = [{ field_key: 'batch_reference', kind: 'check', corrected_value: 'CMB-60-401' }];
+  assert.ok(!R.validateRecord(rec, CTX).warnings.some(w => /crossed-out/.test(w.message)));
+});
+
+test('downtime reasons: Shuttle change is a code, and near-miss spellings map with a soft warning', () => {
+  const ctx = { ...CTX, reasons: R.DEFAULT_DOWNTIME_REASONS };
+  assert.equal(R.resolveReason('Shuttle change').reason.code, 'SHUTTLE');
+  for (const [t, code] of [['Pinn change', 'PIRN'], ['Shuttlen Change', 'SHUTTLE'], ['bean change', 'BEAM']]) {
+    const hit = R.resolveReason(t);
+    assert.equal(hit.reason.code, code, t);
+    assert.equal(hit.exact, false, t);
+    const v = R.validateRecord(baseRecord({ downtime_reason: t }), ctx);
+    assert.ok(v.warnings.some(w => w.field === 'downtime_reason' && /spelling differs/.test(w.message)), t);
+    assert.equal(R.buildErpPayload(baseRecord({ downtime_reason: t }), ctx).downtime_reason_code, code);
+  }
+  assert.equal(R.resolveReason('Blank'), null);
+  assert.equal(R.resolveReason('xyz'), null);
+});

@@ -54,7 +54,8 @@
     { code: 'PIRN', name: 'Pirn / bobbin change', synonyms: ['pirn', 'pirn change', 'bobbin', 'bobbin change', 'cop change'] },
     { code: 'POWER', name: 'Power cut', synonyms: ['power', 'power cut', 'power failure', 'no power', 'light', 'light gayi', 'light cut', 'bijli', 'electricity', 'load shedding', 'लाइट', 'लाइट गई', 'बिजली', 'बिजली गई'] },
     { code: 'MAINT', name: 'Maintenance / repair', synonyms: ['maintenance', 'repair', 'breakdown', 'mechanical', 'lubrication', 'oiling', 'greasing', 'motor', 'belt', 'mistri', 'fitter', 'मरम्मत', 'मिस्त्री', 'मशीन खराब'] },
-    { code: 'WAIT', name: 'Waiting for yarn / material', synonyms: ['no yarn', 'yarn shortage', 'waiting', 'waiting for yarn', 'no material', 'material shortage', 'maal nahi', 'माल नहीं', 'धागा नहीं'] }
+    { code: 'WAIT', name: 'Waiting for yarn / material', synonyms: ['no yarn', 'yarn shortage', 'waiting', 'waiting for yarn', 'no material', 'material shortage', 'maal nahi', 'माल नहीं', 'धागा नहीं'] },
+    { code: 'SHUTTLE', name: 'Shuttle change', synonyms: ['shuttle', 'shuttle change', 'shuttle changed', 'shuttle replaced'] }
   ];
   const OTHER_REASON = { code: 'OTHER', name: 'Other' };
 
@@ -227,6 +228,110 @@
     return 1 - prev[y.length] / Math.max(x.length, y.length);
   }
 
+  function editDistance(a, b) {
+    const x = [...a], y = [...b];
+    const prev = Array.from({ length: y.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= x.length; i++) {
+      let diag = prev[0];
+      prev[0] = i;
+      for (let j = 1; j <= y.length; j++) {
+        const tmp = prev[j];
+        prev[j] = Math.min(prev[j] + 1, prev[j - 1] + 1, diag + (x[i - 1] === y[j - 1] ? 0 : 1));
+        diag = tmp;
+      }
+    }
+    return prev[y.length];
+  }
+
+  /**
+   * Like matchReason, but a near-miss spelling also counts ("Pinn change", "Shuttlen Change",
+   * "bean change"): within 2 letters of a known reason or synonym of 6+ letters.
+   * @returns { reason, exact } or null
+   */
+  function resolveReason(text, reasons) {
+    const exact = matchReason(text, reasons);
+    if (exact) return { reason: exact, exact: true };
+    const s = normText(text).replace(/ /g, '');
+    if (s.length < 5) return null;
+    let best = null;
+    for (const r of (reasons || DEFAULT_DOWNTIME_REASONS).filter(x => x.is_active !== false)) {
+      for (const w of [r.name, ...(r.synonyms || [])].map(t => normText(t).replace(/ /g, '')).filter(t => t.length >= 6)) {
+        const d = editDistance(s, w);
+        if (d <= 2 && (!best || d < best.d)) best = { reason: r, d };
+      }
+    }
+    return best ? { reason: best.reason, exact: false } : null;
+  }
+
+  /** Fabric list used to catch near-miss readings like "Poplin 405" for "Poplin 40s". */
+  const DEFAULT_FABRICS = ['Cambric', 'Poplin 40s', 'Combed Poplin', 'Denim 3/1', 'Oxford', 'Linen Blend', 'Voile 60s',
+    'Sheeting 30s', 'Drill', 'Duck Canvas', 'Satin 50s', 'Yarn Dyed Check'];
+
+  /**
+   * A fabric that is not on the list but within 1-2 letters of one is almost certainly a misread
+   * (or misspelling) of it. Returns that fabric, or null (exact match, or nothing close = a new fabric).
+   */
+  function nearFabric(text, fabrics) {
+    const s = normText(text).replace(/ /g, '');
+    if (!s) return null;
+    const list = fabrics || DEFAULT_FABRICS;
+    if (list.some(f => normText(f).replace(/ /g, '') === s)) return null;
+    let best = null;
+    for (const f of list) {
+      const d = editDistance(s, normText(f).replace(/ /g, ''));
+      if (d >= 1 && d <= 2 && (!best || d < best.d)) best = { fabric: f, d };
+    }
+    return best ? best.fabric : null;
+  }
+
+  /**
+   * Lot / beam numbers: 3 letters, 2 digits, 3 digits (e.g. VOI-60-446). Handwritten codes are where
+   * the AI's confident mistakes cluster: O vs 0, I vs 1 vs l, D vs O, S vs 5, a lost hyphen, or a
+   * crossed-out start left in front. checkLot returns the problems and, when it can, the code with
+   * look-alike characters put back in the right slots ("V01-60-446" -> "VOI-60-446").
+   */
+  const LOT_PREFIX_BY_FABRIC = [
+    ['yarn dyed', 'YDC'], ['combed poplin', 'POP'], ['poplin', 'POP'], ['cambric', 'CMB'], ['denim', 'DEN'], ['oxford', 'OXF'],
+    ['linen', 'LIN'], ['voile', 'VOI'], ['sheeting', 'SHT'], ['drill', 'DRL'], ['duck', 'DCK'], ['satin', 'SAT']
+  ];
+  const TO_LETTER = { 0: 'O', 1: 'I', 5: 'S', 8: 'B', 2: 'Z', 6: 'G' };
+  const TO_DIGIT = { O: '0', D: '0', Q: '0', I: '1', L: '1', S: '5', B: '8', Z: '2', G: '6' };
+
+  function expectedLotPrefix(material) {
+    const m = normText(material);
+    const hit = LOT_PREFIX_BY_FABRIC.find(([k]) => m.includes(k));
+    return hit ? hit[1] : null;
+  }
+
+  function checkLot(value, material) {
+    if (isBlank(value)) return { ok: true };
+    const raw = String(value).trim();
+    const pattern = /^[A-Z]{3}-\d{2}-\d{3}$/;
+    // Take the part that looks like the code (a crossed-out start can leave a word in front of it).
+    const tokens = raw.toUpperCase().split(/\s+/);
+    const extra = tokens.length > 1;
+    const core = tokens[tokens.length - 1];
+    const chars = core.replace(/[^A-Z0-9]/g, '');
+    let suggestion = null;
+    if (chars.length === 8) {
+      const letters = [...chars.slice(0, 3)].map(c => TO_LETTER[c] || c).join('');
+      const digits = [...chars.slice(3)].map(c => TO_DIGIT[c] || c).join('');
+      suggestion = `${letters}-${digits.slice(0, 2)}-${digits.slice(2)}`;
+    }
+    const expected = expectedLotPrefix(material);
+    // A prefix one letter away from the fabric's usual one (OCK for Duck Canvas) is most likely that prefix.
+    if (suggestion && expected && suggestion.slice(0, 3) !== expected && editDistance(suggestion.slice(0, 3), expected) === 1) {
+      suggestion = expected + suggestion.slice(3);
+    }
+    if (suggestion && !pattern.test(suggestion)) suggestion = null;
+    const problems = [];
+    if (extra) problems.push('there is extra text in front of the code (a crossed-out start?)');
+    if (!pattern.test(raw.toUpperCase())) problems.push('it does not match the usual format ABC-12-345');
+    else if (expected && raw.slice(0, 3).toUpperCase() !== expected) problems.push(`the prefix does not match the fabric (${material} lots usually start ${expected})`);
+    if (!problems.length && suggestion && suggestion !== raw.toUpperCase()) problems.push('some characters look like digits or letters in the wrong place');
+    return { ok: problems.length === 0, problems, suggestion: suggestion && suggestion !== raw.toUpperCase() ? suggestion : null };
+  }
+
   /**
    * A location on the photo as Gemini returns it: [ymin, xmin, ymax, xmax] on a 0-1000 scale.
    * Anything else (wrong length, out of range, zero area) is dropped rather than trusted.
@@ -275,8 +380,9 @@
       const source = value !== null ? value : rawValue;
 
       const box = cleanBox(f.box);
+      const struck = f.struck_out === true ? { struck_out: true } : {};
       if (status === 'missing' || (source === null && status !== 'illegible')) {
-        out[def.key] = { value: null, raw_value: rawValue, status: status === 'illegible' ? 'illegible' : 'missing', reason, ...(box ? { box } : {}) };
+        out[def.key] = { value: null, raw_value: rawValue, status: status === 'illegible' ? 'illegible' : 'missing', reason, ...(box ? { box } : {}), ...struck };
         continue;
       }
       if (!status) status = 'read';
@@ -367,7 +473,7 @@
         }
       }
 
-      out[def.key] = { value, raw_value: rawValue, status, reason: reason || null, ...(box ? { box } : {}) };
+      out[def.key] = { value, raw_value: rawValue, status, reason: reason || null, ...(box ? { box } : {}), ...struck };
     }
 
     const needsReview = FIELD_DEFS.some(def => {
@@ -565,8 +671,10 @@
     if (downtime > 0 && isBlank(record.downtime_reason) && onForm(record, 'downtime_reason')) {
       warnings.push({ field: 'downtime_reason', message: 'Downtime is recorded but no reason is given.' });
     }
-    if (!isBlank(record.downtime_reason) && ctx && ctx.reasons && !matchReason(record.downtime_reason, ctx.reasons)) {
-      warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" is not in the downtime reason list; reports will group it under Other.` });
+    if (!isBlank(record.downtime_reason) && ctx && ctx.reasons) {
+      const hit = resolveReason(record.downtime_reason, ctx.reasons);
+      if (!hit) warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" is not in the downtime reason list; reports will group it under Other.` });
+      else if (!hit.exact) warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" is not an exact match; it will be counted as ${hit.reason.name} (spelling differs). Check the photo if that is wrong.` });
     }
 
     const defects = isBlank(record.defects_count) ? null : Number(record.defects_count);
@@ -577,6 +685,37 @@
     }
     if (defects > 0 && isBlank(record.defect_details) && onForm(record, 'defect_details')) {
       warnings.push({ field: 'defect_details', message: 'Defects are counted but not described.' });
+    }
+
+    // Text-like details that are only a number, or details with zero defects, usually mean a scribble or a stray mark was read.
+    if (!isBlank(record.defect_details) && /^[\s\d.,-]+$/.test(String(record.defect_details))) {
+      warnings.push({ field: 'defect_details', message: `Defect details read as "${cleanText(record.defect_details)}", which is only a number. It may be a scribble or a stray mark; check the photo.` });
+    } else if (defects === 0 && !isBlank(record.defect_details)) {
+      warnings.push({ field: 'defect_details', message: 'Defect details are filled in but the defect count is 0. Check the photo.' });
+    }
+
+    // Lot numbers: the AI's confident mistakes cluster here (O/0, I/1, D/O, lost hyphens, crossed-out starts).
+    if (!isBlank(record.batch_reference)) {
+      const lot = checkLot(record.batch_reference, record.material_reference);
+      if (!lot.ok) {
+        const msg = `Lot "${cleanText(record.batch_reference)}": ${lot.problems.join('; ')}.${lot.suggestion ? ` Did you mean ${lot.suggestion}?` : ''}`;
+        if (lot.suggestion || lot.problems.length > 1) needsCheck('batch_reference', msg + ' Check it against the photo.');
+        else warnings.push({ field: 'batch_reference', message: msg });
+      }
+    }
+
+    // Fabric one or two letters away from a known fabric is almost always a misread ("Poplin 405" for "Poplin 40s").
+    if (!isBlank(record.material_reference)) {
+      const near = nearFabric(record.material_reference, [...DEFAULT_FABRICS, ...((ctx && ctx.fabrics) || [])]);
+      if (near) warnings.push({ field: 'material_reference', message: `"${cleanText(record.material_reference)}" is not a known fabric. Did you mean ${near}?`, suggestion: near });
+    }
+
+    // Anything crossed out on paper: the AI was told to read only what replaced it, but a person should look.
+    for (const def of FIELD_DEFS) {
+      const f = record.final_payload && record.final_payload.fields && record.final_payload.fields[def.key];
+      if (f && f.struck_out && !isFieldResolved(record, def)) {
+        warnings.push({ field: def.recordKey, message: `${def.label} has crossed-out writing on the paper. Check that the right value was kept.` });
+      }
     }
 
     if (record.sheet_incomplete) {
@@ -621,7 +760,7 @@
       defect_details: cleanText(record.defect_details),
       downtime_minutes: num(record.downtime_minutes),
       downtime_reason: cleanText(record.downtime_reason),
-      downtime_reason_code: isBlank(record.downtime_reason) ? null : (matchReason(record.downtime_reason, ctx && ctx.reasons) || OTHER_REASON).code,
+      downtime_reason_code: isBlank(record.downtime_reason) ? null : ((resolveReason(record.downtime_reason, ctx && ctx.reasons) || {}).reason || OTHER_REASON).code,
       remarks: cleanText(record.remarks),
       approved_by: record.reviewed_by_name || record.reviewed_by || null,
       approved_at: record.reviewed_at || null,
@@ -667,7 +806,7 @@
   return {
     STATUSES, FIELD_DEFS, THRESHOLDS, ERP_SCHEMA, DEFAULT_DOWNTIME_REASONS, OTHER_REASON,
     normalizeMachineCode, matchShift, parseNumber, parseDurationMinutes, normalizeUnit, parseDate, todayIso,
-    matchReason, similarity, cleanBox,
+    matchReason, resolveReason, editDistance, similarity, cleanBox, checkLot, nearFabric, DEFAULT_FABRICS,
     normalizeExtraction, normalizeSheet, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved, onForm, sameValue, humanChanged,
     buildErpPayload, validateErpPayload, erpReference, minutesBetween
   };

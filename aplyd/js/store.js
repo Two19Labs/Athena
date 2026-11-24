@@ -131,6 +131,14 @@
           changed = true;
         }
         if (!Array.isArray(db.downtime_reasons)) { db.downtime_reasons = this._defaultReasons(); changed = true; }
+        // Reasons added to the default list after a database was created (e.g. Shuttle change).
+        // Only codes this database has never had, so a reason an admin renamed is not brought back.
+        const seen = new Set(db.reason_defaults_seen || db.downtime_reasons.map(x => x.code).concat(['CLEAN', 'BEAM', 'BREAK', 'PIRN', 'POWER', 'MAINT', 'WAIT']));
+        for (const r of this._defaultReasons()) {
+          if (!seen.has(r.code) && !db.downtime_reasons.some(x => x.code === r.code)) db.downtime_reasons.push(r);
+          seen.add(r.code);
+        }
+        if (String(db.reason_defaults_seen) !== String([...seen])) { db.reason_defaults_seen = [...seen]; changed = true; }
         if (changed) this._write(db);
       }
     }
@@ -145,6 +153,7 @@
         machines: DEFAULT_MACHINES.map(m => ({ ...m })),
         shifts: DEFAULT_SHIFTS.map(s => ({ ...s })),
         downtime_reasons: this._defaultReasons(),
+        reason_defaults_seen: Rules.DEFAULT_DOWNTIME_REASONS.map(r => r.code),
         forms: [],
         records: [],
         corrections: []

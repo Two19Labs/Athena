@@ -183,8 +183,29 @@
     $('groupStrip').addEventListener('click', (e) => { if (e.target.closest('#bulkApproveBtn')) bulkApprove(record.batch_id); });
     await loadImage();
     await refresh();
+    showRowOnPhoto();
+  }
+
+  /**
+   * On a register page, outline this record's row. The AI's row boxes drift on long pages, so snap
+   * to the table's printed rules when they can be found; otherwise label the outline approximate.
+   */
+  function showRowOnPhoto() {
     const rowBox = record.final_payload && record.final_payload.row_box;
-    if (rowBox && record.sheet_rows > 1) viewer.showBox(rowBox, { row: true });
+    if (!rowBox || !(record.sheet_rows > 1) || !viewer) return;
+    const label = `Row ${record.sheet_row} of ${record.sheet_rows}`;
+    let box = rowBox, snapped = false;
+    try {
+      const entries = (record.form && record.form.extraction_payload && record.form.extraction_payload.entries) || [];
+      const boxes = entries.map(e => (e && e.row_box) || null);
+      const img = $('canvasImg');
+      if (window.AplydRowSnap && boxes.length === record.sheet_rows && img.naturalWidth) {
+        const { gray, w, h } = window.AplydRowSnap.grayFromImage(img);
+        const res = window.AplydRowSnap.snapRow(gray, w, h, boxes, record.sheet_row - 1);
+        if (res.snapped) { box = res.box; snapped = true; }
+      }
+    } catch (_) { /* fall back to the AI's box */ }
+    viewer.showBox(box, { row: true, label: snapped ? label : `${label} (approximate)` });
   }
 
   /** Fabric names seen before (loom notes and approved records), for "did you mean" hints. */
@@ -372,11 +393,19 @@
   function fieldHints(def, canEdit) {
     const v = record[def.recordKey];
     if (def.recordKey === 'downtime_reason' && v) {
-      const r = Rules.matchReason(v, reasons);
+      const hit = Rules.resolveReason(v, reasons);
+      const r = hit && hit.reason;
       return `<div class="field-hint">Reason code: <strong>${esc(r ? `${r.name} (${r.code})` : `${Rules.OTHER_REASON.name} (${Rules.OTHER_REASON.code})`)}</strong></div>`;
     }
+    if (def.recordKey === 'batch_reference' && v && canEdit) {
+      const lot = Rules.checkLot(v, record.material_reference);
+      if (lot.suggestion) {
+        return `<div class="field-hint">Did you mean <strong>${esc(lot.suggestion)}</strong>? <button type="button" class="link-btn" data-use-lot="${esc(lot.suggestion)}">Use this</button></div>`;
+      }
+    }
     if (def.recordKey === 'material_reference' && v && canEdit && !knownMaterials.some(m => m.toLowerCase() === String(v).toLowerCase())) {
-      const best = knownMaterials.map(m => [m, Rules.similarity(v, m)]).sort((a, b) => b[1] - a[1])[0];
+      const near = Rules.nearFabric(v, [...Rules.DEFAULT_FABRICS, ...knownMaterials]);
+      const best = near ? [near, 1] : knownMaterials.map(m => [m, Rules.similarity(v, m)]).sort((a, b) => b[1] - a[1])[0];
       if (best && best[1] >= 0.72) {
         return `<div class="field-hint">Did you mean <strong>${esc(best[0])}</strong>? <button type="button" class="link-btn" data-use-material="${esc(best[0])}">Use this</button></div>`;
       }
@@ -446,6 +475,9 @@
     container.querySelectorAll('.reason-input').forEach(el => el.addEventListener('change', () => onReasonChange(el)));
     container.querySelectorAll('.confirm-btn').forEach(btn => btn.addEventListener('click', () => onConfirm(btn.dataset.key)));
     container.querySelectorAll('.check-btn').forEach(btn => btn.addEventListener('click', () => onCheck(btn.dataset.key)));
+    container.querySelectorAll('[data-use-lot]').forEach(btn => btn.addEventListener('click', async () => {
+      await save('batch_reference', btn.dataset.useLot, 'Lot number with look-alike characters fixed');
+    }));
     container.querySelectorAll('[data-use-material]').forEach(btn => btn.addEventListener('click', async () => {
       await save('material_reference', btn.dataset.useMaterial, 'Matched to a known fabric name');
     }));
@@ -765,10 +797,13 @@
 
     /** Centre and zoom the viewer on a [ymin, xmin, ymax, xmax] (0-1000) box, and outline it. */
     let boxIsRow = false;
-    const showBox = (b, { row = false } = {}) => {
+    let boxLabel = '';
+    const showBox = (b, { row = false, label = '' } = {}) => {
       if (!b || !img.offsetWidth) return;
       box = b;
       boxIsRow = row;
+      boxLabel = label;
+      if (label) mark.dataset.label = label; else delete mark.dataset.label;
       const w = img.offsetWidth, h = img.offsetHeight;
       const [y0, x0, y1, x1] = b.map(v => v / 1000);
       const bw = Math.max((x1 - x0) * w, 8), bh = Math.max((y1 - y0) * h, 8);
@@ -872,7 +907,7 @@
       const size = `${vp.clientWidth}x${vp.clientHeight}`;
       if (size === lastSize) return;
       lastSize = size;
-      if (box && !drag && !pinchStart) showBox(box, { row: boxIsRow }); else apply();
+      if (box && !drag && !pinchStart) showBox(box, { row: boxIsRow, label: boxLabel }); else apply();
     };
     if (window.ResizeObserver) new ResizeObserver(onResize).observe(vp);
     else window.addEventListener('resize', onResize);

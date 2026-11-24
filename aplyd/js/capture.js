@@ -220,6 +220,28 @@
   }
   const stopTicker = () => { clearInterval(ticker); ticker = null; };
 
+  /**
+   * The free AI is sometimes briefly busy (2 of 15 first attempts in the real-world test). One quiet
+   * retry after a short pause fixes most of those, so the operator never sees an error for them.
+   */
+  async function extractWithRetry(blob, signal) {
+    const vx = window.visionExtractor;
+    try {
+      return await vx.extract(blob, { signal });
+    } catch (err) {
+      if (err.code === 'cancelled' || vx.isOffline(err.code) || !vx.isRetryable(err.code)) throw err;
+      const note = $('progressNote');
+      note.textContent = 'The AI was busy. Trying again in a few seconds…';
+      note.classList.remove('hidden');
+      await new Promise((resolve, reject) => {
+        const t = setTimeout(resolve, 5000);
+        signal.addEventListener('abort', () => { clearTimeout(t); reject(new vx.ExtractionError('Cancelled. Nothing was saved.', 'cancelled')); }, { once: true });
+      });
+      note.textContent = 'Trying again…';
+      return await vx.extract(blob, { signal });
+    }
+  }
+
   async function runExtraction() {
     if (!state.processed) return;
     $('extractBtn').disabled = true;
@@ -232,7 +254,7 @@
     try {
       setStep(1);
       setStep(2);
-      const result = await window.visionExtractor.extract(state.processed, { signal: controller.signal });
+      const result = await extractWithRetry(state.processed, controller.signal);
       stopTicker();
       step = 3;
       setStep(3);

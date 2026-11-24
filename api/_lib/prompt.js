@@ -54,6 +54,10 @@ Hard rules:
 4. Copy units, dates and numbers exactly in raw_value.
 5. Values written once for the whole sheet (e.g. a date or shift at the top of a register page) go in "header", not repeated in every entry. Leave a field out of an entry if it is only in the header.
 6. Skip rows that are completely empty. Count every row that has anything written in it in "rows_detected".
+7. Crossed-out writing: ignore anything struck through or overwritten and read only the value that replaces it (never join the two, e.g. "CAm" struck out then "CMB-60-401" is just "CMB-60-401"). Add "struck_out": true to that field's object.
+8. A scribble, cancel mark, dash or squiggle with no readable words is not a value: use status "missing" with reason "scribbled out". Never turn a mark into "0" or a number unless a digit is clearly written.
+9. Batch / lot codes are usually 3 letters, 2 digits, 3 digits (e.g. VOI-60-446). Handwriting makes O/0, I/1/l, D/O/0, S/5, B/8 and Z/2 look alike: if any character in the code could be read either way, use status "uncertain" and say which characters in reason. Copy hyphens as written.
+10. Fabric names often end in a count with "s" (e.g. "Poplin 40s", "Voile 60s"); a trailing "s" can look like "5", so mark the field "uncertain" if unsure.
 
 Also return:
 - "is_production_form": false if the image is not a production form at all or is too damaged/blurred to read anything; otherwise true.

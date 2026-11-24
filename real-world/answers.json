@@ -1,0 +1,649 @@
+{
+  "description": "Real-world test: forms handwritten by people, photographed on a phone. Answer keys fixed in advance by real-world/forms.js.",
+  "samples": [
+    {
+      "id": "RW-01",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Neat slip; a crossed-out start (\"CAm\") before the lot number",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "neat",
+          "crossed-out start"
+        ]
+      },
+      "truth": {
+        "machine": "L-01",
+        "production_date": "2026-11-15",
+        "shift": "M",
+        "production_quantity": 512,
+        "material_reference": "Cambric",
+        "batch_reference": "CMB-60-401",
+        "defects_count": 1,
+        "defect_details": "Weft slub",
+        "downtime_minutes": 20,
+        "downtime_reason": "Cleaning",
+        "remarks": [
+          "Smooth run",
+          "Smooth run."
+        ]
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-16",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Photo taken sideways; a loom that is not in the loom master (L-15)",
+      "tags": {
+        "photo": "rotated",
+        "writing": [
+          "unknown loom"
+        ]
+      },
+      "truth": {
+        "machine": "L-15",
+        "production_date": "2026-11-20",
+        "shift": "E",
+        "production_quantity": 410,
+        "material_reference": "Poplin 40s",
+        "batch_reference": "POP-40-416",
+        "defects_count": 0,
+        "defect_details": null,
+        "downtime_minutes": 0,
+        "downtime_reason": null,
+        "remarks": "New loom?"
+      },
+      "expect": {
+        "invalid": [
+          "machine"
+        ]
+      }
+    },
+    {
+      "id": "RW-22",
+      "set": "real-world",
+      "layout": "register",
+      "condition": "Register, 6 looms; 362 struck out for 326; the word \"blank\" written in a Reason box",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "register page",
+          "struck-out correction",
+          "Hinglish"
+        ]
+      },
+      "truth": [
+        {
+          "production_date": "2026-11-20",
+          "shift": "E",
+          "machine": "L-07",
+          "production_quantity": 455,
+          "material_reference": "Sheeting 30s",
+          "batch_reference": "SHT-30-431",
+          "defects_count": 0,
+          "downtime_minutes": 25,
+          "downtime_reason": "Cleaning"
+        },
+        {
+          "production_date": "2026-11-20",
+          "shift": "E",
+          "machine": "L-08",
+          "production_quantity": 172,
+          "material_reference": "Drill",
+          "batch_reference": "DRL-14-432",
+          "defects_count": 2,
+          "downtime_minutes": 40,
+          "downtime_reason": "Shuttle change"
+        },
+        {
+          "production_date": "2026-11-20",
+          "shift": "E",
+          "machine": "L-09",
+          "production_quantity": 138,
+          "material_reference": "Duck Canvas",
+          "batch_reference": "DCK-12-433",
+          "defects_count": 1,
+          "downtime_minutes": 60,
+          "downtime_reason": "Power cut"
+        },
+        {
+          "production_date": "2026-11-20",
+          "shift": "E",
+          "machine": "L-10",
+          "production_quantity": 681,
+          "material_reference": "Satin 50s",
+          "batch_reference": "SAT-50-434",
+          "defects_count": 0,
+          "downtime_minutes": 0,
+          "downtime_reason": [
+            "blank",
+            null
+          ]
+        },
+        {
+          "production_date": "2026-11-20",
+          "shift": "E",
+          "machine": "L-11",
+          "production_quantity": 326,
+          "material_reference": [
+            "Yarn Dyed Check",
+            "Yarn Died check",
+            "Yarn Died Check"
+          ],
+          "batch_reference": "YDC-11-435",
+          "defects_count": 1,
+          "downtime_minutes": 30,
+          "downtime_reason": "Beam change"
+        },
+        {
+          "production_date": "2026-11-20",
+          "shift": "E",
+          "machine": "L-12",
+          "production_quantity": 744,
+          "material_reference": "Combed Poplin",
+          "batch_reference": "POP-40-436",
+          "defects_count": 2,
+          "downtime_minutes": 15,
+          "downtime_reason": "safai"
+        }
+      ],
+      "expect": {}
+    },
+    {
+      "id": "RW-02",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Loom written as just \"7\", zeros and blanks, a scribbled-out mark in the defect box",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "format variations",
+          "blanks and zeros"
+        ]
+      },
+      "truth": {
+        "machine": "L-07",
+        "production_date": "2026-11-15",
+        "shift": "E",
+        "production_quantity": 468,
+        "material_reference": "Sheeting 30s",
+        "batch_reference": "SHT-30-402",
+        "defects_count": 0,
+        "defect_details": null,
+        "downtime_minutes": 0,
+        "downtime_reason": null,
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-18",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Fast, messy handwriting; \"Read mark\"; a crossed-out attempt before \"1:30\"",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "rushed",
+          "crossed-out start"
+        ]
+      },
+      "truth": {
+        "machine": "L-03",
+        "production_date": "2026-11-21",
+        "shift": "M",
+        "production_quantity": 301,
+        "material_reference": [
+          "Denim 3/1",
+          "Denim-3/1",
+          "Denin-3/1",
+          "Denin 3/1"
+        ],
+        "batch_reference": "DEN-26-418",
+        "defects_count": 1,
+        "defect_details": [
+          "Read mark",
+          "Reed mark"
+        ],
+        "downtime_minutes": 90,
+        "downtime_reason": "Beam change",
+        "remarks": "Rushed"
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-23",
+      "set": "real-world",
+      "layout": "register",
+      "condition": "Register, 8 looms, photographed at an angle; a loom stopped all shift; \"Motor burnt\" with a crossed-out first attempt",
+      "tags": {
+        "photo": "angled",
+        "writing": [
+          "register page",
+          "blanks and zeros",
+          "crossed-out start"
+        ]
+      },
+      "truth": [
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-01",
+          "production_quantity": 498,
+          "material_reference": "Cambric",
+          "batch_reference": "CMB-60-441",
+          "defects_count": 0,
+          "downtime_minutes": 0,
+          "downtime_reason": null
+        },
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-02",
+          "production_quantity": 521,
+          "material_reference": "Poplin 40s",
+          "batch_reference": "POP-40-442",
+          "defects_count": 1,
+          "downtime_minutes": 20,
+          "downtime_reason": "Cleaning"
+        },
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-03",
+          "production_quantity": 287,
+          "material_reference": "Denim 3/1",
+          "batch_reference": "DEN-26-443",
+          "defects_count": 0,
+          "downtime_minutes": 45,
+          "downtime_reason": "Warp break"
+        },
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-04",
+          "production_quantity": 318,
+          "material_reference": [
+            "Oxford",
+            "Oxbond"
+          ],
+          "batch_reference": "OXF-18-444",
+          "defects_count": 2,
+          "downtime_minutes": 10,
+          "downtime_reason": "Lubrication"
+        },
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-05",
+          "production_quantity": 0,
+          "material_reference": "Linen Blend",
+          "batch_reference": "LIN-55-445",
+          "defects_count": 0,
+          "downtime_minutes": 480,
+          "downtime_reason": "Motor burnt"
+        },
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-06",
+          "production_quantity": 577,
+          "material_reference": "Voile 60s",
+          "batch_reference": "VOI-60-446",
+          "defects_count": 1,
+          "downtime_minutes": null,
+          "downtime_reason": null
+        },
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-07",
+          "production_quantity": 463,
+          "material_reference": "Sheeting 30s",
+          "batch_reference": "SHT-30-447",
+          "defects_count": 0,
+          "downtime_minutes": 15,
+          "downtime_reason": "Pirn change"
+        },
+        {
+          "production_date": "2026-11-21",
+          "shift": "N",
+          "machine": "L-08",
+          "production_quantity": 201,
+          "material_reference": "Drill",
+          "batch_reference": "DRL-14-448",
+          "defects_count": 1,
+          "downtime_minutes": 30,
+          "downtime_reason": "Shuttle change"
+        }
+      ],
+      "expect": {}
+    },
+    {
+      "id": "RW-03",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Shift written as \"Night\", stoppage as \"1 hr. 15 min\"",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "format variations"
+        ]
+      },
+      "truth": {
+        "machine": "L-12",
+        "production_date": "2026-11-16",
+        "shift": "N",
+        "production_quantity": 735,
+        "material_reference": "Combed Poplin",
+        "batch_reference": "POP-40-403",
+        "defects_count": 2,
+        "defect_details": "Float",
+        "downtime_minutes": 75,
+        "downtime_reason": "Beam knotting",
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-05",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Struck-out correction (412 crossed out, 421 written next to it), lower-case lot number",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "struck-out correction"
+        ]
+      },
+      "truth": {
+        "machine": "L-05",
+        "production_date": "2026-11-16",
+        "shift": "E",
+        "production_quantity": 421,
+        "material_reference": "Linen Blend",
+        "batch_reference": "LIN-55-405",
+        "defects_count": 0,
+        "defect_details": null,
+        "downtime_minutes": 20,
+        "downtime_reason": "Pirn change",
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-12",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Photo taken sideways; stoppage reason in Hindi (Devanagari)",
+      "tags": {
+        "photo": "rotated",
+        "writing": [
+          "Hindi"
+        ]
+      },
+      "truth": {
+        "machine": "L-09",
+        "production_date": "2026-11-19",
+        "shift": "M",
+        "production_quantity": 154,
+        "material_reference": "Duck Canvas",
+        "batch_reference": "DCK-12-412",
+        "defects_count": 0,
+        "defect_details": null,
+        "downtime_minutes": 40,
+        "downtime_reason": [
+          "लाइट गई",
+          "light gayi",
+          "light gai",
+          "light gaya",
+          "power cut"
+        ],
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-07",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Crumpled paper; stoppage written in words (\"fifteen Min.\"), \"Safai\", \"Okay\", a crossed-out start in the lot number",
+      "tags": {
+        "photo": "crumpled",
+        "writing": [
+          "Hinglish",
+          "words for numbers",
+          "crossed-out start"
+        ]
+      },
+      "truth": {
+        "machine": "L-10",
+        "production_date": "2026-11-17",
+        "shift": "E",
+        "production_quantity": 690,
+        "material_reference": [
+          "Satin 50s",
+          "Satin-50s"
+        ],
+        "batch_reference": "SAT-50-407",
+        "defects_count": 0,
+        "defect_details": null,
+        "downtime_minutes": 15,
+        "downtime_reason": "safai",
+        "remarks": [
+          "Okay",
+          "OK"
+        ]
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-11",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Photographed at a strong angle",
+      "tags": {
+        "photo": "angled",
+        "writing": [
+          "everyday"
+        ]
+      },
+      "truth": {
+        "machine": "L-11",
+        "production_date": "2026-11-18",
+        "shift": "N",
+        "production_quantity": 377,
+        "material_reference": [
+          "Yarn Dyed Check",
+          "Yarn-Dyed Check"
+        ],
+        "batch_reference": "YDC-11-411",
+        "defects_count": 1,
+        "defect_details": "Stain",
+        "downtime_minutes": 25,
+        "downtime_reason": "Lubrication",
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-15",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Ordinary slip",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "everyday"
+        ]
+      },
+      "truth": {
+        "machine": "L-12",
+        "production_date": "2026-11-20",
+        "shift": "M",
+        "production_quantity": 760,
+        "material_reference": "Combed Poplin",
+        "batch_reference": "POP-40-415",
+        "defects_count": 1,
+        "defect_details": "Float",
+        "downtime_minutes": 5,
+        "downtime_reason": "Cleaning",
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-19",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Stoppage reason written in Hindi instead of English",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "Hindi"
+        ]
+      },
+      "truth": {
+        "machine": "L-10",
+        "production_date": "2026-11-21",
+        "shift": "E",
+        "production_quantity": 702,
+        "material_reference": "Satin 50s",
+        "batch_reference": "SAT-50-419",
+        "defects_count": 0,
+        "defect_details": null,
+        "downtime_minutes": 10,
+        "downtime_reason": [
+          "सफाई",
+          "साफ़ाई",
+          "safai",
+          "Cleaning"
+        ],
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-20",
+      "set": "real-world",
+      "layout": "slip",
+      "condition": "Held in one hand while photographing; \"whole\" written for the defect",
+      "tags": {
+        "photo": "handheld",
+        "writing": [
+          "everyday"
+        ]
+      },
+      "truth": {
+        "machine": "L-06",
+        "production_date": "2026-11-21",
+        "shift": "N",
+        "production_quantity": 640,
+        "material_reference": [
+          "Voile 60s",
+          "Voile-60s"
+        ],
+        "batch_reference": [
+          "VOI-60-420",
+          "V0I-60-420"
+        ],
+        "defects_count": 3,
+        "defect_details": [
+          "whole",
+          "Hole"
+        ],
+        "downtime_minutes": 20,
+        "downtime_reason": "Yarn shortage",
+        "remarks": null
+      },
+      "expect": {}
+    },
+    {
+      "id": "RW-24",
+      "set": "real-world",
+      "layout": "register",
+      "condition": "Register, 6 looms, rows written by different people",
+      "tags": {
+        "photo": "normal",
+        "writing": [
+          "register page",
+          "several writers"
+        ]
+      },
+      "truth": [
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-02",
+          "production_quantity": 476,
+          "material_reference": "Poplin 40s",
+          "batch_reference": "POP-40-451",
+          "defects_count": 1,
+          "downtime_minutes": 20,
+          "downtime_reason": "Cleaning"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-04",
+          "production_quantity": 263,
+          "material_reference": "Oxford",
+          "batch_reference": "OXF-18-452",
+          "defects_count": 0,
+          "downtime_minutes": 35,
+          "downtime_reason": "Beam change"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-06",
+          "production_quantity": 598,
+          "material_reference": "Voile 60s",
+          "batch_reference": [
+            "VOI-60-453",
+            "VOL-60-453"
+          ],
+          "defects_count": 2,
+          "downtime_minutes": 10,
+          "downtime_reason": "Warp break"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-08",
+          "production_quantity": 185,
+          "material_reference": "Drill",
+          "batch_reference": "DRL-14-454",
+          "defects_count": 0,
+          "downtime_minutes": 50,
+          "downtime_reason": "Shuttle change"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-10",
+          "production_quantity": 672,
+          "material_reference": "Satin 50s",
+          "batch_reference": "SAT-50-455",
+          "defects_count": 1,
+          "downtime_minutes": 5,
+          "downtime_reason": "Cleaning"
+        },
+        {
+          "production_date": "2026-11-18",
+          "shift": "E",
+          "machine": "L-12",
+          "production_quantity": 731,
+          "material_reference": "Combed Poplin",
+          "batch_reference": "POP-40-456",
+          "defects_count": 0,
+          "downtime_minutes": 0,
+          "downtime_reason": null
+        }
+      ],
+      "expect": {}
+    }
+  ]
+}

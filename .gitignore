@@ -12,3 +12,13 @@ context.md
 incoming-samples/*.png
 incoming-samples/*.jpg
 incoming-samples/*.webp
+
+# Real-world test: photos of people's handwriting and raw outputs stay on this machine unless chosen for the report
+real-world/photos/*
+!real-world/photos/.gitkeep
+real-world/outputs/
+real-world/kit/kit.html
+real-world/writers.csv
+real-world/report-draft.md
+real-world/screenshots/
+real-world/results.json

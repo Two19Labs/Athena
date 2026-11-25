@@ -788,3 +788,11 @@ test('/api/extract: a second model reads in parallel; its disagreements reach th
     } finally { stub.restore(); }
   });
 });
+
+test('two numbers in one number box (a correction) warn until checked', () => {
+  const out = modelOutput({ production_quantity: f(421, 'read', '412 - 421') });
+  const rec = baseRecord({ production_quantity: 421, final_payload: R.normalizeExtraction(out, MASTER) });
+  assert.ok(R.validateRecord(rec, CTX).warnings.some(w => w.field === 'production_quantity' && /Two numbers/.test(w.message)));
+  rec.corrections = [{ field_key: 'production_quantity', kind: 'check', corrected_value: 421 }];
+  assert.ok(!R.validateRecord(rec, CTX).warnings.some(w => /Two numbers/.test(w.message)));
+});

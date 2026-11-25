@@ -744,6 +744,15 @@
       warnings.push({ field: 'defect_details', message: 'Defects are counted but not described.' });
     }
 
+    // Two numbers written in one number box ("412 - 421") is usually a crossed-out value and its correction.
+    for (const def of FIELD_DEFS.filter(d => d.type === 'number' || d.type === 'integer')) {
+      const f = record.final_payload && record.final_payload.fields && record.final_payload.fields[def.key];
+      const nums = f && f.raw_value ? String(f.raw_value).match(/\d+(?:\.\d+)?/g) || [] : [];
+      if (nums.length >= 2 && !isFieldResolved(record, def) && !unresolvedFlags(record).includes(def)) {
+        warnings.push({ field: def.recordKey, message: `Two numbers are written here ("${f.raw_value}"), probably a correction. Check which one is the final value.` });
+      }
+    }
+
     // Text-like details that are only a number, or details with zero defects, usually mean a scribble or a stray mark was read.
     if (!isBlank(record.defect_details) && /^[\s\d.,-]+$/.test(String(record.defect_details))) {
       warnings.push({ field: 'defect_details', message: `Defect details read as "${cleanText(record.defect_details)}", which is only a number. It may be a scribble or a stray mark; check the photo.` });

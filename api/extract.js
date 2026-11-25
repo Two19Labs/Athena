@@ -64,7 +64,9 @@ module.exports = async function handler(req, res) {
   // It never delays or fails the main read: if it is slow or errors, the main reading is used alone.
   const allModels = configuredProviders().flatMap(p => p.models);
   const secondRead = process.env.AI_SECOND_READ !== '0' && allModels.length > 1
-    ? runVision({ ...request, exclude: [allModels[0]], deadline: Math.min(deadline, started + 35000) })
+    // Start further down the chain: when the first model is busy the main read falls back to the
+    // second one, so a second reading that started there too would just repeat the same model.
+    ? runVision({ ...request, exclude: allModels.slice(0, allModels.length > 2 ? 2 : 1), deadline: Math.min(deadline, started + 35000) })
       .then(r => ({ model: r.model, parsed: parseModelJson(r.text) }))
       .catch(err => ({ error: err.message }))
     : null;

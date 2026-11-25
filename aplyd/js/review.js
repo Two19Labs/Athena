@@ -256,7 +256,10 @@
       const tries = (record.extraction_attempts || (record.form && record.form.extraction_attempts) || []).filter(a => !a.ok);
       const meta = $('extractionMeta');
       const second = record.form && record.form.extraction_payload && record.form.extraction_payload.second_read;
-      const secondText = second && second.model && !second.skipped ? ` · double-checked by ${second.model} (${second.disagreed.length ? `${second.disagreed.length} disagreement${second.disagreed.length > 1 ? 's' : ''} on the sheet` : 'agreed'})` : '';
+      const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+      const secondText = !second ? ''
+        : second.skipped ? ' · not double-checked (second reading unavailable)'
+          : ` · double-checked by ${second.model}: ${plural(second.corrections || 0, 'correction')} found, ${second.disagreed.length ? `${plural(second.disagreed.length, 'disagreement')} on the sheet` : 'numbers agreed'}`;
       meta.textContent = `Read by ${record.extraction_model}${ms ? ` in ${(ms / 1000).toFixed(1)}s` : ''}${tries.length ? ` · ${tries.length} busy model${tries.length > 1 ? 's' : ''} skipped` : ''}${secondText}`;
       meta.title = tries.map(a => `${a.model}: ${a.error} (${(a.ms / 1000).toFixed(1)}s)`).join('\n');
     }
@@ -429,7 +432,7 @@
 
   function baseHints(def, canEdit, v) {
     if (def.recordKey === 'downtime_reason' && v) {
-      const hit = Rules.resolveReason(v, reasons);
+      const hit = Rules.reasonOf(record, reasons);
       const r = hit && hit.reason;
       return `<div class="field-hint">Reason code: <strong>${esc(r ? `${r.name} (${r.code})` : `${Rules.OTHER_REASON.name} (${Rules.OTHER_REASON.code})`)}</strong></div>`;
     }

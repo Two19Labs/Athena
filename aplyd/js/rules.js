@@ -378,13 +378,19 @@
       let status = STATUSES.includes(f.status) ? f.status : null;
       let reason = cleanText(f.reason);
       const rawValue = isBlank(f.raw_value) ? (isBlank(f.value) ? null : String(f.value)) : String(f.raw_value);
+      // Crossed-out writing is transcribed as ~~412~~ 421. The struck part is never the value; what is
+      // left is (finalRaw). The code decides this, not the model.
+      const struckParts = rawValue ? [...rawValue.matchAll(/~~([^~]*)~~/g)].map(m => m[1].trim()).filter(Boolean) : [];
+      const finalRaw = struckParts.length ? (rawValue.replace(/~~[^~]*~~/g, ' ').replace(/\s+/g, ' ').trim() || null) : rawValue;
       let value = isBlank(f.value) ? null : f.value;
-      const source = value !== null ? value : rawValue;
+      if (typeof value === 'string' && value.includes('~~')) value = value.replace(/~~[^~]*~~/g, ' ').replace(/\s+/g, ' ').trim() || null;
+      const source = value !== null ? value : finalRaw;
 
       const box = cleanBox(f.box);
-      const struck = f.struck_out === true ? { struck_out: true } : {};
+      const struck = (f.struck_out === true || struckParts.length) ? { struck_out: true, ...(struckParts.length ? { struck: struckParts } : {}) } : {};
+      const extra = def.key === 'downtime_reason' && !isBlank(f.meaning_en) ? { meaning: cleanText(f.meaning_en) } : {};
       if (status === 'missing' || (source === null && status !== 'illegible')) {
-        out[def.key] = { value: null, raw_value: rawValue, status: status === 'illegible' ? 'illegible' : 'missing', reason, ...(box ? { box } : {}), ...struck };
+        out[def.key] = { value: null, raw_value: rawValue, status: status === 'illegible' ? 'illegible' : 'missing', reason, ...(box ? { box } : {}), ...struck, ...extra };
         continue;
       }
       if (!status) status = 'read';
@@ -465,17 +471,41 @@
 
       // The model's own transcription and its value must agree. If it wrote down "850" but returned
       // 350 (or the other way round), it is unsure whichever it says: flag it, never trust either silently.
-      if (status === 'read' && value !== null && rawValue !== null) {
-        const fromRaw = def.type === 'duration' ? parseDurationMinutes(rawValue)
-          : (def.type === 'number' || def.type === 'integer') ? parseNumber(rawValue)
-            : def.type === 'date' ? (parseDate(rawValue) || {}).iso || null : undefined;
+      const parseAs = (t) => (t === null ? null : def.type === 'duration' ? parseDurationMinutes(t)
+        : (def.type === 'number' || def.type === 'integer') ? parseNumber(t)
+          : def.type === 'date' ? (parseDate(t) || {}).iso || null : undefined);
+      if (status === 'read' && value !== null && finalRaw !== null) {
+        const fromRaw = parseAs(finalRaw);
         if (fromRaw !== undefined && fromRaw !== null && !sameValue(fromRaw, value)) {
           status = 'uncertain';
           reason = `The AI transcribed "${rawValue}" but read the value as ${value}; check the photo.`;
         }
       }
 
-      out[def.key] = { value, raw_value: rawValue, status, reason: reason || null, ...(box ? { box } : {}), ...struck };
+      // The model picked the crossed-out value: use what was written instead, and make a person check.
+      let alt;
+      if (struckParts.length && value !== null) {
+        const hit = struckParts.some(t => { const v = parseAs(t); return v === undefined ? normText(t) === normText(value) : v !== null && sameValue(v, value); });
+        if (hit) {
+          const fromFinal = parseAs(finalRaw);
+          const replacement = fromFinal === undefined ? cleanText(finalRaw) : fromFinal;
+          alt = value;
+          if (replacement !== null && replacement !== undefined) value = replacement;
+          status = 'uncertain';
+          reason = `"${struckParts.join('", "')}" is crossed out on the paper${finalRaw ? ` and "${finalRaw}" written instead` : ''}. Check which one is final.`;
+        }
+      }
+
+      // A fabric name the model was unsure of, but which exactly matches a known fabric, is not a misread.
+      if (def.key === 'material_reference' && status === 'uncertain' && !struckParts.length && value !== null) {
+        const known = [...DEFAULT_FABRICS, ...((master && master.fabrics) || [])];
+        if (known.some(k => normText(k).replace(/ /g, '') === normText(value).replace(/ /g, ''))) {
+          status = 'read';
+          reason = `The AI was unsure, but "${value}" exactly matches a known fabric.`;
+        }
+      }
+
+      out[def.key] = { value, raw_value: rawValue, status, reason: reason || null, ...(box ? { box } : {}), ...struck, ...extra, ...(alt !== undefined ? { alt } : {}) };
     }
 
     const needsReview = FIELD_DEFS.some(def => {
@@ -509,6 +539,95 @@
   }
 
   const MAX_ENTRIES = 30;
+
+  /**
+   * Corrections check. `audit` is a second, narrow reading of the same photo (often with enlarged
+   * crops): every crossed-out / overwritten value with its final value, and every number and lot
+   * re-read character by character. Applied to the normalised main sheet in place:
+   *  - the main read used the crossed-out value  -> switch to the final value, needs a check
+   *  - a correction or re-read disagrees          -> needs a check, other value offered as `alt`
+   *  - a lot the AI was unsure of, re-read the same -> not flagged (numbers always keep their flag)
+   * @returns { corrections, compared, disagreed: [{ row, field, main, audit }] }
+   */
+  function applyAudit(main, audit) {
+    const disagreed = [];
+    let compared = 0, corrections = 0;
+    const entries = (audit && Array.isArray(audit.entries)) ? audit.entries.filter(e => e && typeof e === 'object') : [];
+    const loom = e => e.fields.machine && e.fields.machine.value;
+    const parseFor = (def, t) => {
+      if (isBlank(t)) return null;
+      if (def.type === 'duration') return parseDurationMinutes(t);
+      if (def.type === 'number' || def.type === 'integer') return parseNumber(t);
+      if (def.type === 'date') return (parseDate(t) || {}).iso || null;
+      return cleanText(t);
+    };
+    const same = (def, a, b) => (def.type === 'text' || def.type === 'machine' || def.type === 'shift')
+      ? normText(a).replace(/ /g, '') === normText(b).replace(/ /g, '') : sameValue(a, b);
+    const flag = (row, def, fa, alt, why) => {
+      if (!isBlank(alt) && !same(def, alt, fa.value)) fa.alt = alt;
+      fa.status = 'uncertain';
+      fa.reason = why;
+      fa.second_read_disagrees = true;
+      disagreed.push({ row, field: def.key, main: fa.value, audit: alt });
+    };
+    main.entries.forEach((a, i) => {
+      a.double_checked = true;
+      const b = entries.find(e => normalizeMachineCode(e.machine) && normalizeMachineCode(e.machine) === loom(a)) ||
+        (entries.length === main.entries.length ? entries[i] : null);
+      if (!b) return;
+      for (const c of (Array.isArray(b.corrections) ? b.corrections : [])) {
+        const def = FIELD_DEFS.find(d => d.key === (c && c.field));
+        const fa = def && a.fields[def.key];
+        if (!fa || fa.not_on_form) continue;
+        corrections++;
+        const finalV = parseFor(def, c.final), struckV = parseFor(def, c.struck);
+        fa.struck_out = true;
+        if (!isBlank(c.struck)) fa.struck = [...new Set([...(fa.struck || []), String(c.struck)])];
+        if (struckV !== null && fa.value !== null && same(def, fa.value, struckV) && finalV !== null && !same(def, finalV, struckV)) {
+          const was = fa.value;
+          fa.value = finalV;
+          flag(i + 1, def, fa, was, `"${c.struck}" is crossed out on the paper and "${c.final}" written instead (found by the second reading). Check which one is final.`);
+        } else if (finalV !== null && !same(def, fa.value, finalV)) {
+          flag(i + 1, def, fa, finalV, `The second reading says "${c.struck}" is crossed out and the final value is "${c.final}". Check the photo.`);
+        }
+      }
+      const reread = (b.reread && typeof b.reread === 'object') ? b.reread : {};
+      for (const [key, t] of Object.entries(reread)) {
+        const def = FIELD_DEFS.find(d => d.key === key);
+        const fa = def && a.fields[def.key];
+        if (!fa || fa.not_on_form || fa.second_read_disagrees) continue;
+        const v = parseFor(def, t);
+        if (v === null) continue;
+        compared++;
+        if (fa.value === null || !same(def, fa.value, v)) {
+          flag(i + 1, def, fa, v, `A second, closer reading gave "${t}". Check the photo.`);
+        } else if (def.key === 'batch_reference' && fa.status === 'uncertain') {
+          fa.status = 'read';
+          fa.reason = 'The AI was unsure, but a second, closer reading agreed.';
+        }
+      }
+      a.overall_status = FIELD_DEFS.some(d => ['uncertain', 'illegible', 'invalid'].includes(a.fields[d.key].status) ||
+        (d.required && a.fields[d.key].status !== 'read')) ? 'needs_review' : 'ready_for_approval';
+    });
+    return { corrections, compared, disagreed };
+  }
+
+  /**
+   * The downtime reason code for a record: its text, or (for a reason written in Hindi or another
+   * script the AI misread) the English meaning the AI gave for the original text.
+   */
+  function reasonOf(record, reasons) {
+    const text = record && record.downtime_reason;
+    if (isBlank(text)) return null;
+    const direct = resolveReason(text, reasons);
+    if (direct) return { ...direct, via: 'text' };
+    const f = record.final_payload && record.final_payload.fields && record.final_payload.fields.downtime_reason;
+    if (f && f.meaning && sameValue(f.value, text)) {
+      const m = resolveReason(f.meaning, reasons);
+      if (m) return { reason: m.reason, exact: false, via: 'meaning', meaning: f.meaning };
+    }
+    return null;
+  }
 
   /**
    * Second opinion. `main` and `second` are normalised sheets of the same photo from two different
@@ -729,8 +848,9 @@
       warnings.push({ field: 'downtime_reason', message: 'Downtime is recorded but no reason is given.' });
     }
     if (!isBlank(record.downtime_reason) && ctx && ctx.reasons) {
-      const hit = resolveReason(record.downtime_reason, ctx.reasons);
-      if (!hit) warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" is not in the downtime reason list; reports will group it under Other.` });
+      const hit = reasonOf(record, ctx.reasons);
+      if (hit && hit.via === 'meaning') warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" may be misread handwriting; its meaning ("${hit.meaning}") is counted as ${hit.reason.name}. Check the photo.` });
+      else if (!hit) warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" is not in the downtime reason list; reports will group it under Other.` });
       else if (!hit.exact) warnings.push({ field: 'downtime_reason', message: `"${cleanText(record.downtime_reason)}" is not an exact match; it will be counted as ${hit.reason.name} (spelling differs). Check the photo if that is wrong.` });
     }
 
@@ -748,7 +868,7 @@
     for (const def of FIELD_DEFS.filter(d => d.type === 'number' || d.type === 'integer')) {
       const f = record.final_payload && record.final_payload.fields && record.final_payload.fields[def.key];
       const nums = f && f.raw_value ? String(f.raw_value).match(/\d+(?:\.\d+)?/g) || [] : [];
-      if (nums.length >= 2 && !isFieldResolved(record, def) && !unresolvedFlags(record).includes(def)) {
+      if (nums.length >= 2 && !f.struck_out && !isFieldResolved(record, def) && !unresolvedFlags(record).includes(def)) {
         warnings.push({ field: def.recordKey, message: `Two numbers are written here ("${f.raw_value}"), probably a correction. Check which one is the final value.` });
       }
     }
@@ -780,8 +900,12 @@
     for (const def of FIELD_DEFS) {
       const f = record.final_payload && record.final_payload.fields && record.final_payload.fields[def.key];
       if (f && f.struck_out && !isFieldResolved(record, def)) {
-        warnings.push({ field: def.recordKey, message: `${def.label} has crossed-out writing on the paper. Check that the right value was kept.` });
+        warnings.push({ field: def.recordKey, message: `${def.label} has crossed-out writing on the paper${f.struck && f.struck.length ? ` ("${f.struck.join('", "')}" struck out)` : ''}. Check that the right value was kept.` });
       }
+    }
+
+    if (record.final_payload && record.final_payload.double_checked === false) {
+      warnings.push({ field: null, message: 'This photo was not double-checked by the second AI reading (the AI was busy or slow). Compare the numbers with the photo before approving.' });
     }
 
     if (record.sheet_incomplete) {
@@ -826,7 +950,7 @@
       defect_details: cleanText(record.defect_details),
       downtime_minutes: num(record.downtime_minutes),
       downtime_reason: cleanText(record.downtime_reason),
-      downtime_reason_code: isBlank(record.downtime_reason) ? null : ((resolveReason(record.downtime_reason, ctx && ctx.reasons) || {}).reason || OTHER_REASON).code,
+      downtime_reason_code: isBlank(record.downtime_reason) ? null : ((reasonOf(record, ctx && ctx.reasons) || {}).reason || OTHER_REASON).code,
       remarks: cleanText(record.remarks),
       approved_by: record.reviewed_by_name || record.reviewed_by || null,
       approved_at: record.reviewed_at || null,
@@ -873,7 +997,7 @@
     STATUSES, FIELD_DEFS, THRESHOLDS, ERP_SCHEMA, DEFAULT_DOWNTIME_REASONS, OTHER_REASON,
     normalizeMachineCode, matchShift, parseNumber, parseDurationMinutes, normalizeUnit, parseDate, todayIso,
     matchReason, resolveReason, editDistance, similarity, cleanBox, checkLot, nearFabric, DEFAULT_FABRICS,
-    normalizeExtraction, normalizeSheet, compareReadings, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved, onForm, sameValue, humanChanged,
+    normalizeExtraction, normalizeSheet, compareReadings, applyAudit, reasonOf, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved, onForm, sameValue, humanChanged,
     buildErpPayload, validateErpPayload, erpReference, minutesBetween
   };
 });

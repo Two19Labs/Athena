@@ -12,8 +12,8 @@
 
 const { send, readJson } = require('./_lib/http');
 const { runVision, configuredProviders, totalBudgetMs } = require('./_lib/providers');
-const { buildSystemPrompt, USER_INSTRUCTION, parseModelJson } = require('./_lib/prompt');
-const { normalizeSheet, compareReadings } = require('../aplyd/js/rules.js');
+const { buildSystemPrompt, buildAuditPrompt, USER_INSTRUCTION, AUDIT_INSTRUCTION, parseModelJson } = require('./_lib/prompt');
+const { normalizeSheet, applyAudit } = require('../aplyd/js/rules.js');
 
 const MAX_BODY = 4 * 1024 * 1024; // Vercel's request limit is 4.5 MB; the client downsizes images well below this.
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
@@ -42,7 +42,9 @@ module.exports = async function handler(req, res) {
     return send(res, err.status || 400, { success: false, code: 'bad_request', error: err.status === 413 ? 'Image is too large. Retake at a lower resolution.' : 'Body must be JSON.' });
   }
 
-  const { imageBase64, mimeType, master, today } = body || {};
+  const { imageBase64, mimeType, master, today, tiles } = body || {};
+  // Optional enlarged crops of the same photo (from the browser) for the corrections check.
+  const extraImages = Array.isArray(tiles) ? tiles.filter(t => typeof t === 'string' && t.length > 100).slice(0, 3).map(data => ({ data, mimeType: 'image/jpeg' })) : [];
   if (typeof imageBase64 !== 'string' || imageBase64.length < 100) {
     return send(res, 400, { success: false, code: 'bad_request', error: 'imageBase64 is required.' });
   }
@@ -59,14 +61,13 @@ module.exports = async function handler(req, res) {
   const deadline = started + totalBudgetMs();
   const request = { system: buildSystemPrompt(safeMaster), user: USER_INSTRUCTION, imageBase64, mimeType, deadline };
 
-  // Second opinion: a different model reads the same photo at the same time. Where the two readings
-  // disagree, the field is flagged for a person and the other reading is offered as a one-tap choice.
-  // It never delays or fails the main read: if it is slow or errors, the main reading is used alone.
+  // Corrections check: a second, narrow reading of the same photo (with enlarged crops) runs in
+  // parallel. It looks only for crossed-out / overwritten values and re-reads numbers and lot codes.
+  // It never fails the main read: if it errors or runs out of time, the records say "not double-checked".
   const allModels = configuredProviders().flatMap(p => p.models);
-  const secondRead = process.env.AI_SECOND_READ !== '0' && allModels.length > 1
-    // Start further down the chain: when the first model is busy the main read falls back to the
-    // second one, so a second reading that started there too would just repeat the same model.
-    ? runVision({ ...request, exclude: allModels.slice(0, allModels.length > 2 ? 2 : 1), deadline: Math.min(deadline, started + 35000) })
+  const secondRead = process.env.AI_SECOND_READ !== '0' && allModels.length > 0
+    ? runVision({ system: buildAuditPrompt(safeMaster), user: AUDIT_INSTRUCTION, imageBase64, mimeType, extraImages,
+      exclude: allModels.length > 2 ? allModels.slice(0, 2) : [], deadline: deadline - 1500 })
       .then(r => ({ model: r.model, parsed: parseModelJson(r.text) }))
       .catch(err => ({ error: err.message }))
     : null;
@@ -112,13 +113,14 @@ module.exports = async function handler(req, res) {
 
   const data = normalizeSheet(parsed, safeMaster);
   if (secondRead && data.entries.length) {
-    // Wait a little for the second reading if the main one finished first; never past the deadline.
-    const wait = Math.max(0, Math.min(8000, deadline - Date.now() - 1000));
-    const second = await Promise.race([secondRead, new Promise(r => setTimeout(() => r({ error: 'second reading was too slow' }), wait))]);
-    if (second.parsed && second.model !== result.model && second.parsed.is_production_form !== false) {
-      data.second_read = { model: second.model, ...compareReadings(data, normalizeSheet(second.parsed, safeMaster)) };
+    // Wait for the corrections check up to the time budget (it started at the same time as the main read).
+    const wait = Math.max(0, deadline - Date.now() - 1000);
+    const second = await Promise.race([secondRead, new Promise(r => setTimeout(() => r({ error: 'the second reading ran out of time' }), wait))]);
+    if (second.parsed) {
+      data.second_read = { model: second.model, crops: extraImages.length, ...applyAudit(data, second.parsed) };
     } else {
-      data.second_read = { model: second.model || null, skipped: second.error || (second.model === result.model ? 'same model as the main reading' : 'no usable second reading') };
+      data.entries.forEach(e => { e.double_checked = false; });
+      data.second_read = { model: second.model || null, skipped: second.error || 'no usable second reading' };
     }
   }
   if (!data.entries.length) {

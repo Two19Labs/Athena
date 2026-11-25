@@ -187,7 +187,7 @@
     const lines = rows.map(r => [
       r.record_number, r.production_date, r.machine && r.machine.machine_code, r.shift && r.shift.shift_code,
       r.production_quantity, r.production_unit, r.material_reference, r.batch_reference, r.defects_count, r.defect_details,
-      r.downtime_minutes, r.downtime_reason, r.downtime_reason ? ((window.AplydRules.resolveReason(r.downtime_reason, reasons) || {}).reason || window.AplydRules.OTHER_REASON).code : null, r.remarks, r.status, r.erp_reference, r.reviewed_by_name, r.reviewed_at
+      r.downtime_minutes, r.downtime_reason, r.downtime_reason ? ((window.AplydRules.reasonOf(r, reasons) || {}).reason || window.AplydRules.OTHER_REASON).code : null, r.remarks, r.status, r.erp_reference, r.reviewed_by_name, r.reviewed_at
     ].map(csvCell).join(','));
     download(`aplyd-register-${window.AplydRules.todayIso()}.csv`, '﻿' + [header.join(','), ...lines].join('\r\n'), 'text/csv;charset=utf-8');
     window.toast.show(`Exported ${rows.length} records to CSV.`, 'success');

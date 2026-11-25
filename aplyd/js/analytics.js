@@ -134,7 +134,7 @@
     C.doughnut('shiftChart', Object.keys(byShift), Object.values(byShift));
 
     // Grouped by reason CODE, so "Loom cleaning", "Cleaning" and "safai" are one bar.
-    const reasonName = (r) => (r.downtime_reason ? ((Rules.resolveReason(r.downtime_reason, reasons) || {}).reason || Rules.OTHER_REASON).name : null);
+    const reasonName = (r) => (r.downtime_reason ? ((Rules.reasonOf(r, reasons) || {}).reason || Rules.OTHER_REASON).name : null);
     const byReason = sumBy(reasonName, r => r.downtime_minutes, approved);
     const topReasons = Object.entries(byReason).sort((a, b) => b[1] - a[1]).slice(0, 6);
     C.bar('downtimeChart', topReasons.map(x => x[0]), topReasons.map(x => x[1]), { color: p.warn, horizontal: true, label: 'Minutes' });

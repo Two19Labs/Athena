@@ -155,6 +155,7 @@ async function overflow(page) {
   const stubSrv = await startStub();
   process.env.GEMINI_API_KEY = 'e2e-test-key';
   process.env.GEMINI_MODELS = 'stub-model';
+  process.env.AI_SECOND_READ = '0'; // the corrections check has its own unit tests
   process.env.GEMINI_API_BASE = `http://localhost:${stubSrv.address().port}/v1beta`;
   delete process.env.OPENROUTER_API_KEY;
   const { createServer } = require('../dev-server.js');

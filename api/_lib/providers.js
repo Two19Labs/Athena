@@ -90,11 +90,11 @@ async function errorFromResponse(resp, provider, model) {
   return new ProviderError(`${provider} ${model} ${brief}.`, { status: 502, retryable: resp.status === 404 || resp.status >= 500, code: 'upstream' });
 }
 
-async function callGemini(p, model, { system, user, imageBase64, mimeType, timeoutMs }) {
+async function callGemini(p, model, { system, user, imageBase64, mimeType, extraImages = [], timeoutMs }) {
   const url = `${p.base}/models/${encodeURIComponent(model)}:generateContent`;
   const body = {
     systemInstruction: { parts: [{ text: system }] },
-    contents: [{ role: 'user', parts: [{ inline_data: { mime_type: mimeType, data: imageBase64 } }, { text: user }] }],
+    contents: [{ role: 'user', parts: [{ inline_data: { mime_type: mimeType, data: imageBase64 } }, ...extraImages.map(x => ({ inline_data: { mime_type: x.mimeType, data: x.data } })), { text: user }] }],
     generationConfig: { temperature: 0, responseMimeType: 'application/json' }
   };
   const resp = await fetchWithTimeout(url, {
@@ -113,7 +113,7 @@ async function callGemini(p, model, { system, user, imageBase64, mimeType, timeo
   return { text, usage: data.usageMetadata || null };
 }
 
-async function callOpenAICompatible(p, model, { system, user, imageBase64, mimeType, timeoutMs }) {
+async function callOpenAICompatible(p, model, { system, user, imageBase64, mimeType, extraImages = [], timeoutMs }) {
   const resp = await fetchWithTimeout(`${p.base}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${p.apiKey}` },
@@ -124,6 +124,7 @@ async function callOpenAICompatible(p, model, { system, user, imageBase64, mimeT
         { role: 'system', content: system },
         { role: 'user', content: [
           { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
+          ...extraImages.map(x => ({ type: 'image_url', image_url: { url: `data:${x.mimeType};base64,${x.data}` } })),
           { type: 'text', text: user }
         ] }
       ]

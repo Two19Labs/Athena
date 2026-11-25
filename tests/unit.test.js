@@ -767,24 +767,32 @@ test('second reading: disagreements are flagged with the other value kept; agree
   assert.equal(m2.entries[0].fields.defect_details.alt, '0');
 });
 
-test('/api/extract: a second model reads in parallel; its disagreements reach the operator, its failure does not', async () => {
+test('/api/extract: the corrections check runs in parallel with enlarged crops; a crossed-out value is caught; its failure never fails the read', async () => {
   const extract = require('../api/extract.js');
+  const isAudit = (body) => /check photos of handwritten/.test(body.systemInstruction.parts[0].text);
   await withEnv({ GEMINI_API_KEY: 'k', GEMINI_MODELS: 'm1,m2', AI_SECOND_READ: '1' }, async () => {
-    let stub = stubFetch((url) => geminiReply(modelOutput(/m2:/.test(url) ? { production_quantity: f(621, 'read', '621') } : {})));
+    const audit = { entries: [{ machine: 'L-12', corrections: [{ field: 'production_quantity', struck: '612', final: '621' }], reread: { production_quantity: '621', batch_reference: 'POP-40-881' } }] };
+    let stub = stubFetch((url, n, body) => geminiReply(isAudit(body) ? audit : modelOutput()));
     try {
-      const res = await call(extract, 'POST', EXTRACT_BODY);
+      const res = await call(extract, 'POST', { ...EXTRACT_BODY, tiles: [IMG, IMG] });
       assert.equal(res.statusCode, 200);
-      assert.equal(res.body.model, 'm1');
-      assert.equal(res.body.data.second_read.model, 'm2');
-      assert.deepEqual(res.body.data.second_read.disagreed.map(d => d.field), ['production_quantity']);
-      assert.equal(res.body.data.entries[0].fields.production_quantity.alt, 621);
+      const q = res.body.data.entries[0].fields.production_quantity;
+      assert.equal(q.value, 621, 'the main read used the crossed-out value; the final one is used instead');
+      assert.equal(q.alt, 612);
+      assert.equal(q.status, 'uncertain');
+      assert.equal(res.body.data.second_read.corrections, 1);
+      assert.equal(res.body.data.entries[0].double_checked, true);
+      const auditCall = stub.calls.find(c => isAudit(c.body));
+      assert.equal(auditCall.body.contents[0].parts.filter(x => x.inline_data).length, 3, 'photo + 2 enlarged crops');
+      const mainCall = stub.calls.find(c => !isAudit(c.body));
+      assert.equal(mainCall.body.contents[0].parts.filter(x => x.inline_data).length, 1, 'the main read gets the photo only');
     } finally { stub.restore(); }
-    stub = stubFetch((url) => (/m2:/.test(url) ? { status: 503, json: {} } : geminiReply(modelOutput())));
+    stub = stubFetch((url, n, body) => (isAudit(body) ? { status: 503, json: {} } : geminiReply(modelOutput())));
     try {
       const res = await call(extract, 'POST', EXTRACT_BODY);
-      assert.equal(res.statusCode, 200, 'a failed second reading never fails the request');
-      assert.equal(res.body.data.entries[0].fields.production_quantity.status, 'read');
+      assert.equal(res.statusCode, 200, 'a failed corrections check never fails the request');
       assert.ok(res.body.data.second_read.skipped);
+      assert.equal(res.body.data.entries[0].double_checked, false);
     } finally { stub.restore(); }
   });
 });
@@ -795,4 +803,45 @@ test('two numbers in one number box (a correction) warn until checked', () => {
   assert.ok(R.validateRecord(rec, CTX).warnings.some(w => w.field === 'production_quantity' && /Two numbers/.test(w.message)));
   rec.corrections = [{ field_key: 'production_quantity', kind: 'check', corrected_value: 421 }];
   assert.ok(!R.validateRecord(rec, CTX).warnings.some(w => /Two numbers/.test(w.message)));
+});
+
+test('crossed-out text (~~412~~ 421): the struck value is never used, and the field always needs a check', () => {
+  const field = (x) => R.normalizeExtraction(modelOutput({ production_quantity: x }), MASTER).fields.production_quantity;
+  let q = field({ value: 412, raw_value: '~~412~~ 421', status: 'read' });
+  assert.equal(q.value, 421);
+  assert.equal(q.alt, 412);
+  assert.equal(q.status, 'uncertain');
+  q = field({ value: 421, raw_value: '~~412~~ 421', status: 'read' });
+  assert.equal(q.value, 421);
+  assert.equal(q.struck_out, true);
+  const rec = baseRecord({ production_quantity: 421, final_payload: R.normalizeExtraction(modelOutput({ production_quantity: { value: 421, raw_value: '~~412~~ 421', status: 'read' } }), MASTER) });
+  assert.ok(R.validateRecord(rec, CTX).warnings.some(w => w.field === 'production_quantity' && /crossed-out/.test(w.message) && /412/.test(w.message)));
+});
+
+test('corrections check: re-read disagreements need a check; an unsure lot re-read the same is cleared; numbers keep their flag', () => {
+  const sheet = R.normalizeSheet(modelOutput({
+    batch_reference: f('POP-40-881', 'uncertain', 'POP-40-881'), defects_count: f(0, 'uncertain', '0'), downtime_minutes: f(20, 'read', '20 min')
+  }), MASTER);
+  const out = R.applyAudit(sheet, { entries: [{ machine: 'L-12', corrections: [], reread: { batch_reference: 'pop-40-881', defects_count: '0', downtime_minutes: '25 min' } }] });
+  const fl = sheet.entries[0].fields;
+  assert.equal(fl.batch_reference.status, 'read');
+  assert.equal(fl.defects_count.status, 'uncertain', 'a number the AI was unsure of stays flagged even if the re-read agrees');
+  assert.equal(fl.downtime_minutes.status, 'uncertain');
+  assert.equal(fl.downtime_minutes.alt, 25);
+  assert.deepEqual(out.disagreed.map(d => d.field), ['downtime_minutes']);
+  const rec = baseRecord({ final_payload: { ...sheet.entries[0], double_checked: false } });
+  assert.ok(R.validateRecord(rec, CTX).warnings.some(w => /not double-checked/.test(w.message)));
+});
+
+test('an unsure fabric that exactly matches a known fabric is not flagged; a Hindi reason maps by its English meaning', () => {
+  const fl = R.normalizeExtraction(modelOutput({
+    material_reference: f('Voile 60s', 'uncertain', 'Voile 60s'),
+    downtime_reason: { value: 'ताइ्रट गाई', raw_value: 'ताइ्रट गाई', status: 'read', meaning_en: 'power cut' }
+  }), MASTER).fields;
+  assert.equal(fl.material_reference.status, 'read');
+  const rec = baseRecord({ downtime_reason: 'ताइ्रट गाई', final_payload: R.normalizeExtraction(modelOutput({ downtime_reason: { value: 'ताइ्रट गाई', raw_value: 'ताइ्रट गाई', status: 'read', meaning_en: 'power cut' } }), MASTER) });
+  const ctx = { ...CTX, reasons: R.DEFAULT_DOWNTIME_REASONS };
+  assert.equal(R.reasonOf(rec, ctx.reasons).reason.code, 'POWER');
+  assert.equal(R.buildErpPayload(rec, ctx).downtime_reason_code, 'POWER');
+  assert.ok(R.validateRecord(rec, ctx).warnings.some(w => /misread handwriting/.test(w.message)));
 });

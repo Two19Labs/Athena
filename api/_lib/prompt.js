@@ -54,10 +54,11 @@ Hard rules:
 4. Copy units, dates and numbers exactly in raw_value.
 5. Values written once for the whole sheet (e.g. a date or shift at the top of a register page) go in "header", not repeated in every entry. Leave a field out of an entry if it is only in the header.
 6. Skip rows that are completely empty. Count every row that has anything written in it in "rows_detected".
-7. Crossed-out writing: ignore anything struck through or overwritten and read only the value that replaces it (never join the two, e.g. "CAm" struck out then "CMB-60-401" is just "CMB-60-401"). Add "struck_out": true to that field's object.
+7. Crossed-out writing: look closely for a line or scribble through any characters, or digits written over other digits. In raw_value wrap the struck part in ~~ ~~ and keep what replaced it, e.g. "~~412~~ 421" or "~~CAm~~ CMB-60-401". The value is ONLY what replaces it (421, CMB-60-401), never the struck part. Add "struck_out": true to that field's object. Two numbers in one box almost always mean one of them is a correction: decide which is struck and mark it.
 8. A scribble, cancel mark, dash or squiggle with no readable words is not a value: use status "missing" with reason "scribbled out". Never turn a mark into "0" or a number unless a digit is clearly written.
 9. Batch / lot codes are usually 3 letters, 2 digits, 3 digits (e.g. VOI-60-446). Handwriting makes O/0, I/1/l, D/O/0, S/5, B/8 and Z/2 look alike: if any character in the code could be read either way, use status "uncertain" and say which characters in reason. Copy hyphens as written.
 10. Fabric names often end in a count with "s" (e.g. "Poplin 40s", "Voile 60s"); a trailing "s" can look like "5", so mark the field "uncertain" if unsure.
+11. If downtime_reason is not in English (e.g. Hindi in Devanagari or Hinglish), also give "meaning_en": its meaning in plain English (e.g. "power cut", "cleaning").
 
 Also return:
 - "is_production_form": false if the image is not a production form at all or is too damaged/blurred to read anything; otherwise true.
@@ -73,6 +74,30 @@ Respond with JSON only, in exactly this shape:
 }
 
 const USER_INSTRUCTION = 'Extract this shop-floor production form. Return JSON only.';
+
+/**
+ * Corrections check: a second, narrow pass over the same photo (plus enlarged crops of it). It does
+ * not transcribe the whole form; it hunts for crossed-out / overwritten values and re-reads the
+ * numbers and lot codes character by character. Its answer is merged by rules.applyAudit.
+ */
+function buildAuditPrompt(master) {
+  const looms = (master.machines || []).map(m => m.machine_code).join(', ') || '(none configured)';
+  return `You check photos of handwritten textile production forms for two kinds of mistakes a transcriber makes.
+The first image is the whole page. Any further images are enlarged crops of the same page (top part, bottom part): use them to see small pen strokes clearly.
+A page holds one slip (one loom) or a register with one row per loom. Registered looms: ${looms}
+
+Task 1, corrections. Find EVERY place where the writer corrected something: a value struck through with a line or scribble, digits written over other digits, or two values in one box where one replaces the other. Look at each box separately and closely; a single thin line through a number counts. For each, give the field, the struck (old) value and the final (new) value.
+
+Task 2, re-read. Re-read these fields one character at a time, exactly as finally written (ignoring anything struck out): production_quantity, defects_count, downtime_minutes (as written, e.g. "1 hr 15 min"), batch_reference (lot code, e.g. "VOI-60-446"; letters and digits look alike, so decide each character from its shape and position). Use null for a blank box.
+
+Field names: machine, production_date, shift, production_quantity, material_reference, batch_reference, defects_count, defect_details, downtime_minutes, downtime_reason, remarks.
+
+Respond with JSON only, one entry per slip or register row, in this shape:
+{"entries": [{"machine": "L-05", "corrections": [{"field": "production_quantity", "struck": "412", "final": "421"}], "reread": {"production_quantity": "421", "defects_count": "0", "downtime_minutes": "20 min", "batch_reference": "LIN-55-405"}}]}
+"corrections" is [] when nothing on that row or slip was corrected. Never invent a correction.`;
+}
+
+const AUDIT_INSTRUCTION = 'Find every crossed-out or overwritten value and re-read the numbers and lot codes. Return JSON only.';
 
 /** Pull a JSON object out of a model reply (tolerates code fences / leading prose). */
 function parseModelJson(text) {
@@ -96,4 +121,4 @@ function parseModelJson(text) {
   return obj;
 }
 
-module.exports = { buildSystemPrompt, USER_INSTRUCTION, parseModelJson, FIELD_SPEC };
+module.exports = { buildSystemPrompt, buildAuditPrompt, USER_INSTRUCTION, AUDIT_INSTRUCTION, parseModelJson, FIELD_SPEC };

@@ -13,7 +13,7 @@
 const { send, readJson } = require('./_lib/http');
 const { runVision, configuredProviders, totalBudgetMs } = require('./_lib/providers');
 const { buildSystemPrompt, USER_INSTRUCTION, parseModelJson } = require('./_lib/prompt');
-const { normalizeSheet } = require('../aplyd/js/rules.js');
+const { normalizeSheet, compareReadings } = require('../aplyd/js/rules.js');
 
 const MAX_BODY = 4 * 1024 * 1024; // Vercel's request limit is 4.5 MB; the client downsizes images well below this.
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
@@ -59,6 +59,16 @@ module.exports = async function handler(req, res) {
   const deadline = started + totalBudgetMs();
   const request = { system: buildSystemPrompt(safeMaster), user: USER_INSTRUCTION, imageBase64, mimeType, deadline };
 
+  // Second opinion: a different model reads the same photo at the same time. Where the two readings
+  // disagree, the field is flagged for a person and the other reading is offered as a one-tap choice.
+  // It never delays or fails the main read: if it is slow or errors, the main reading is used alone.
+  const allModels = configuredProviders().flatMap(p => p.models);
+  const secondRead = process.env.AI_SECOND_READ !== '0' && allModels.length > 1
+    ? runVision({ ...request, exclude: [allModels[0]], deadline: Math.min(deadline, started + 35000) })
+      .then(r => ({ model: r.model, parsed: parseModelJson(r.text) }))
+      .catch(err => ({ error: err.message }))
+    : null;
+
   // A long reply occasionally comes back as broken JSON. Ask once more (the next model in the chain,
   // within the same time budget) before telling the operator; never guess at a broken reply.
   let result;
@@ -99,6 +109,16 @@ module.exports = async function handler(req, res) {
   }
 
   const data = normalizeSheet(parsed, safeMaster);
+  if (secondRead && data.entries.length) {
+    // Wait a little for the second reading if the main one finished first; never past the deadline.
+    const wait = Math.max(0, Math.min(8000, deadline - Date.now() - 1000));
+    const second = await Promise.race([secondRead, new Promise(r => setTimeout(() => r({ error: 'second reading was too slow' }), wait))]);
+    if (second.parsed && second.model !== result.model && second.parsed.is_production_form !== false) {
+      data.second_read = { model: second.model, ...compareReadings(data, normalizeSheet(second.parsed, safeMaster)) };
+    } else {
+      data.second_read = { model: second.model || null, skipped: second.error || (second.model === result.model ? 'same model as the main reading' : 'no usable second reading') };
+    }
+  }
   if (!data.entries.length) {
     return send(res, 422, {
       success: false,

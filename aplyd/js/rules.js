@@ -337,6 +337,8 @@
    * Anything else (wrong length, out of range, zero area) is dropped rather than trusted.
    */
   function cleanBox(b) {
+    // Some models wrap the box in an extra array: [[ymin, xmin, ymax, xmax]].
+    if (Array.isArray(b) && b.length === 1 && Array.isArray(b[0])) b = b[0];
     if (!Array.isArray(b) || b.length !== 4) return null;
     const n = b.map(Number);
     if (n.some(v => !Number.isFinite(v) || v < 0 || v > 1000)) return null;
@@ -482,7 +484,7 @@
       return def.required && f.status !== 'read';
     });
 
-    const rowBox = cleanBox(raw && raw.row_box);
+    const rowBox = cleanBox(raw && raw.row_box) || rowBoxFromFields(out);
     return {
       schema_version: '2.0',
       overall_status: needsReview ? 'needs_review' : 'ready_for_approval',
@@ -492,7 +494,62 @@
     };
   }
 
+  /**
+   * No row box from the model: outline the row from its field boxes. Boxes far from the row's
+   * median height (e.g. a unit printed in the column header) are left out.
+   */
+  function rowBoxFromFields(fields) {
+    const boxes = Object.values(fields).map(f => f.box).filter(Boolean);
+    if (boxes.length < 3) return null;
+    const mids = boxes.map(b => (b[0] + b[2]) / 2).sort((a, b) => a - b);
+    const median = mids[Math.floor(mids.length / 2)];
+    const inRow = boxes.filter(b => Math.abs((b[0] + b[2]) / 2 - median) <= 40);
+    if (inRow.length < 3) return null;
+    return cleanBox([Math.min(...inRow.map(b => b[0])), Math.min(...inRow.map(b => b[1])), Math.max(...inRow.map(b => b[2])), Math.max(...inRow.map(b => b[3]))]);
+  }
+
   const MAX_ENTRIES = 30;
+
+  /**
+   * Second opinion. `main` and `second` are normalised sheets of the same photo from two different
+   * models. Every field where they disagree is marked "uncertain" in `main` (so approval waits for a
+   * person) and the other reading is kept as `alt` for a one-tap choice. Entries are matched by loom
+   * number, falling back to position when the two readings found the same number of rows.
+   * @returns { compared, disagreed: [{ row, field, main, second }] }
+   */
+  function compareReadings(main, second) {
+    const disagreed = [];
+    let compared = 0;
+    const loom = e => e.fields.machine && e.fields.machine.value;
+    const norm = v => normText(v).replace(/ /g, '');
+    main.entries.forEach((a, i) => {
+      const b = second.entries.find(e => loom(e) && loom(e) === loom(a)) ||
+        (second.entries.length === main.entries.length ? second.entries[i] : null);
+      if (!b) return;
+      for (const def of FIELD_DEFS) {
+        if (def.key === 'production_unit') continue; // often only implied by a column header
+        const fa = a.fields[def.key], fb = b.fields[def.key];
+        if (!fa || !fb || fa.not_on_form || fb.not_on_form) continue;
+        compared++;
+        const va = fa.value, vb = fb.value;
+        let differs;
+        if (isBlank(va) || isBlank(vb)) differs = isBlank(va) !== isBlank(vb);
+        else if (def.type === 'text') differs = similarity(norm(va), norm(vb)) < 0.8; // small wording differences are not a misread
+        else differs = norm(va) !== norm(vb);
+        if (!differs) continue;
+        disagreed.push({ row: i + 1, field: def.key, main: va, second: vb });
+        if (!isBlank(vb)) fa.alt = vb;
+        if (fa.status === 'read' || fa.status === 'missing') {
+          fa.status = 'uncertain';
+          fa.reason = `A second AI reading gave ${isBlank(vb) ? 'nothing (blank)' : `"${fb.raw_value || vb}"`}. Check the photo.`;
+        }
+        fa.second_read_disagrees = true;
+      }
+      a.overall_status = FIELD_DEFS.some(d => ['uncertain', 'illegible', 'invalid'].includes(a.fields[d.key].status) ||
+        (d.required && a.fields[d.key].status !== 'read')) ? 'needs_review' : a.overall_status;
+    });
+    return { compared, disagreed };
+  }
 
   function isBlankField(f) {
     return !f || typeof f !== 'object' || (isBlank(f.value) && isBlank(f.raw_value) && f.status !== 'illegible');
@@ -807,7 +864,7 @@
     STATUSES, FIELD_DEFS, THRESHOLDS, ERP_SCHEMA, DEFAULT_DOWNTIME_REASONS, OTHER_REASON,
     normalizeMachineCode, matchShift, parseNumber, parseDurationMinutes, normalizeUnit, parseDate, todayIso,
     matchReason, resolveReason, editDistance, similarity, cleanBox, checkLot, nearFabric, DEFAULT_FABRICS,
-    normalizeExtraction, normalizeSheet, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved, onForm, sameValue, humanChanged,
+    normalizeExtraction, normalizeSheet, compareReadings, MAX_ENTRIES, validateRecord, unresolvedFlags, isFieldResolved, onForm, sameValue, humanChanged,
     buildErpPayload, validateErpPayload, erpReference, minutesBetween
   };
 });

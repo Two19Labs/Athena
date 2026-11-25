@@ -309,10 +309,11 @@ const IMG = 'A'.repeat(200);
 const EXTRACT_BODY = { imageBase64: IMG, mimeType: 'image/jpeg', master: { machines: MACHINES, shifts: SHIFTS }, today: '2026-11-16' };
 
 function withEnv(env, fn) {
-  const keys = ['GEMINI_API_KEY', 'GEMINI_MODELS', 'GEMINI_API_BASE', 'OPENROUTER_API_KEY', 'OPENROUTER_MODELS', 'OPENROUTER_API_BASE', 'AI_PROVIDER_ORDER', 'AI_TOTAL_BUDGET_MS'];
+  const keys = ['GEMINI_API_KEY', 'GEMINI_MODELS', 'GEMINI_API_BASE', 'OPENROUTER_API_KEY', 'OPENROUTER_MODELS', 'OPENROUTER_API_BASE', 'AI_PROVIDER_ORDER', 'AI_TOTAL_BUDGET_MS', 'AI_SECOND_READ'];
   const saved = Object.fromEntries(keys.map(k => [k, process.env[k]]));
   keys.forEach(k => delete process.env[k]);
-  Object.assign(process.env, env);
+  // The second reading has its own tests; elsewhere it would consume the stubbed replies.
+  Object.assign(process.env, { AI_SECOND_READ: '0' }, env);
   return Promise.resolve(fn()).finally(() => {
     keys.forEach(k => { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; });
   });
@@ -732,4 +733,58 @@ test('downtime reasons: Shuttle change is a code, and near-miss spellings map wi
   }
   assert.equal(R.resolveReason('Blank'), null);
   assert.equal(R.resolveReason('xyz'), null);
+});
+
+test('row boxes: a box wrapped in an extra array is accepted; a missing row box is built from the field boxes', () => {
+  assert.deepEqual(R.cleanBox([[486, 102, 545, 882]]), [486, 102, 545, 882]);
+  const out = modelOutput({
+    machine: { ...f('L-12'), box: [501, 105, 528, 178] },
+    production_quantity: { ...f(612), box: [517, 191, 534, 268] },
+    production_unit: { ...f('m'), box: [263, 227, 271, 279] },
+    batch_reference: { ...f('POP-40-881'), box: [486, 421, 542, 521] }
+  });
+  assert.deepEqual(R.normalizeExtraction(out, MASTER).row_box, [486, 105, 542, 521]);
+  out.row_box = [[480, 100, 550, 900]];
+  assert.deepEqual(R.normalizeExtraction(out, MASTER).row_box, [480, 100, 550, 900]);
+});
+
+test('second reading: disagreements are flagged with the other value kept; agreement and small wording changes are not', () => {
+  const sheet = (fields) => R.normalizeSheet(modelOutput(fields), MASTER);
+  const main = sheet({ production_quantity: f(412, 'read', '412'), remarks: f('Smooth run') });
+  const second = sheet({ production_quantity: f(421, 'read', '421'), remarks: f('Smooth run.') });
+  const out = R.compareReadings(main, second);
+  assert.deepEqual(out.disagreed.map(d => d.field), ['production_quantity']);
+  const q = main.entries[0].fields.production_quantity;
+  assert.equal(q.status, 'uncertain');
+  assert.equal(q.alt, 421);
+  assert.match(q.reason, /second AI reading gave "421"/);
+  assert.equal(main.entries[0].overall_status, 'needs_review');
+  assert.equal(main.entries[0].fields.remarks.status, 'read');
+  // A blank on one reading and a value on the other also counts (a scribble read as "0").
+  const m2 = sheet({ defect_details: f(null, 'missing') }), s2 = sheet({ defect_details: f('0') });
+  R.compareReadings(m2, s2);
+  assert.equal(m2.entries[0].fields.defect_details.status, 'uncertain');
+  assert.equal(m2.entries[0].fields.defect_details.alt, '0');
+});
+
+test('/api/extract: a second model reads in parallel; its disagreements reach the operator, its failure does not', async () => {
+  const extract = require('../api/extract.js');
+  await withEnv({ GEMINI_API_KEY: 'k', GEMINI_MODELS: 'm1,m2', AI_SECOND_READ: '1' }, async () => {
+    let stub = stubFetch((url) => geminiReply(modelOutput(/m2:/.test(url) ? { production_quantity: f(621, 'read', '621') } : {})));
+    try {
+      const res = await call(extract, 'POST', EXTRACT_BODY);
+      assert.equal(res.statusCode, 200);
+      assert.equal(res.body.model, 'm1');
+      assert.equal(res.body.data.second_read.model, 'm2');
+      assert.deepEqual(res.body.data.second_read.disagreed.map(d => d.field), ['production_quantity']);
+      assert.equal(res.body.data.entries[0].fields.production_quantity.alt, 621);
+    } finally { stub.restore(); }
+    stub = stubFetch((url) => (/m2:/.test(url) ? { status: 503, json: {} } : geminiReply(modelOutput())));
+    try {
+      const res = await call(extract, 'POST', EXTRACT_BODY);
+      assert.equal(res.statusCode, 200, 'a failed second reading never fails the request');
+      assert.equal(res.body.data.entries[0].fields.production_quantity.status, 'read');
+      assert.ok(res.body.data.second_read.skipped);
+    } finally { stub.restore(); }
+  });
 });

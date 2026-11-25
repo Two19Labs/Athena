@@ -255,7 +255,9 @@
       const ms = record.extraction_latency_ms || (record.form && record.form.extraction_latency_ms);
       const tries = (record.extraction_attempts || (record.form && record.form.extraction_attempts) || []).filter(a => !a.ok);
       const meta = $('extractionMeta');
-      meta.textContent = `Read by ${record.extraction_model}${ms ? ` in ${(ms / 1000).toFixed(1)}s` : ''}${tries.length ? ` · ${tries.length} busy model${tries.length > 1 ? 's' : ''} skipped` : ''}`;
+      const second = record.form && record.form.extraction_payload && record.form.extraction_payload.second_read;
+      const secondText = second && second.model && !second.skipped ? ` · double-checked by ${second.model} (${second.disagreed.length ? `${second.disagreed.length} disagreement${second.disagreed.length > 1 ? 's' : ''} on the sheet` : 'agreed'})` : '';
+      meta.textContent = `Read by ${record.extraction_model}${ms ? ` in ${(ms / 1000).toFixed(1)}s` : ''}${tries.length ? ` · ${tries.length} busy model${tries.length > 1 ? 's' : ''} skipped` : ''}${secondText}`;
       meta.title = tries.map(a => `${a.model}: ${a.error} (${(a.ms / 1000).toFixed(1)}s)`).join('\n');
     }
   }
@@ -389,9 +391,43 @@
     return `<p class="field-value${text === null ? ' muted' : ''}${def.type === 'number' ? ' strong' : ''}" id="value_${def.recordKey}">${esc(text === null ? '—' : text)}</p>`;
   }
 
-  /** Small helper lines under a field: downtime reason code, "did you mean" for fabric names. */
+  /**
+   * Other values this field could be: a second AI reading that disagreed, or two numbers written in one
+   * box (a crossed-out value and its correction, read as "412 - 421"). Each becomes a one-tap choice.
+   * @returns [{ value (as stored on the record), label }]
+   */
+  function candidates(def) {
+    const f = record.final_payload && record.final_payload.fields[def.key];
+    if (!f) return [];
+    const out = [];
+    const add = (value, label) => {
+      if (value === null || value === undefined || value === '') return;
+      if (Rules.sameValue(value, record[def.recordKey]) || out.some(c => Rules.sameValue(c.value, value))) return;
+      out.push({ value, label: String(label) });
+    };
+    if (['number', 'integer'].includes(def.type) && f.raw_value) {
+      const nums = String(f.raw_value).match(/\d+(?:\.\d+)?/g) || [];
+      if (nums.length >= 2) nums.forEach(n => add(Number(n), n));
+    }
+    if (f.alt !== undefined && f.alt !== null) {
+      if (def.type === 'machine') { const m = machines.find(x => x.machine_code === f.alt); if (m) add(m.id, m.machine_code); }
+      else if (def.type === 'shift') { const s = shifts.find(x => x.shift_code === f.alt); if (s) add(s.id, s.name); }
+      else add(f.alt, def.type === 'duration' ? `${f.alt} min` : f.alt);
+    }
+    return out;
+  }
+
+  /** Small helper lines under a field: other possible readings, reason code, "did you mean" for fabric names and lots. */
   function fieldHints(def, canEdit) {
     const v = record[def.recordKey];
+    const alts = canEdit ? candidates(def) : [];
+    const altHtml = alts.length
+      ? `<div class="field-hint">Other possible reading${alts.length > 1 ? 's' : ''}: ${alts.map(c => `<button type="button" class="btn btn-outline btn-tiny" data-use-value="${esc(String(c.value))}" data-key="${def.recordKey}">Use ${esc(c.label)}</button>`).join(' ')}</div>`
+      : '';
+    return altHtml + baseHints(def, canEdit, v);
+  }
+
+  function baseHints(def, canEdit, v) {
     if (def.recordKey === 'downtime_reason' && v) {
       const hit = Rules.resolveReason(v, reasons);
       const r = hit && hit.reason;
@@ -475,6 +511,9 @@
     container.querySelectorAll('.reason-input').forEach(el => el.addEventListener('change', () => onReasonChange(el)));
     container.querySelectorAll('.confirm-btn').forEach(btn => btn.addEventListener('click', () => onConfirm(btn.dataset.key)));
     container.querySelectorAll('.check-btn').forEach(btn => btn.addEventListener('click', () => onCheck(btn.dataset.key)));
+    container.querySelectorAll('[data-use-value]').forEach(btn => btn.addEventListener('click', async () => {
+      await save(btn.dataset.key, btn.dataset.useValue, 'Picked from the other possible readings');
+    }));
     container.querySelectorAll('[data-use-lot]').forEach(btn => btn.addEventListener('click', async () => {
       await save('batch_reference', btn.dataset.useLot, 'Lot number with look-alike characters fixed');
     }));

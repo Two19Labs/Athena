@@ -6,7 +6,8 @@
     "api/erp.js": { "maxDuration": 10 }
   },
   "redirects": [
-    { "source": "/", "destination": "/aplyd/index.html", "permanent": false }
+    { "source": "/", "destination": "/aplyd/index.html", "permanent": false },
+    { "source": "/pdf", "destination": "https://drive.google.com/file/d/1H72hhe8tI-eKtXzMY15sJSbAD0vsT7Sr/view?usp=sharing", "permanent": false }
   ],
   "rewrites": [
     { "source": "/((?!aplyd/|api/).*)", "destination": "/aplyd/$1" }

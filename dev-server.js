@@ -63,6 +63,10 @@ function createServer() {
         res.writeHead(307, { Location: '/aplyd/index.html' });
         return res.end();
       }
+      if (urlPath === '/pdf' || urlPath === '/pdf/') {
+        res.writeHead(307, { Location: 'https://drive.google.com/file/d/1H72hhe8tI-eKtXzMY15sJSbAD0vsT7Sr/view?usp=sharing' });
+        return res.end();
+      }
       // Mirror vercel.json: everything outside /aplyd and /api is served from /aplyd
       return serveStatic(req, res, urlPath.startsWith('/aplyd') ? urlPath : '/aplyd' + urlPath);
     } catch (err) {
